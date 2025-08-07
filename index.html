@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arunami Investor Club</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FAIC%20Title%20Bar.png?alt=media&token=772f57e6-9e40-4863-be2f-b3eb080ff78d"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Custom styles */
+      body {
+        font-family: "DM Sans", sans-serif;
+        background-color: #f3f4f6;
+      }
+      .page-section {
+        display: none;
+      }
+      .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .project-card-image {
+        aspect-ratio: 16 / 9;
+        object-fit: contain;
+        background-color: #e5e7eb;
+      }
+
+      /* --- Responsive Table Styles --- */
+      @media (max-width: 768px) {
+        .responsive-table thead {
+          display: none; /* Hide table headers on mobile */
+        }
+        .responsive-table tr {
+          display: block;
+          margin-bottom: 1rem;
+          border: 1px solid #ddd;
+          border-radius: 0.5rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          background-color: white;
+        }
+        .responsive-table td {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem 1rem;
+          text-align: right;
+          border-bottom: 1px solid #eee;
+        }
+        .responsive-table td:last-child {
+          border-bottom: none;
+        }
+        .responsive-table td::before {
+          content: attr(data-label);
+          font-weight: 600;
+          text-align: left;
+          padding-right: 1rem;
+          white-space: nowrap;
+        }
+        .responsive-table td .flex {
+          /* Ensure action buttons stack nicely */
+          justify-content: flex-end;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body class="text-gray-800">
+    <div id="app" class="min-h-screen">
+      <header id="navbar" class="bg-white shadow-md hidden">
+        <nav class="container mx-auto px-4 md:px-6 py-3">
+          <div class="flex justify-between items-center">
+            <a href="#">
+              <img
+                src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FArunami%20Logo%20Horizontal.png?alt=media&token=ca2a7a9e-1d68-45c7-b5ae-8cb88bd8f4f7"
+                alt="Arunami Logo"
+                class="h-16 md:h-20 w-auto"
+              />
+            </a>
+            <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
+              <a
+                href="#"
+                id="nav-dashboard"
+                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                >Projects</a
+              >
+              <a
+                href="#"
+                id="nav-bookings"
+                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                >My Bookings</a
+              >
+              <a href="#" id="nav-verified-investments" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Portfolio</a>
+              <a href="https://wa.me/6285647718853" id="nav-contact-us" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200 flex items-center">
+    <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FWA%20Logo.png?alt=media&token=dd9a7789-96bb-4988-bc31-cfbf65c47452" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="mr-2 text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+    Contact Us
+</a>
+              <span id="admin-nav-links" class="hidden">
+                <a
+                  href="#"
+                  id="nav-admin-proposed-projects"
+                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >Proposed Projects</a
+                >
+                <a
+                  href="#"
+                  id="nav-admin-projects"
+                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >Manage Projects</a
+                >
+                <a
+                  href="#"
+                  id="nav-admin-users"
+                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >Manage Users</a
+                >
+                <a
+                  href="#"
+                  id="nav-investment-report"
+                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >Investment Report</a
+                >
+              </span>
+              <span id="business-owner-nav-links" class="hidden">
+                <a
+                  href="#"
+                  id="nav-my-project"
+                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >My Projects</a
+                >
+                <a
+                  href="#"
+                  id="nav-my-approved-project"
+                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >My Approved Projects</a
+                >
+              </span>
+              <div
+                id="profile-dropdown-container"
+                class="relative inline-block group"
+              >
+                <button
+                  id="profile-dropdown-btn"
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    id="navbar-user-name"
+                    class="font-medium text-sm hidden lg:block"
+                    >Profile</span
+                  >
+                  <img
+                    id="navbar-user-avatar"
+                    class="h-8 w-8 rounded-full object-cover"
+                    src="https://placehold.co/40x40/e2e8f0/4a5568?text=A"
+                    alt="Avatar"
+                  />
+                </button>
+                <div
+                  id="profile-dropdown-menu"
+                  class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden"
+                >
+                  <a
+                    href="#"
+                    id="nav-profile"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >My Profile</a
+                  >
+                  <a
+                    href="#"
+                    id="sign-out-btn"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >Sign Out</a
+                  >
+                  <a
+                    href="#"
+                    id="nav-admin-logs"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    style="display: none"
+                    >Admin Logs</a
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="md:hidden">
+              <button
+                id="mobile-menu-button"
+                class="text-gray-800 focus:outline-none"
+              >
+                <svg
+                  class="h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16m-7 6h7"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div id="mobile-menu" class="hidden md:hidden mt-4">
+            <a
+              href="#"
+              id="mobile-nav-dashboard"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+              >Projects</a
+            >
+            <a
+              href="#"
+              id="mobile-nav-bookings"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+              >My Bookings</a
+            >
+            <a href="#" id="mobile-nav-verified-investments" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Portfolio</a>
+            <div id="mobile-business-owner-nav-links" class="hidden border-t mt-2 pt-2">
+              <a
+                href="#"
+                id="mobile-nav-my-project"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >My Projects</a
+              >
+              <a
+                href="#"
+                id="mobile-nav-my-approved-project"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >My Approved Projects</a
+              >
+            </div>
+<a href="https://wa.me/6285647718853" id="mobile-nav-contact-us" target="_blank" rel="noopener noreferrer" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 flex items-center">
+    <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FWA%20Logo.png?alt=media&token=dd9a7789-96bb-4988-bc31-cfbf65c47452" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="mr-3 text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+    Contact Us
+</a>
+
+            <div id="mobile-admin-nav-links" class="hidden border-t mt-2 pt-2">
+              <a
+                href="#"
+                id="mobile-nav-admin-projects"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >Manage Projects</a
+              >
+              <a
+                href="#"
+                id="mobile-nav-admin-users"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >Manage Users</a
+              >
+              <a
+                href="#"
+                id="mobile-nav-investment-report"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >Investment Report</a
+              >
+              <a
+                href="#"
+                id="mobile-nav-admin-proposed-projects"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >Proposed Projects</a
+              >
+              <a
+                href="#"
+                id="mobile-nav-admin-logs"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >Admin Logs</a
+              >
+            </div>
+            <div class="border-t mt-2 pt-2">
+              <a
+                href="#"
+                id="mobile-nav-profile"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >My Profile</a
+              >
+              <a
+                href="#"
+                id="mobile-sign-out-btn"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >Sign Out</a
+              >
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <div
+        id="loading-spinner"
+        class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50"
+      >
+        <div
+          class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"
+        ></div>
+      </div>
+
+      <div
+        id="auth-section"
+        class="page-section flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4"
+      >
+        <div class="w-full max-w-md">
+          <div id="sign-in-form-container">
+            <form
+              id="sign-in-form"
+              class="bg-white shadow-lg rounded-xl px-8 pt-6 pb-8 mb-4"
+            >
+              <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">
+                Sign In
+              </h2>
+              <div
+                id="sign-in-error"
+                class="text-red-500 text-sm mb-4 hidden"
+              ></div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="signin-email"
+                  >Email</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  id="signin-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+              <div class="mb-6">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="signin-password"
+                  >Password</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  id="signin-password"
+                  type="password"
+                  placeholder="******************"
+                  required
+                />
+              </div>
+              <div class="flex items-center justify-between">
+                <button
+                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline"
+                  type="submit"
+                >
+                  Sign In
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <main id="main-content" class="container mx-auto p-4 md:p-6 hidden">
+        <div
+          id="force-change-password-section"
+          class="page-section flex items-center justify-center min-h-[80vh]"
+        >
+          <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+            <h1 class="text-2xl font-bold mb-2 text-center">Welcome!</h1>
+            <p class="text-center text-gray-600 mb-6">
+              For your security, please update your password to continue.
+            </p>
+            <form id="force-change-password-form">
+              <div
+                id="force-change-password-error"
+                class="text-red-500 text-sm mb-4 hidden"
+              ></div>
+              <div
+                id="force-change-password-success"
+                class="text-green-600 text-sm mb-4 hidden"
+              ></div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="force-new-password"
+                  >New Password</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="force-new-password"
+                  type="password"
+                  required
+                />
+              </div>
+              <div class="mb-6">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="force-confirm-new-password"
+                  >Confirm New Password</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="force-confirm-new-password"
+                  type="password"
+                  required
+                />
+              </div>
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                >
+                  Update Password and Continue
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="projects-dashboard-section" class="page-section">
+          <div
+            class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4"
+          >
+            <h1 class="text-2xl md:text-3xl font-bold">
+              Investment Opportunities
+            </h1>
+            <div class="flex items-center rounded-lg bg-gray-200 p-1">
+              <button
+                id="card-view-btn"
+                class="px-3 py-1 text-sm font-medium text-gray-800 rounded-md bg-white shadow"
+              >
+                Card View
+              </button>
+              <button
+                id="list-view-btn"
+                class="px-3 py-1 text-sm font-medium text-gray-600 rounded-md"
+              >
+                List View
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="projects-grid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ></div>
+
+          <div id="projects-list-container" class="hidden overflow-x-auto">
+            <table class="min-w-full bg-white rounded-lg shadow-md">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Project Name
+                  </th>
+                  <th
+                    class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Time Left
+                  </th>
+                  <th
+                    class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Price Per Slot
+                  </th>
+                  <th
+                    class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Slots Filled
+                  </th>
+                  <th
+                    class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="projects-list-body"
+                class="divide-y divide-gray-200"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="booking-section" class="page-section">
+          <h1 class="text-2xl md:text-3xl font-bold mb-6">
+            My Bookings (Awaiting Verification)
+          </h1>
+          <div
+            id="booking-summary"
+            class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+          >
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <h3 class="text-lg font-medium text-gray-500">
+                Total Projects Booked
+              </h3>
+              <p
+                id="total-projects-booked"
+                class="mt-1 text-3xl font-semibold text-gray-900"
+              >
+                0
+              </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <h3 class="text-lg font-medium text-gray-500">
+                Total Slots Booked
+              </h3>
+              <p
+                id="total-slots-booked"
+                class="mt-1 text-3xl font-semibold text-gray-900"
+              >
+                0
+              </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <h3 class="text-lg font-medium text-gray-500">
+                Total Amount Booked
+              </h3>
+              <p
+                id="total-amount-booked"
+                class="mt-1 text-3xl font-semibold text-gray-900"
+              >
+                Rp 0
+              </p>
+            </div>
+          </div>
+          <h2 class="text-2xl font-bold mb-4">Project Reports</h2>
+          <div id="booking-list" class="space-y-6"></div>
+        </div>
+
+        <div id="verified-investments-section" class="page-section">
+          <h1 class="text-2xl md:text-3xl font-bold mb-6"> My Portfolio </h1>
+          <div
+            id="verified-summary"
+            class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+          >
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <h3 class="text-lg font-medium text-gray-500"> Total Projects </h3>
+              <p
+                id="total-projects-verified"
+                class="mt-1 text-3xl font-semibold text-gray-900"
+              >
+                0
+              </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <h3 class="text-lg font-medium text-gray-500"> Total Slots </h3>
+              <p
+                id="total-slots-verified"
+                class="mt-1 text-3xl font-semibold text-gray-900"
+              >
+                0
+              </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <h3 class="text-lg font-medium text-gray-500"> Total Investment Amount </h3>
+              <p
+                id="total-amount-verified"
+                class="mt-1 text-3xl font-semibold text-gray-900"
+              >
+                Rp 0
+              </p>
+            </div>
+          </div>
+          <div id="general-reports-section" class="mb-8">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+              <button
+                id="toggle-general-reports"
+                class="w-full flex justify-between items-center p-4 md:p-6 text-left font-bold text-xl md:text-2xl focus:outline-none"
+              >
+                <span>General Reports</span>
+                <svg
+                  class="w-6 h-6 transform transition-transform duration-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              <div
+                id="general-reports-content"
+                class="px-4 md:px-6 pb-4 md:pb-6 hidden"
+              >
+                <div
+                  id="general-reports-table-container"
+                  class="overflow-x-auto"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold mb-4">Project Reports</h2>
+          <div id="verified-investments-list" class="space-y-6"></div>
+        </div>
+
+        <div id="profile-section" class="page-section">
+          <h1 class="text-2xl md:text-3xl font-bold mb-6">My Profile</h1>
+          <div
+            class="bg-white p-6 md:p-8 rounded-lg shadow-lg max-w-2xl mx-auto"
+          >
+            <form id="update-profile-form" class="mb-10 border-b pb-10">
+              <h2 class="text-xl md:text-2xl font-semibold mb-4">
+                Profile Information
+              </h2>
+              <div
+                id="update-profile-success"
+                class="text-green-600 text-sm mb-4 hidden"
+              ></div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="profile-fullname"
+                  >Full Name</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="profile-fullname"
+                  type="text"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="profile-phone"
+                  >Phone Number</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="profile-phone"
+                  type="tel"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="profile-picture-url"
+                  >Profile Picture URL (Optional)</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="profile-picture-url"
+                  type="url"
+                />
+              </div>
+              <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2"
+                  >Investor Type</label
+                >
+                <p
+                  id="profile-investor-type"
+                  class="text-gray-700 py-2 px-3 bg-gray-100 rounded-lg"
+                ></p>
+              </div>
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                >
+                  Save Profile
+                </button>
+              </div>
+            </form>
+            <form id="change-password-form">
+              <h2 class="text-xl md:text-2xl font-semibold mb-4">
+                Change Password
+              </h2>
+              <div
+                id="change-password-error"
+                class="text-red-500 text-sm mb-4 hidden"
+              ></div>
+              <div
+                id="change-password-success"
+                class="text-green-600 text-sm mb-4 hidden"
+              ></div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="new-password"
+                  >New Password</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="new-password"
+                  type="password"
+                  required
+                />
+              </div>
+              <div class="mb-6">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="confirm-new-password"
+                  >Confirm New Password</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="confirm-new-password"
+                  type="password"
+                  required
+                />
+              </div>
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                >
+                  Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- =================== BUSINESS OWNER SECTIONS START =================== -->
+        <!-- =================================================================== -->
+
+        <div id="business-owner-my-projects-section" class="page-section">
+          <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+            <h1 class="text-2xl md:text-3xl font-bold">My Proposed Projects</h1>
+            <div class="flex items-stretch gap-4">
+               <div class="flex items-center rounded-lg bg-gray-200 p-1">
+                  <button id="my-projects-card-view-btn" class="px-3 py-1 text-sm font-medium text-gray-800 rounded-md bg-white shadow">Card View</button>
+                  <button id="my-projects-list-view-btn" class="px-3 py-1 text-sm font-medium text-gray-600 rounded-md">List View</button>
+                </div>
+                <button id="show-create-my-project-modal-btn" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Propose New Project
+                </button>
+            </div>
+          </div>
+          
+          <div id="my-projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+
+          <div id="my-projects-list-container" class="hidden overflow-x-auto">
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+                <table class="min-w-full bg-white responsive-table">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                      <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin Comments</th>
+                      <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="my-projects-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="business-owner-approved-projects-section" class="page-section">
+          <h1 class="text-2xl md:text-3xl font-bold mb-6">My Approved Projects</h1>
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Value</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified Slots</th>
+                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="my-approved-projects-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- =================== BUSINESS OWNER SECTIONS END =================== -->
+        <!-- ================================================================= -->
+
+        <div id="admin-projects-section" class="page-section">
+          <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+            <h1 class="text-2xl md:text-3xl font-bold">Project Management</h1>
+            <button
+              id="show-create-project-modal-btn"
+              class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Create Project
+            </button>
+          </div>
+
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg mb-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4 text-yellow-600">Under Review</h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Owner</th>
+                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-under-review-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg mb-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4 text-blue-600">Need Update</h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Owner</th>
+                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-need-update-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg mb-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4 text-green-600">Approved</h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booked Slots</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified Slots</th>
+                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Visibility</th>
+                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-approved-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4 text-red-600">Rejected</h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Owner</th>
+                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-rejected-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-users-section" class="page-section">
+          <div
+            class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4"
+          >
+            <h1 class="text-2xl md:text-3xl font-bold">User Management</h1>
+            <div
+              class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto"
+            >
+              <div class="flex-grow">
+                <label for="user-role-filter" class="sr-only"
+                  >Filter by role:</label
+                >
+                <select
+                  id="user-role-filter"
+                  class="w-full h-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
+                >
+                  <option value="all">All Users</option>
+                  <option value="investor">Investors Only</option>
+                  <option value="admin">Admins Only</option>
+                </select>
+              </div>
+              <button
+                id="show-add-user-modal-btn"
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="mr-2"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add User
+              </button>
+            </div>
+          </div>
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Full Name
+                    </th>
+                    <th
+                      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Email
+                    </th>
+                    <th
+                      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Phone
+                    </th>
+                    <th
+                      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Role
+                    </th>
+                    <th
+                      class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="admin-users-table-body"
+                  class="divide-y divide-gray-200 md:divide-y-0"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-proposed-projects-section" class="page-section">
+            <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+                <h1 class="text-2xl md:text-3xl font-bold">Proposed Projects</h1>
+                <div class="flex items-center rounded-lg bg-gray-200 p-1">
+                    <button id="proposed-card-view-btn" class="px-3 py-1 text-sm font-medium text-gray-800 rounded-md bg-white shadow">Card View</button>
+                    <button id="proposed-list-view-btn" class="px-3 py-1 text-sm font-medium text-gray-600 rounded-md">List View</button>
+                </div>
+            </div>
+
+            <div id="admin-proposed-projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              </div>
+            
+            <div id="admin-proposed-projects-list-container" class="hidden">
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white responsive-table">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                          <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Owner</th>
+                          <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="admin-proposed-projects-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
+                    </table>
+                  </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="investment-report-section" class="page-section">
+          <h1 class="text-2xl md:text-3xl font-bold mb-6">
+            Investment Workflow
+          </h1>
+
+          <div class="mb-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4">
+              Prospects (Requested Information)
+            </h2>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <div class="overflow-x-auto">
+                <table class="min-w-full bg-white responsive-table">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Project
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Prospect Name
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Prospect Email
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Date Requested
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="prospects-table-body"
+                    class="divide-y divide-gray-200 md:divide-y-0"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4">New Booking</h2>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <div class="overflow-x-auto">
+                <table class="min-w-full bg-white responsive-table">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Project
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor Email
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Phone
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Slots
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Amount
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Date Booked
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Contacted
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="new-booking-table-body"
+                    class="divide-y divide-gray-200 md:divide-y-0"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4">
+              Contacted Investors (Awaiting Payment)
+            </h2>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <div class="overflow-x-auto">
+                <table class="min-w-full bg-white responsive-table">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Project
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor Email
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Phone
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Slots
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Amount
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Date Contacted
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Contacted
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Payment Verified
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Cancelled
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="contacted-investors-table-body"
+                    class="divide-y divide-gray-200 md:divide-y-0"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-4">
+              Cancelled Bookings
+            </h2>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <div class="overflow-x-auto">
+                <table class="min-w-full bg-white responsive-table">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Project
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor Email
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Slots
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Date Cancelled
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="cancelled-booking-table-body"
+                    class="divide-y divide-gray-200 md:divide-y-0"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-12">
+            <div
+              class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4"
+            >
+              <h2 class="text-xl md:text-2xl font-semibold">
+                Verified Investments
+              </h2>
+              <div>
+                <label for="verified-project-filter" class="sr-only"
+                  >Filter by project:</label
+                >
+                <select
+                  id="verified-project-filter"
+                  class="w-full sm:w-auto h-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
+                >
+                  <option value="all">Filter by Project</option>
+                </select>
+              </div>
+            </div>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+              <div class="overflow-x-auto">
+                <table class="min-w-full bg-white responsive-table">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Project
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Investor Email
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Phone
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Slots
+                      </th>
+                      <th
+                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Amount
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Payment Verified
+                      </th>
+                      <th
+                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="verified-investments-table-body"
+                    class="divide-y divide-gray-200 md:divide-y-0"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="admin-logs-section" class="page-section">
+          <h1 class="text-2xl md:text-3xl font-bold mb-6">
+            Admin Activity Logs
+          </h1>
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Timestamp
+                    </th>
+                    <th
+                      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Admin
+                    </th>
+                    <th
+                      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="admin-logs-table-body"
+                  class="divide-y divide-gray-200 md:divide-y-0"
+                >
+                  <!-- Logs will be rendered here by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div
+      id="project-detail-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 m-4 flex flex-col"
+        style="max-height: 90vh"
+      >
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+          <h2 id="project-detail-modal-header-title" class="text-3xl font-bold">
+            Project Details
+          </h2>
+          <button
+            id="close-project-detail-modal"
+            class="text-gray-500 hover:text-gray-800 text-3xl font-bold"
+          >
+            &times;
+          </button>
+        </div>
+        <div id="project-detail-modal-content" class="overflow-y-auto"></div>
+      </div>
+    </div>
+
+    <div
+      id="project-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-y-auto"
+        style="max-height: 90vh"
+      >
+        <form id="project-form">
+          <h2 id="project-modal-title" class="text-2xl font-bold mb-6">
+            Create Project
+          </h2>
+          <input type="hidden" id="project-id" />
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="project-title"
+              >Project Title</label
+            >
+            <input
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="project-title"
+              type="text"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="project-photo-upload"
+              >Project Photo</label
+            >
+            <div class="mt-2 flex items-center space-x-4">
+              <img
+                id="project-image-preview"
+                src="https://placehold.co/100x100/e2e8f0/4a5568?text=Preview"
+                alt="Image Preview"
+                class="h-24 w-24 object-cover rounded-md bg-gray-200"
+              />
+              <div>
+                <input
+                  type="file"
+                  id="project-photo-upload"
+                  accept="image/*"
+                  class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                  Upload new image from your device
+                </p>
+              </div>
+            </div>
+            <input type="hidden" id="project-photo-url" />
+          </div>
+          <div class="space-y-4">
+            <input type="hidden" id="project-company-profile-url">
+            <input type="hidden" id="project-legal-doc-url">
+            <input type="hidden" id="project-financial-doc-url">
+
+            <div class="p-4 border rounded-lg bg-gray-50">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="project-company-profile-upload">Company Profiles (PDF)</label>
+                <div id="company-profile-link-container" class="mb-2"></div>
+                <input class="block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" id="project-company-profile-upload" type="file" accept=".pdf" />
+            </div>
+
+            <div class="p-4 border rounded-lg bg-gray-50">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="project-legal-doc-upload">Legal Document (PDF)</label>
+                <div id="legal-doc-link-container" class="mb-2"></div>
+                <input class="block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" id="project-legal-doc-upload" type="file" accept=".pdf" />
+            </div>
+
+            <div class="p-4 border rounded-lg bg-gray-50">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="project-financial-doc-upload">Financial Document (PDF)</label>
+                <div id="financial-doc-link-container" class="mb-2"></div>
+                <input class="block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" id="project-financial-doc-upload" type="file" accept=".pdf" />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="project-summary"
+              >Summary (One-liner)</label
+            >
+            <input
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="project-summary"
+              type="text"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="project-description"
+              >Full Description</label
+            >
+            <textarea
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="project-description"
+              rows="5"
+              required
+            ></textarea>
+          </div>
+          <div id="admin-only-project-fields">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="project-due-date"
+                  >Due Date</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="project-due-date"
+                  type="date"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="project-total-slots"
+                  >Total Slots</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="project-total-slots"
+                  type="number"
+                  min="1"
+                  required
+                />
+              </div>
+            </div>
+            <div class="mb-4">
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="project-slot-price"
+                >Price per Slot (Rp)</label
+              >
+              <input
+                class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                id="project-slot-price"
+                type="text"
+                required
+              />
+            </div>
+          </div>
+          <div class="flex justify-end space-x-4 mt-8">
+            <button
+              id="cancel-project-form"
+              type="button"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Save Project
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="investment-details-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-3xl p-8 m-4 overflow-y-auto"
+        style="max-height: 90vh"
+      >
+        <h2 id="investment-details-modal-title" class="text-2xl font-bold mb-6">
+          Investors for: Project Title
+        </h2>
+
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4 border-b pb-2">
+            Investor That Booked a Slot
+          </h3>
+          <div id="investor-list-container" class="space-y-3"></div>
+        </div>
+
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4 border-b pb-2">
+            Verified Investor
+          </h3>
+          <div id="verified-investor-list-container" class="space-y-3"></div>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-4 border-b pb-2">
+            Manually Add Investment
+          </h3>
+          <form id="manual-investment-form">
+            <input type="hidden" id="manual-investment-project-id" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  for="manual-investor-select"
+                  class="block text-sm font-medium text-gray-700"
+                  >Select Investor</label
+                >
+                <select
+                  id="manual-investor-select"
+                  class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                ></select>
+              </div>
+              <div>
+                <label
+                  for="manual-slots-input"
+                  class="block text-sm font-medium text-gray-700"
+                  >Number of Slots</label
+                >
+                <input
+                  type="number"
+                  id="manual-slots-input"
+                  min="1"
+                  class="mt-1 shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  required
+                />
+              </div>
+            </div>
+            <div class="flex justify-end space-x-4 mt-6">
+              <button
+                id="cancel-investment-details-modal"
+                type="button"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+              >
+                Close
+              </button>
+              <button
+                type="submit"
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+              >
+                Add Investment
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="edit-investment-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-8 m-4">
+        <form id="edit-investment-form">
+          <h2 id="edit-investment-modal-title" class="text-2xl font-bold mb-4">
+            Edit Investment
+          </h2>
+          <input type="hidden" id="edit-investment-project-id" />
+          <input type="hidden" id="edit-investment-user-id" />
+          <div class="mb-4">
+            <label
+              for="edit-slots-input"
+              class="block text-sm font-medium text-gray-700"
+              >Number of Slots</label
+            >
+            <input
+              type="number"
+              id="edit-slots-input"
+              min="1"
+              class="mt-1 shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              required
+            />
+          </div>
+          <div class="flex justify-end space-x-4 mt-6">
+            <button
+              id="cancel-edit-investment-modal"
+              type="button"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="user-portfolio-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-3xl p-8 m-4 overflow-y-auto"
+        style="max-height: 90vh"
+      >
+        <h2 id="user-portfolio-modal-title" class="text-2xl font-bold mb-6">
+          Investor's Portfolio
+        </h2>
+        <div id="user-portfolio-list-container" class="space-y-3"></div>
+        <div class="flex justify-end mt-6">
+          <button
+            id="cancel-user-portfolio-modal"
+            type="button"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="user-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
+        <form id="user-form">
+          <h2 id="user-modal-title" class="text-2xl font-bold mb-6">
+            Add New User
+          </h2>
+          <input type="hidden" id="user-id" />
+          <div id="user-error" class="text-red-500 text-sm mb-4 hidden"></div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="user-fullname"
+              >Full Name</label
+            >
+            <input
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="user-fullname"
+              type="text"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="user-email"
+              >Email</label
+            >
+            <input
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="user-email"
+              type="email"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="user-phone"
+              >Phone Number</label
+            >
+            <input
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="user-phone"
+              type="tel"
+              required
+            />
+          </div>
+          <div class="mb-4" id="password-field-container">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="user-password"
+              >Password</label
+            >
+            <input
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="user-password"
+              type="password"
+            />
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="user-investor-type"
+              >Investor Type</label
+            >
+            <select
+              id="user-investor-type"
+              class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700"
+            >
+              <option value="Personal" selected>Personal</option>
+              <option value="Institution">Institution</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="user-role"
+              >Role</label
+            >
+            <select
+              id="user-role"
+              class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700"
+            >
+              <option value="investor" selected>Investor</option>
+              <option value="admin">Admin</option>
+              <option value="business-owner">Business Owner</option>
+            </select>
+          </div>
+          <div class="flex justify-end space-x-4 mt-8">
+            <button
+              id="cancel-user-form"
+              type="button"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Save User
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="progress-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-hidden flex flex-col"
+        style="max-height: 90vh"
+      >
+        <div class="flex-shrink-0">
+          <h2 class="text-2xl font-bold mb-6">Manage Progress Updates</h2>
+        </div>
+
+        <div class="flex-grow overflow-y-auto pr-4">
+          <form id="progress-form" class="mb-8">
+            <!-- This title will now change dynamically -->
+            <h3 id="progress-form-title" class="text-xl font-semibold mb-4">
+              Add New Update
+            </h3>
+            <input type="hidden" id="progress-project-id" />
+            <!-- This new hidden field will store the index of the update being edited -->
+            <input type="hidden" id="progress-update-index" />
+            <div class="mb-4">
+    <label class="block text-gray-700 text-sm font-bold mb-2" for="progress-user-select">Make Visible To</label>
+    <select id="progress-user-select" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white">
+        </select>
+</div>
+            <div class="mb-4">
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="progress-title"
+                >Update Title</label
+              >
+              <input
+                class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                id="progress-title"
+                type="text"
+                placeholder="e.g., Q2 2025 Financial Report"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="progress-pdf-url"
+                >Update PDF Link (Google Drive)</label
+              >
+              <input
+                class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                id="progress-pdf-url"
+                type="url"
+                placeholder="https://drive.google.com/file/d/..."
+                required
+              />
+            </div>
+          </form>
+
+          <div>
+            <h3 class="text-xl font-semibold mb-4 border-t pt-6">
+              Previous Updates
+            </h3>
+            <div id="previous-updates-list" class="space-y-3">
+              <!-- Previous updates will be rendered here by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-shrink-0 pt-6 border-t">
+          <div class="flex justify-end space-x-4">
+            <button
+              id="cancel-progress-form"
+              type="button"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Close
+            </button>
+            <!-- This button now has an ID to change its text -->
+            <button
+              id="progress-form-submit-btn"
+              type="submit"
+              form="progress-form"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Add Update
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="manage-reports-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-3xl p-8 m-4 overflow-y-auto"
+        style="max-height: 90vh"
+      >
+        <h2 id="manage-reports-modal-title" class="text-2xl font-bold mb-6">
+          Manage General Reports
+        </h2>
+
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4 border-b pb-2">
+            Add/Edit Report
+          </h3>
+          <form id="add-report-form">
+            <input type="hidden" id="add-report-user-id" />
+            <!-- This new hidden field will store the index of the report being edited -->
+            <input type="hidden" id="add-report-index" />
+            <div class="mb-4">
+              <label
+                for="add-report-title"
+                class="block text-sm font-medium text-gray-700"
+                >Report Title</label
+              >
+              <input
+                type="text"
+                id="add-report-title"
+                class="mt-1 shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                placeholder="e.g., Annual Portfolio Summary 2024"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label
+                for="add-report-pdf-url"
+                class="block text-sm font-medium text-gray-700"
+                >Report PDF Link (Google Drive)</label
+              >
+              <input
+                type="url"
+                id="add-report-pdf-url"
+                class="mt-1 shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                placeholder="https://drive.google.com/file/d/..."
+                required
+              />
+            </div>
+            <div class="flex justify-end space-x-4 mt-6">
+              <!-- This button now has an ID to change its text -->
+              <button
+                id="add-report-submit-btn"
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+              >
+                Add Report
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="border-t pt-6">
+          <h3 class="text-xl font-semibold mb-4 border-b pb-2">Sent Reports</h3>
+          <div id="user-reports-list-container" class="space-y-3">
+            <!-- Sent reports will be rendered here by JavaScript -->
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-8">
+          <button
+            id="cancel-manage-reports-modal"
+            type="button"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="pdf-viewer-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-4xl h-full max-h-[90vh] p-4 m-4 flex flex-col"
+      >
+        <div class="flex justify-between items-center border-b pb-2 mb-4">
+          <h2 id="pdf-viewer-title" class="text-2xl font-bold">
+            Progress Update
+          </h2>
+          <button
+            id="close-pdf-viewer-modal"
+            class="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:outline-none"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="flex-grow">
+          <iframe
+            id="pdf-iframe"
+            src=""
+            class="w-full h-full"
+            frameborder="0"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="nda-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
+        <h2 class="text-2xl font-bold mb-4">Confidentiality Agreement</h2>
+        <p class="text-gray-600 mb-6">
+          By proceeding, you acknowledge that the information you are about to
+          view, including the company profile and other sensitive data, is
+          highly confidential and for your eyes only. You agree not to
+          distribute, copy, or share this information with any third party.
+        </p>
+        <div class="flex items-center mb-6">
+          <input
+            id="nda-checkbox"
+            type="checkbox"
+            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label for="nda-checkbox" class="ml-2 block text-sm text-gray-900"
+            >I agree to the terms and conditions.</label
+          >
+        </div>
+        <div class="flex justify-end space-x-4">
+          <button
+            id="cancel-nda"
+            type="button"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            id="proceed-nda"
+            type="button"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
+            disabled
+          >
+            Proceed
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="message-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 m-4 text-center"
+      >
+        <p id="message-modal-text" class="text-lg mb-6"></p>
+        <button
+          id="message-modal-close"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+
+    <div id="disclaimer-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 m-4">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Disclaimer</h2>
+        <p class="text-gray-600 mb-6 text-left leading-relaxed">
+            Arunami provides comprehensive data and analysis on prospective investees for educational purposes and initial consideration. We do not raise funds or manage investments, and the information provided is not a solicitation or an offer to invest.
+        </p>
+        <button id="disclaimer-modal-close" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">I Understand</button>
+    </div>
+</div>
+
+<div id="review-project-modal" class="fixed inset-0 z-40 items-center justify-center hidden modal-backdrop">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-y-auto" style="max-height: 90vh;">
+        <form id="review-project-form">
+          <h2 id="review-project-modal-title" class="text-2xl font-bold mb-2">Review Project</h2>
+          <p id="review-project-owner" class="text-sm text-gray-500 mb-6"></p>
+          <input type="hidden" id="review-project-id" />
+          
+          <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2">Project Details</label>
+              <div id="review-project-details" class="p-4 bg-gray-50 rounded-lg border text-sm"></div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="review-project-status">Status</label>
+            <select id="review-project-status" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700">
+              <option value="Under Review">Under Review</option>
+              <option value="Need Update">Need Update</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="review-project-comments">Comments for Business Owner</label>
+            <textarea id="review-project-comments" rows="4" class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"></textarea>
+          </div>
+
+          <div class="flex justify-end space-x-4 mt-8">
+            <button id="cancel-review-project-form" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save Review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="upload-progress-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 m-4">
+        <h2 class="text-xl font-bold mb-4">Uploading Project...</h2>
+        <p id="upload-status-text" class="text-sm text-gray-600 mb-2">Initializing...</p>
+        <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+          <div id="upload-progress-bar" class="bg-blue-600 h-4 rounded-full" style="width: 0%"></div>
+        </div>
+        <p id="upload-percentage" class="text-right text-sm font-medium text-gray-700">0%</p>
+      </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
