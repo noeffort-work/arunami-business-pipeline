@@ -2104,46 +2104,90 @@ document.getElementById('progress-form').addEventListener('submit', async (e) =>
 
 const userModal = document.getElementById("user-modal");
 const userForm = document.getElementById("user-form");
-document
-  .getElementById("show-add-user-modal-btn")
-  .addEventListener("click", () => openUserModal());
+document.getElementById("show-add-user-modal-btn").addEventListener("click", () => {
+    document.getElementById('role-selection-modal').style.display = 'flex';
+});
+// --- NEW ROLE SELECTION MODAL LOGIC ---
+const roleSelectionModal = document.getElementById('role-selection-modal');
+document.getElementById('close-role-selection-modal').addEventListener('click', () => {
+    roleSelectionModal.style.display = 'none';
+});
+document.getElementById('add-investor-btn').addEventListener('click', () => {
+    roleSelectionModal.style.display = 'none';
+    openUserModal(null, 'investor');
+});
+document.getElementById('add-business-owner-btn').addEventListener('click', () => {
+    roleSelectionModal.style.display = 'none';
+    openUserModal(null, 'business-owner');
+});
+document.getElementById('add-admin-btn').addEventListener('click', () => {
+    roleSelectionModal.style.display = 'none';
+    openUserModal(null, 'admin');
+});
 document
   .getElementById("cancel-user-form")
   .addEventListener("click", () => (userModal.style.display = "none"));
 
-async function openUserModal(userId = null) {
+async function openUserModal(userId = null, role = null) {
   userForm.reset();
   document.getElementById("user-id").value = "";
+  document.getElementById("user-creation-role").value = "";
+
   const emailInput = document.getElementById("user-email");
   const passwordContainer = document.getElementById("password-field-container");
   const passwordInput = document.getElementById("user-password");
+  const roleContainer = document.getElementById("role-field-container");
+  const investorFields = document.getElementById("investor-fields");
+  const businessOwnerFields = document.getElementById("business-owner-fields");
 
-  if (userId) {
+  // Hide all role-specific sections by default
+  investorFields.style.display = 'none';
+  businessOwnerFields.style.display = 'none';
+
+  if (userId) { // --- EDITING A USER ---
     document.getElementById("user-modal-title").textContent = "Edit User";
+    roleContainer.style.display = 'block';
+    passwordContainer.style.display = 'none';
+    passwordInput.required = false;
+    emailInput.disabled = true;
+
     const userToEdit = allUsers.find((u) => u.id === userId);
     if (userToEdit) {
       document.getElementById("user-id").value = userToEdit.id;
-      document.getElementById("user-fullname").value =
-        userToEdit.fullName || "";
+      document.getElementById("user-fullname").value = userToEdit.fullName || "";
       document.getElementById("user-phone").value = userToEdit.phone || "";
       emailInput.value = userToEdit.email;
-      emailInput.disabled = true;
-      document.getElementById("user-investor-type").value =
-        userToEdit.investorType || "Personal";
       document.getElementById("user-role").value = userToEdit.role;
-      passwordContainer.style.display = "none";
-      passwordInput.required = false;
+      
+      // Show specific fields based on the user's role
+      if (userToEdit.role === 'investor') {
+        investorFields.style.display = 'block';
+        document.getElementById("user-investor-type").value = userToEdit.investorType || "Personal";
+      } else if (userToEdit.role === 'business-owner') {
+        businessOwnerFields.style.display = 'block';
+        document.getElementById("user-company-name").value = userToEdit.companyName || "";
+      }
     }
-  } else {
-    document.getElementById("user-modal-title").textContent = "Add New User";
-    emailInput.disabled = false;
-    passwordContainer.style.display = "block";
+  } else if (role) { // --- CREATING A NEW USER ---
+    document.getElementById("user-modal-title").textContent = `Add New ${role.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}`;
+    document.getElementById("user-creation-role").value = role;
+
+    roleContainer.style.display = 'none';
+    passwordContainer.style.display = 'block';
     passwordInput.required = true;
+    emailInput.disabled = false;
+    
+    // Show the form section for the selected role
+    if (role === 'investor') {
+        investorFields.style.display = 'block';
+    } else if (role === 'business-owner') {
+        businessOwnerFields.style.display = 'block';
+    }
   }
   userModal.style.display = "flex";
 }
 
-userForm.addEventListener("submit", async (e) => {
+userForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const userId = document.getElementById("user-id").value;
   const errorDiv = document.getElementById("user-error");
@@ -2151,18 +2195,23 @@ userForm.addEventListener("submit", async (e) => {
 
   loadingSpinner.style.display = "flex";
 
+  // --- LOGIC FOR EDITING A USER ---
   if (userId) {
     const dataToUpdate = {
       fullName: document.getElementById("user-fullname").value,
       phone: document.getElementById("user-phone").value,
-      investorType: document.getElementById("user-investor-type").value,
       role: document.getElementById("user-role").value,
     };
+    // Add role-specific fields to the update
+    if (dataToUpdate.role === 'investor') {
+        dataToUpdate.investorType = document.getElementById("user-investor-type").value;
+    } else if (dataToUpdate.role === 'business-owner') {
+        dataToUpdate.companyName = document.getElementById("user-company-name").value;
+    }
+
     try {
       await updateDoc(doc(db, "users", userId), dataToUpdate);
-      await logAdminAction(
-        `Edited user: ${dataToUpdate.fullName} (ID: ${userId})`
-      );
+      await logAdminAction(`Edited user: ${dataToUpdate.fullName} (ID: ${userId})`);
       showMessage("User updated successfully.");
       userModal.style.display = "none";
     } catch (error) {
@@ -2171,39 +2220,40 @@ userForm.addEventListener("submit", async (e) => {
     } finally {
       loadingSpinner.style.display = "none";
     }
-  } else {
+  } 
+  // --- LOGIC FOR CREATING A NEW USER ---
+  else { 
     const email = document.getElementById("user-email").value;
     const password = document.getElementById("user-password").value;
     const fullName = document.getElementById("user-fullname").value;
     const phone = document.getElementById("user-phone").value;
-    const investorType = document.getElementById("user-investor-type").value;
-    const role = document.getElementById("user-role").value;
-    try {
-      const tempApp = initializeApp(
-        firebaseConfig,
-        "tempAppForUserCreation" + Date.now()
-      );
-      const tempAuth = getAuth(tempApp);
-      const userCredential = await createUserWithEmailAndPassword(
-        tempAuth,
-        email,
-        password
-      );
-      const user = userCredential.user;
+    const role = document.getElementById("user-creation-role").value;
 
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
+    const userData = {
+        email: email,
         fullName: fullName,
         phone: phone,
-        investorType: investorType,
         profilePictureURL: "",
         generalReports: [],
         role: role,
         createdAt: Timestamp.now(),
         hasChangedPassword: false,
-      });
+    };
+    // Add role-specific fields to the new user data
+    if (role === 'investor') {
+        userData.investorType = document.getElementById("user-investor-type").value;
+    } else if (role === 'business-owner') {
+        userData.companyName = document.getElementById("user-company-name").value;
+    }
 
-      await logAdminAction(`Created new user: ${fullName} (${email})`);
+    try {
+      const tempApp = initializeApp(firebaseConfig, "tempAppForUserCreation" + Date.now());
+      const tempAuth = getAuth(tempApp);
+      const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+      
+      await setDoc(doc(db, "users", userCredential.user.uid), userData);
+
+      await logAdminAction(`Created new ${role}: ${fullName} (${email})`);
       showMessage(`User ${email} created successfully.`);
       userModal.style.display = "none";
     } catch (error) {

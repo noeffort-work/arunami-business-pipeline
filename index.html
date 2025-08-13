@@ -1661,111 +1661,55 @@
       </div>
     </div>
 
-    <div
-      id="user-modal"
-      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
-    >
+    <div id="user-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
         <form id="user-form">
-          <h2 id="user-modal-title" class="text-2xl font-bold mb-6">
-            Add New User
-          </h2>
+          <h2 id="user-modal-title" class="text-2xl font-bold mb-6">Add New User</h2>
           <input type="hidden" id="user-id" />
+          <input type="hidden" id="user-creation-role" />
           <div id="user-error" class="text-red-500 text-sm mb-4 hidden"></div>
+          
           <div class="mb-4">
-            <label
-              class="block text-gray-700 text-sm font-bold mb-2"
-              for="user-fullname"
-              >Full Name</label
-            >
-            <input
-              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-              id="user-fullname"
-              type="text"
-              required
-            />
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-fullname">Full Name</label>
+            <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="user-fullname" type="text" required />
           </div>
           <div class="mb-4">
-            <label
-              class="block text-gray-700 text-sm font-bold mb-2"
-              for="user-email"
-              >Email</label
-            >
-            <input
-              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-              id="user-email"
-              type="email"
-              required
-            />
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-email">Email</label>
+            <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="user-email" type="email" required />
           </div>
           <div class="mb-4">
-            <label
-              class="block text-gray-700 text-sm font-bold mb-2"
-              for="user-phone"
-              >Phone Number</label
-            >
-            <input
-              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-              id="user-phone"
-              type="tel"
-              required
-            />
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-phone">Phone Number</label>
+            <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="user-phone" type="tel" />
           </div>
-          <div class="mb-4" id="password-field-container">
-            <label
-              class="block text-gray-700 text-sm font-bold mb-2"
-              for="user-password"
-              >Password</label
-            >
-            <input
-              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-              id="user-password"
-              type="password"
-            />
-          </div>
-          <div class="mb-4">
-            <label
-              class="block text-gray-700 text-sm font-bold mb-2"
-              for="user-investor-type"
-              >Investor Type</label
-            >
-            <select
-              id="user-investor-type"
-              class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700"
-            >
+          
+          <div id="investor-fields" class="hidden mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-investor-type">Investor Type</label>
+            <select id="user-investor-type" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700">
               <option value="Personal" selected>Personal</option>
               <option value="Institution">Institution</option>
             </select>
           </div>
-          <div class="mb-4">
-            <label
-              class="block text-gray-700 text-sm font-bold mb-2"
-              for="user-role"
-              >Role</label
-            >
-            <select
-              id="user-role"
-              class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700"
-            >
+          <div id="business-owner-fields" class="hidden mb-4">
+             <label class="block text-gray-700 text-sm font-bold mb-2" for="user-company-name">Company Name</label>
+            <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="user-company-name" type="text" />
+          </div>
+
+          <div class="mb-4" id="password-field-container">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-password">Password</label>
+            <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="user-password" type="password" />
+          </div>
+          <div class="mb-4" id="role-field-container">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-role">Role</label>
+            <select id="user-role" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700">
               <option value="investor" selected>Investor</option>
-              <option value="admin">Admin</option>
               <option value="business-owner">Business Owner</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
+
           <div class="flex justify-end space-x-4 mt-8">
-            <button
-              id="cancel-user-form"
-              type="button"
-              class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
-            >
-              Save User
-            </button>
+            <button id="cancel-user-form" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save User</button>
           </div>
         </form>
       </div>
@@ -2073,6 +2017,29 @@
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save Review</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div id="role-selection-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Add a New User</h2>
+            <button id="close-role-selection-modal" class="p-2 rounded-full text-gray-500 hover:bg-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <p class="text-gray-600 mb-6">What type of user would you like to add?</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button id="add-investor-btn" class="role-selection-btn flex flex-col items-center justify-center p-6 bg-blue-50 text-blue-800 rounded-lg border-2 border-transparent hover:border-blue-500 hover:bg-blue-100 transition">
+            <span class="text-lg font-bold">Investor</span>
+          </button>
+          <button id="add-business-owner-btn" class="role-selection-btn flex flex-col items-center justify-center p-6 bg-green-50 text-green-800 rounded-lg border-2 border-transparent hover:border-green-500 hover:bg-green-100 transition">
+            <span class="text-lg font-bold">Business Owner</span>
+          </button>
+          <button id="add-admin-btn" class="role-selection-btn flex flex-col items-center justify-center p-6 bg-gray-50 text-gray-800 rounded-lg border-2 border-transparent hover:border-gray-500 hover:bg-gray-100 transition">
+            <span class="text-lg font-bold">Admin</span>
+          </button>
+        </div>
       </div>
     </div>
 
