@@ -138,6 +138,12 @@
                 >
                 <a
                   href="#"
+                  id="nav-project-progress"
+                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >Project Progress</a
+                >
+                <a
+                  href="#"
                   id="nav-my-approved-project"
                   class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
                   >My Approved Projects</a
@@ -231,6 +237,12 @@
                 id="mobile-nav-my-project"
                 class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
                 >My Projects</a
+              >
+              <a
+                href="#"
+                id="mobile-nav-project-progress"
+                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
+                >Project Progress</a
               >
               <a
                 href="#"
@@ -777,6 +789,34 @@
             </div>
           </div>
         </div>
+        <div id="business-owner-project-progress-section" class="page-section">
+  <h1 class="text-2xl md:text-3xl font-bold mb-6">Project Progress History</h1>
+  <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg overflow-x-auto">
+    <table class="min-w-full bg-white">
+      <thead class="bg-gray-50">
+        <tr>
+          <th
+            class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Project Title
+          </th>
+          <th
+            class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Current Status
+          </th>
+          <th
+            class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody id="project-progress-tbody" class="divide-y divide-gray-200">
+        </tbody>
+    </table>
+  </div>
+</div>
 
         <!-- ================================================================= -->
         <!-- =================== BUSINESS OWNER SECTIONS END =================== -->
@@ -817,16 +857,71 @@
             <div class="overflow-x-auto">
               <table class="min-w-full bg-white responsive-table">
                 <thead class="bg-gray-50">
-                  <tr>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Owner</th>
-                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
+  <tr>
+    <th
+      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+    >
+      Project Title
+    </th>
+    <th
+      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+    >
+      Business Owner
+    </th>
+    <th
+      class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+    >
+      Admin Comment
+    </th>
+    <th
+      class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+    >
+      Actions
+    </th>
+  </tr>
+</thead>
                 <tbody id="admin-need-update-table-body" class="divide-y divide-gray-200 md:divide-y-0"></tbody>
               </table>
             </div>
           </div>
+
+          <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg mb-12">
+  <h2 class="text-xl md:text-2xl font-semibold mb-4 text-purple-600">
+    Resubmitted for Review
+  </h2>
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white responsive-table">
+      <thead class="bg-gray-50">
+        <tr>
+          <th
+            class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Project Title
+          </th>
+          <th
+            class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Business Owner
+          </th>
+          <th
+            class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Latest Comment
+          </th>
+          <th
+            class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        id="admin-resubmitted-table-body"
+        class="divide-y divide-gray-200 md:divide-y-0"
+      ></tbody>
+    </table>
+  </div>
+</div>
 
           <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg mb-12">
             <h2 class="text-xl md:text-2xl font-semibold mb-4 text-green-600">Approved</h2>
@@ -881,8 +976,9 @@
                 >
                   <option value="all">All Users</option>
                   <option value="investor">Investors Only</option>
+                  <option value="business-owner">Business Owners Only</option>
                   <option value="admin">Admins Only</option>
-                </select>
+                </select> 
               </div>
               <button
                 id="show-add-user-modal-btn"
@@ -1985,40 +2081,80 @@
     </div>
 </div>
 
-<div id="review-project-modal" class="fixed inset-0 z-40 items-center justify-center hidden modal-backdrop">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-y-auto" style="max-height: 90vh;">
-        <form id="review-project-form">
-          <h2 id="review-project-modal-title" class="text-2xl font-bold mb-2">Review Project</h2>
-          <p id="review-project-owner" class="text-sm text-gray-500 mb-6"></p>
-          <input type="hidden" id="review-project-id" />
-          
-          <div class="mb-4">
-              <label class="block text-gray-700 text-sm font-bold mb-2">Project Details</label>
-              <div id="review-project-details" class="p-4 bg-gray-50 rounded-lg border text-sm"></div>
-          </div>
+<div
+  id="review-project-modal"
+  class="fixed inset-0 z-40 items-center justify-center hidden modal-backdrop"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-y-auto"
+    style="max-height: 90vh"
+  >
+    <h2 id="review-project-modal-title" class="text-2xl font-bold mb-2">
+      Review Project
+    </h2>
+    <p id="review-project-owner" class="text-sm text-gray-500 mb-6"></p>
+    <input type="hidden" id="review-project-id" />
 
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="review-project-status">Status</label>
-            <select id="review-project-status" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700">
-              <option value="Under Review">Under Review</option>
-              <option value="Need Update">Need Update</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
+    <div class="mb-4">
+      <label class="block text-gray-700 text-sm font-bold mb-2"
+        >Project Details</label
+      >
+      <div
+        id="review-project-details"
+        class="p-4 bg-gray-50 rounded-lg border text-sm"
+      ></div>
+    </div>
 
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="review-project-comments">Comments for Business Owner</label>
-            <textarea id="review-project-comments" rows="4" class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"></textarea>
-          </div>
+    <div class="mb-4">
+      <label
+        class="block text-gray-700 text-sm font-bold mb-2"
+        for="review-project-comments"
+        >Comments for Business Owner</label
+      >
+      <textarea
+        id="review-project-comments"
+        rows="4"
+        class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+        placeholder="Provide feedback for the business owner..."
+      ></textarea>
+    </div>
 
-          <div class="flex justify-end space-x-4 mt-8">
-            <button id="cancel-review-project-form" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save Review</button>
-          </div>
-        </form>
+    <div class="flex justify-between items-center mt-8">
+      <div>
+        <button
+          id="approve-project-btn"
+          type="button"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Approve
+        </button>
+        <button
+          id="reject-project-btn"
+          type="button"
+          class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg ml-2"
+        >
+          Reject
+        </button>
+      </div>
+      <div class="space-x-4">
+        <button
+          id="cancel-review-project-form"
+          type="button"
+          class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Cancel
+        </button>
+        <button
+          id="request-update-btn"
+          type="button"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Request Update
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
     <div id="role-selection-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
@@ -2040,6 +2176,30 @@
             <span class="text-lg font-bold">Admin</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <div id="business-owner-update-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
+        <form id="bo-update-form">
+          <h2 class="text-2xl font-bold mb-4">Respond to Admin Feedback</h2>
+          <p class="text-gray-600 mb-6">First, edit your project proposal with the required changes. Then, add a comment below for the admin and resubmit for review.</p>
+          <input type="hidden" id="bo-update-project-id" />
+          
+          <div class="mb-4">
+            <button id="bo-edit-project-btn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">1. Edit Project Details</button>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="bo-update-comment">2. Add a Comment for the Admin</label>
+            <textarea id="bo-update-comment" rows="4" class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" placeholder="e.g., 'I have updated the financial documents as requested.'" required></textarea>
+          </div>
+
+          <div class="flex justify-end space-x-4">
+            <button id="cancel-bo-update-form" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Resubmit for Review</button>
+          </div>
+        </form>
       </div>
     </div>
 

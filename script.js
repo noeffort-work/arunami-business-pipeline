@@ -308,6 +308,63 @@ onAuthStateChanged(auth, (user) => {
 
 // --- NEW EVENT LISTENERS FOR BUSINESS OWNER & ADMIN ---
 
+// --- NEW BUSINESS OWNER UPDATE MODAL LOGIC ---
+const boUpdateModal = document.getElementById('business-owner-update-modal');
+
+function openBusinessOwnerUpdateModal(projectId) {
+    document.getElementById('bo-update-project-id').value = projectId;
+    document.getElementById('bo-update-form').reset();
+    boUpdateModal.style.display = 'flex';
+}
+
+document.getElementById('cancel-bo-update-form').addEventListener('click', () => {
+    boUpdateModal.style.display = 'none';
+});
+
+document.getElementById('bo-edit-project-btn').addEventListener('click', () => {
+    const projectId = document.getElementById('bo-update-project-id').value;
+    openProjectModal(projectId);
+});
+
+document.getElementById('bo-update-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loadingSpinner.style.display = 'flex';
+
+    const projectId = document.getElementById('bo-update-project-id').value;
+    const comment = document.getElementById('bo-update-comment').value;
+    const projectRef = doc(db, "projects", projectId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const projectDoc = await transaction.get(projectRef);
+            if (!projectDoc.exists()) {
+                throw "Project not found!";
+            }
+            const projectData = projectDoc.data();
+            const newHistoryEntry = {
+                status: 'Under Review', // Set status back to Under Review
+                comments: comment,
+                timestamp: Timestamp.now(),
+                author: 'Business Owner' // Mark this comment as from the owner
+            };
+            const updatedHistory = [...(projectData.statusHistory || []), newHistoryEntry];
+            
+            transaction.update(projectRef, {
+                status: 'Under Review',
+                statusHistory: updatedHistory
+            });
+        });
+        
+        showMessage("Project has been updated and resubmitted for review.");
+        boUpdateModal.style.display = 'none';
+    } catch (error) {
+        console.error("Error resubmitting project:", error);
+        showMessage("Failed to resubmit project.");
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+});
+
 // Business Owner View Toggles
 const myProjectsCardViewBtn = document.getElementById("my-projects-card-view-btn");
 const myProjectsListViewBtn = document.getElementById("my-projects-list-view-btn");
@@ -1124,23 +1181,141 @@ function renderGeneralReportsTable(reports = []) {
 function renderAdminProjectsTable() {
     const underReviewBody = document.getElementById('admin-under-review-table-body');
     const needUpdateBody = document.getElementById('admin-need-update-table-body');
+    const resubmittedBody = document.getElementById('admin-resubmitted-table-body'); // New
     const approvedBody = document.getElementById('admin-approved-table-body');
     const rejectedBody = document.getElementById('admin-rejected-table-body');
 
+    // Clear all tables
     underReviewBody.innerHTML = '';
     needUpdateBody.innerHTML = '';
+    resubmittedBody.innerHTML = '';
     approvedBody.innerHTML = '';
     rejectedBody.innerHTML = '';
 
-    const underReviewProjects = allAdminProjects.filter(p => p.status === 'Under Review');
+    // Separate projects based on status and history
+    const allUnderReview = allAdminProjects.filter(p => p.status === 'Under Review');
+    
+    const newProposals = allUnderReview.filter(p => !p.statusHistory || p.statusHistory.length <= 1);
+    const resubmittedProjects = allUnderReview.filter(p => p.statusHistory && p.statusHistory.length > 1);
+    
     const needUpdateProjects = allAdminProjects.filter(p => p.status === 'Need Update');
     const approvedProjects = allAdminProjects.filter(p => p.status === 'Approved');
     const rejectedProjects = allAdminProjects.filter(p => p.status === 'Rejected');
 
-    renderAdminStatusTable(underReviewProjects, underReviewBody, 'No projects are currently under review.');
-    renderAdminStatusTable(needUpdateProjects, needUpdateBody, 'No projects currently need updates.');
+    // Render each table with the appropriate function
+    renderAdminSimpleStatusTable(newProposals, underReviewBody, 'No new projects are awaiting review.');
+    renderAdminStatusTableWithHistory(needUpdateProjects, needUpdateBody, 'No projects currently need updates.');
+    renderAdminStatusTableWithHistory(resubmittedProjects, resubmittedBody, 'No projects have been resubmitted.');
     renderAdminApprovedTable(approvedProjects, approvedBody);
-    renderAdminStatusTable(rejectedProjects, rejectedBody, 'No projects have been rejected.');
+    renderAdminSimpleStatusTable(rejectedProjects, rejectedBody, 'No projects have been rejected.');
+}
+
+function renderAdminSimpleStatusTable(projects, tableBody, emptyMessage) {
+    if (projects.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">${emptyMessage}</td></tr>`;
+        return;
+    }
+    projects.forEach(project => {
+        const row = `
+            <tr>
+                <td data-label="Project" class="py-4 px-6 font-medium">${project.title}</td>
+                <td data-label="Owner" class="py-4 px-6">${project.ownerName || 'Admin'}</td>
+                <td class="py-4 px-6 text-center">
+                    <div class="flex items-center justify-center space-x-4">
+                        <button data-id="${project.id}" class="review-project-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Review</button>
+                        <button data-id="${project.id}" data-title="${project.title}" class="delete-project-btn text-red-600 hover:text-red-900" title="Delete Project">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    });
+    
+    tableBody.querySelectorAll('.review-project-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => openReviewProjectModal(e.currentTarget.dataset.id));
+    });
+
+    tableBody.querySelectorAll('.delete-project-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => deleteProject(e.currentTarget.dataset.id, e.currentTarget.dataset.title));
+    });
+}
+
+function renderAdminStatusTableWithHistory(projects, tableBody, emptyMessage) {
+    if (projects.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">${emptyMessage}</td></tr>`;
+        return;
+    }
+    
+    let allRowsHTML = ''; // Create an empty string to hold all the HTML
+    projects.forEach(project => {
+        const history = project.statusHistory || [];
+        const sortedHistory = [...history].sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+        const latestComment = sortedHistory.length > 0 ? (sortedHistory[0].comments || 'N/A') : 'N/A';
+
+        const historyTableHTML = `
+            <div class="p-4 bg-gray-50">
+                <h4 class="font-bold text-md mb-2">Review History</h4>
+                <table class="min-w-full text-sm">
+                    <thead class="border-b">
+                        <tr>
+                            <th class="py-2 px-3 text-left font-medium text-gray-500 uppercase">Timestamp</th>
+                            <th class="py-2 px-3 text-left font-medium text-gray-500 uppercase">Status</th>
+                             <th class="py-2 px-3 text-left font-medium text-gray-500 uppercase">Author</th>
+                            <th class="py-2 px-3 text-left font-medium text-gray-500 uppercase">Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedHistory.map(entry => `
+                            <tr class="border-b">
+                                <td class="py-3 px-3 text-gray-600 whitespace-nowrap">${formatDetailedTimestamp(entry.timestamp)}</td>
+                                <td class="py-3 px-3 font-medium">${entry.status}</td>
+                                <td class="py-3 px-3 font-medium">${entry.author || 'Admin'}</td>
+                                <td class="py-3 px-3 text-gray-700 whitespace-pre-wrap">${entry.comments || 'N/A'}</td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="4" class="text-center py-4 text-gray-500">No review history.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        // Append the HTML for each project to the string variable
+        allRowsHTML += `
+            <tr class="project-main-row">
+                <td data-label="Project" class="py-4 px-6 font-medium">${project.title}</td>
+                <td data-label="Owner" class="py-4 px-6">${project.ownerName || 'Admin'}</td>
+                <td data-label="Latest Comment" class="py-4 px-6 text-sm italic text-gray-600">${latestComment}</td>
+                <td class="py-4 px-6 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                         <button data-id="${project.id}" class="review-project-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Review</button>
+                         <button data-project-id="${project.id}" class="toggle-admin-history-btn text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-3 rounded-md">History</button>
+                    </div>
+                </td>
+            </tr>
+            <tr id="admin-history-row-${project.id}" class="project-detail-row hidden">
+                <td colspan="4" class="p-0">
+                    ${historyTableHTML}
+                </td>
+            </tr>
+        `;
+    });
+
+    // Set the table body's HTML only once, after the loop is finished
+    tableBody.innerHTML = allRowsHTML;
+
+    // Now, attach the event listeners to the newly created buttons
+    tableBody.querySelectorAll('.review-project-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => openReviewProjectModal(e.currentTarget.dataset.id));
+    });
+
+    tableBody.querySelectorAll('.toggle-admin-history-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const projectId = e.currentTarget.dataset.projectId;
+            const detailRow = document.getElementById(`admin-history-row-${projectId}`);
+            detailRow.classList.toggle('hidden');
+        });
+    });
 }
 
 function renderAdminStatusTable(projects, tableBody, emptyMessage) {
@@ -3454,23 +3629,132 @@ function listenToMyProjects() {
     onSnapshot(projectsQuery, (snapshot) => {
         const myProjectsTableBody = document.getElementById('my-projects-table-body');
         const myApprovedProjectsTableBody = document.getElementById('my-approved-projects-table-body');
-        myProjectsTableBody.innerHTML = '';
-        myApprovedProjectsTableBody.innerHTML = '';
-
-        const myProjects = [];
-        const myApprovedProjects = [];
-
-        snapshot.forEach(doc => {
-            const project = { id: doc.id, ...doc.data() };
-            if (project.status === 'Approved') {
-                myApprovedProjects.push(project);
-            } else {
-                myProjects.push(project);
-            }
-        });
         
-        renderMyProjectsTable(myProjects, myProjectsTableBody);
-        renderMyApprovedProjectsTable(myApprovedProjects, myApprovedProjectsTableBody);
+        const allMyProjects = [];
+        snapshot.forEach(doc => {
+            allMyProjects.push({ id: doc.id, ...doc.data() });
+        });
+
+        const proposedProjects = allMyProjects.filter(p => p.status !== 'Approved');
+        const approvedProjects = allMyProjects.filter(p => p.status === 'Approved');
+        
+        renderMyProjectsTable(proposedProjects, myProjectsTableBody);
+        renderMyApprovedProjectsTable(approvedProjects, myApprovedProjectsTableBody);
+        renderMyProjectProgress(allMyProjects); // Call the new function
+    });
+}
+
+  // --- NEW EVENT LISTENERS AND RENDERER FOR PROJECT PROGRESS ---
+
+document.getElementById("nav-project-progress").addEventListener("click", (e) => {
+  e.preventDefault();
+  showPage("business-owner-project-progress-section");
+});
+document.getElementById("mobile-nav-project-progress").addEventListener("click", (e) => {
+  e.preventDefault();
+  mobileMenu.classList.add("hidden");
+  showPage("business-owner-project-progress-section");
+});
+
+function renderMyProjectProgress(projects) {
+    const container = document.getElementById('project-progress-tbody');
+    container.innerHTML = '';
+
+    if (projects.length === 0) {
+        container.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">You have no projects to track.</td></tr>';
+        return;
+    }
+
+    projects.forEach(project => {
+        const history = project.statusHistory || [];
+        const sortedHistory = [...history].sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+        
+        // --- START OF MODIFIED SECTION ---
+        const latestStatus = project.status || 'N/A';
+        let statusClass = 'bg-gray-100 text-gray-800';
+        
+        // The "View History" button is now always present
+        const viewHistoryButton = `<button data-project-id="${project.id}" class="toggle-history-btn text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-3 rounded-md">View History</button>`;
+        let updateButton = ''; // This will be empty unless the status is "Need Update"
+
+        if (latestStatus === 'Need Update') {
+            statusClass = 'bg-blue-100 text-blue-800';
+            // The "Update" button is created only when needed
+            updateButton = `<button data-id="${project.id}" class="update-project-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 text-sm rounded-md">Update & Resubmit</button>`;
+        } else if (latestStatus === 'Under Review') {
+            statusClass = 'bg-yellow-100 text-yellow-800';
+        } else if (latestStatus === 'Approved') {
+            statusClass = 'bg-green-100 text-green-800';
+        } else if (latestStatus === 'Rejected') {
+            statusClass = 'bg-red-100 text-red-800';
+        }
+
+        // The buttons are combined here, wrapped in a flex container for nice spacing
+        const actionButtonHTML = `<div class="flex items-center justify-center space-x-2">${updateButton}${viewHistoryButton}</div>`;
+        // --- END OF MODIFIED SECTION ---
+
+        // Generate the history table HTML for the detail row
+        const historyTableHTML = `
+            <div class="p-4 bg-gray-50">
+                <h4 class="font-bold text-md mb-2">Review History</h4>
+                <table class="min-w-full text-sm">
+                    <thead class="border-b">
+                        <tr>
+                            <th class="py-2 px-3 text-left font-medium text-gray-500 uppercase">Timestamp</th>
+                            <th class="py-2 px-3 text-left font-medium text-gray-500 uppercase">Status</th>
+                            <th class="py-2 px-3 text-left font-medium text-gray-500 uppercase">Review/Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedHistory.map(entry => `
+                            <tr class="border-b">
+                                <td class="py-3 px-3 text-gray-600 whitespace-nowrap">${formatDetailedTimestamp(entry.timestamp)}</td>
+                                <td class="py-3 px-3 font-medium">${entry.status}</td>
+                                <td class="py-3 px-3 text-gray-700 whitespace-pre-wrap">
+                                    <span class="font-bold block">${entry.author === 'Business Owner' ? 'Your Comment:' : 'Admin Review:'}</span>
+                                    <span>${entry.comments || 'N/A'}</span>
+                                </td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="3" class="text-center py-4 text-gray-500">No review history yet.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        const rowHTML = `
+            <tr class="project-main-row">
+                <td class="py-4 px-6 font-medium">${project.title}</td>
+                <td class="py-4 px-6">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                        ${latestStatus}
+                    </span>
+                </td>
+                <td class="py-4 px-6 text-center">
+                    ${actionButtonHTML}
+                </td>
+            </tr>
+            <tr id="history-row-${project.id}" class="project-detail-row hidden">
+                <td colspan="3" class="p-0">
+                    ${historyTableHTML}
+                </td>
+            </tr>
+        `;
+        container.innerHTML += rowHTML;
+    });
+
+    // Add event listeners AFTER rendering
+    container.querySelectorAll('.update-project-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            openBusinessOwnerUpdateModal(e.currentTarget.dataset.id);
+        });
+    });
+
+    container.querySelectorAll('.toggle-history-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const projectId = e.currentTarget.dataset.projectId;
+            const detailRow = document.getElementById(`history-row-${projectId}`);
+            detailRow.classList.toggle('hidden');
+        });
     });
 }
 
@@ -3688,12 +3972,10 @@ async function openReviewProjectModal(projectId) {
     document.getElementById('review-project-id').value = projectId;
     document.getElementById('review-project-modal-title').textContent = `Review: ${project.title}`;
     document.getElementById('review-project-owner').textContent = `Proposed by: ${project.ownerName}`;
-    document.getElementById('review-project-status').value = project.status;
     document.getElementById('review-project-comments').value = project.adminComments || '';
 
     const detailsContainer = document.getElementById('review-project-details');
     
-    // --- NEW LOGIC: Generate details and document preview buttons ---
     let detailsHTML = `<p class="mb-4"><strong>Summary:</strong> ${project.summary}</p>`;
     
     const docButtons = [];
@@ -3713,50 +3995,88 @@ async function openReviewProjectModal(projectId) {
     
     detailsContainer.innerHTML = detailsHTML;
     
-    // Add event listeners to the newly created buttons
     detailsContainer.querySelectorAll('.view-review-pdf-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const { pdfUrl, pdfTitle } = e.currentTarget.dataset;
             openPdfViewerModal(pdfUrl, pdfTitle);
         });
     });
-    // --- END NEW LOGIC ---
-    
+
+    const reviewProjectModal = document.getElementById("review-project-modal");
     reviewProjectModal.style.display = 'flex';
 }
 
-document.getElementById('review-project-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loadingSpinner.style.display = 'flex';
-    
+document.getElementById('request-update-btn').addEventListener('click', () => {
     const projectId = document.getElementById('review-project-id').value;
-    const status = document.getElementById('review-project-status').value;
-    const adminComments = document.getElementById('review-project-comments').value;
+    const comments = document.getElementById('review-project-comments').value;
+    if (!comments) {
+        showMessage("Please provide a comment when requesting an update.");
+        return;
+    }
+    handleAdminReviewAction(projectId, comments, 'Need Update');
+});
+
+document.getElementById('approve-project-btn').addEventListener('click', () => {
+    const projectId = document.getElementById('review-project-id').value;
+    const comments = document.getElementById('review-project-comments').value || "Project approved.";
+    handleAdminReviewAction(projectId, comments, 'Approved');
+});
+
+document.getElementById('reject-project-btn').addEventListener('click', () => {
+    const projectId = document.getElementById('review-project-id').value;
+    const comments = document.getElementById('review-project-comments').value;
+     if (!comments) {
+        showMessage("Please provide a reason for rejecting the project.");
+        return;
+    }
+    handleAdminReviewAction(projectId, comments, 'Rejected');
+});
+
+// This new reusable function handles all review actions
+async function handleAdminReviewAction(projectId, comments, newStatus) {
+    loadingSpinner.style.display = 'flex';
+    const reviewProjectModal = document.getElementById("review-project-modal");
 
     const projectRef = doc(db, "projects", projectId);
-    const projectDoc = await getDoc(projectRef);
-    const projectTitle = projectDoc.exists() ? projectDoc.data().title : 'Unknown Project';
-
     try {
+        const projectDoc = await getDoc(projectRef);
+        const projectTitle = projectDoc.exists() ? projectDoc.data().title : 'Unknown Project';
+
         const updateData = {
-            status,
-            adminComments
+            status: newStatus,
+            adminComments: comments
         };
 
-        if (status === 'Approved') {
+        if (newStatus === 'Approved') {
             updateData.isVisible = true; // Make it visible to investors
         } else {
             updateData.isVisible = false;
         }
+        
+        await runTransaction(db, async (transaction) => {
+            const freshProjectDoc = await transaction.get(projectRef);
+            if (!freshProjectDoc.exists()) {
+                throw "Project does not exist!";
+            }
+            const existingHistory = freshProjectDoc.data().statusHistory || [];
+            const newHistoryEntry = {
+                status: newStatus,
+                comments: comments,
+                timestamp: Timestamp.now(),
+                author: 'Admin' // Explicitly set the author
+            };
+            updateData.statusHistory = [...existingHistory, newHistoryEntry];
+            transaction.update(projectRef, updateData);
+        });
 
-        await updateDoc(projectRef, updateData);
-        await logAdminAction(`Reviewed project "${projectTitle}". Set status to ${status}.`);
+        await logAdminAction(`Reviewed project "${projectTitle}". Set status to ${newStatus}.`);
         showMessage("Project review saved successfully.");
         reviewProjectModal.style.display = 'none';
+
     } catch (error) {
         console.error("Error saving review:", error);
         showMessage("Failed to save project review.");
     } finally {
         loadingSpinner.style.display = 'none';
     }
-});
+}
