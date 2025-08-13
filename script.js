@@ -186,7 +186,6 @@ function initializeAppUI(userData) {
     
     renderGeneralReportsTable(userData.generalReports || []);
 
-    // Get references to all navigation links that need to be managed
     const adminNavLinks = document.getElementById('admin-nav-links');
     const mobileAdminNavLinks = document.getElementById('mobile-admin-nav-links');
     const businessOwnerNavLinks = document.getElementById('business-owner-nav-links');
@@ -196,8 +195,10 @@ function initializeAppUI(userData) {
     const mobileNavAdminLogs = document.getElementById('mobile-nav-admin-logs');
     const navContactUs = document.getElementById('nav-contact-us');
     const mobileNavContactUs = document.getElementById('mobile-nav-contact-us');
+    
+    const analystManageProjectsLink = document.getElementById('nav-admin-projects');
+    const mobileAnalystManageProjectsLink = document.getElementById('mobile-nav-admin-projects');
 
-    // Hide all role-specific links by default
     adminNavLinks.style.display = 'none';
     mobileAdminNavLinks.style.display = 'none';
     businessOwnerNavLinks.style.display = 'none';
@@ -214,7 +215,6 @@ function initializeAppUI(userData) {
         navContactUs.style.display = 'none';
         mobileNavContactUs.style.display = 'none';
         
-        // Show Admin Logs for admins
         navAdminLogs.style.display = 'block';
         mobileNavAdminLogs.style.display = 'block';
         
@@ -233,6 +233,16 @@ function initializeAppUI(userData) {
 
         listenToMyProjects();
         defaultPage = 'business-owner-my-projects-section';
+
+    } else if (userData.role === 'analyst') {
+        analystManageProjectsLink.style.display = 'inline';
+        mobileAnalystManageProjectsLink.style.display = 'block';
+        navContactUs.style.display = 'none';
+        mobileNavContactUs.style.display = 'none';
+
+        listenToAdminProjects();
+        listenToUsers();
+        defaultPage = 'admin-projects-section';
 
     } else { // Investor role
         investorNavLinks.forEach(link => link.style.display = 'block');
@@ -840,7 +850,6 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
             `;
         }
         
-        // --- NEW LOGIC for displaying project documents ---
         let documentsSectionHTML = '<h3 class="text-2xl font-semibold mb-4 border-b pb-2">Project Documents</h3>';
         let hasDocs = false;
         
@@ -853,7 +862,6 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
             documentsSectionHTML += `<div class="mb-2"><a href="${project.legalDocURL}" target="_blank" class="text-blue-600 hover:underline">View Legal Document</a></div>`;
         }
          if (project.financialDocURL) {
-            // Logic to show financial docs only if user has requested info (NDA equivalent)
             if (hasRequestedInfo || currentUserData.role === 'admin') {
                  hasDocs = true;
                  documentsSectionHTML += `<div class="mb-2"><a href="${project.financialDocURL}" target="_blank" class="text-blue-600 hover:underline">View Financial Document (Confidential)</a></div>`;
@@ -869,7 +877,24 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
         if (!hasDocs) {
             documentsSectionHTML += '<p class="text-gray-500">No documents have been uploaded for this project yet.</p>';
         }
-        // --- END NEW LOGIC ---
+        
+        let dueDiligenceSectionHTML = '';
+        if (project.dueDiligenceReports && project.dueDiligenceReports.length > 0) {
+            dueDiligenceSectionHTML = `
+                <h3 class="text-2xl font-semibold mb-4 mt-8 border-b pb-2">Due Diligence Reports</h3>
+                <div class="space-y-4">
+                    ${project.dueDiligenceReports.map(report => `
+                        <div class="flex justify-between items-center p-3 bg-gray-100 rounded-lg">
+                            <div>
+                                <p class="font-semibold">${report.title}</p>
+                                <p class="text-sm text-gray-500">By ${report.authorName} - ${report.date.toDate().toLocaleDateString()}</p>
+                            </div>
+                            <button class="view-update-pdf-btn text-blue-600 hover:underline" data-pdf-url="${report.pdfURL}" data-pdf-title="${report.title}">View Report</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
 
         projectDetailModalContent.innerHTML = `
             <button id="back-to-dashboard-btn" class="mb-6 text-blue-600 hover:underline">&larr; Back to Dashboard</button>
@@ -892,6 +917,8 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
             <p class="text-gray-700 whitespace-pre-wrap mb-8">${project.description}</p>
             
             <div class="mt-8">${documentsSectionHTML}</div>
+            
+            ${dueDiligenceSectionHTML}
 
             <div class="bg-blue-50 p-6 rounded-lg mt-8">
                 ${bookingSectionHTML}
@@ -911,7 +938,8 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
         if (!isClosed && context !== 'portfolio') {
             document.getElementById('booking-form')?.addEventListener('submit', handleBooking);
         }
-
+        
+        document.querySelectorAll('.view-update-pdf-btn').forEach(button => button.addEventListener('click', (e) => openPdfViewerModal(e.currentTarget.dataset.pdfUrl, e.currentTarget.dataset.pdfTitle)));
     } catch (error) {
         console.error("Error fetching project details:", error);
         showMessage("Could not load project details.");
@@ -1216,18 +1244,19 @@ function renderAdminSimpleStatusTable(projects, tableBody, emptyMessage) {
         return;
     }
     projects.forEach(project => {
+        // Actions are now the same for Admin and Analyst in this table
+        const actionsHTML = `<div class="flex items-center justify-center space-x-4">
+                    <button data-id="${project.id}" class="review-project-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Review</button>
+                    <button data-id="${project.id}" data-title="${project.title}" class="delete-project-btn text-red-600 hover:text-red-900" title="Delete Project">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>`;
+        
         const row = `
             <tr>
                 <td data-label="Project" class="py-4 px-6 font-medium">${project.title}</td>
                 <td data-label="Owner" class="py-4 px-6">${project.ownerName || 'Admin'}</td>
-                <td class="py-4 px-6 text-center">
-                    <div class="flex items-center justify-center space-x-4">
-                        <button data-id="${project.id}" class="review-project-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Review</button>
-                        <button data-id="${project.id}" data-title="${project.title}" class="delete-project-btn text-red-600 hover:text-red-900" title="Delete Project">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </div>
-                </td>
+                <td class="py-4 px-6 text-center">${actionsHTML}</td>
             </tr>
         `;
         tableBody.innerHTML += row;
@@ -1248,7 +1277,7 @@ function renderAdminStatusTableWithHistory(projects, tableBody, emptyMessage) {
         return;
     }
     
-    let allRowsHTML = ''; // Create an empty string to hold all the HTML
+    let allRowsHTML = '';
     projects.forEach(project => {
         const history = project.statusHistory || [];
         const sortedHistory = [...history].sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
@@ -1279,19 +1308,19 @@ function renderAdminStatusTableWithHistory(projects, tableBody, emptyMessage) {
                 </table>
             </div>
         `;
+        
+        // Actions are now the same for Admin and Analyst in this table
+        const actionsHTML = `<div class="flex items-center justify-center space-x-2">
+                    <button data-id="${project.id}" class="review-project-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Review</button>
+                    <button data-project-id="${project.id}" class="toggle-admin-history-btn text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-3 rounded-md">History</button>
+               </div>`;
 
-        // Append the HTML for each project to the string variable
         allRowsHTML += `
             <tr class="project-main-row">
                 <td data-label="Project" class="py-4 px-6 font-medium">${project.title}</td>
                 <td data-label="Owner" class="py-4 px-6">${project.ownerName || 'Admin'}</td>
                 <td data-label="Latest Comment" class="py-4 px-6 text-sm italic text-gray-600">${latestComment}</td>
-                <td class="py-4 px-6 text-center">
-                    <div class="flex items-center justify-center space-x-2">
-                         <button data-id="${project.id}" class="review-project-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Review</button>
-                         <button data-project-id="${project.id}" class="toggle-admin-history-btn text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-3 rounded-md">History</button>
-                    </div>
-                </td>
+                <td class="py-4 px-6 text-center">${actionsHTML}</td>
             </tr>
             <tr id="admin-history-row-${project.id}" class="project-detail-row hidden">
                 <td colspan="4" class="p-0">
@@ -1301,10 +1330,8 @@ function renderAdminStatusTableWithHistory(projects, tableBody, emptyMessage) {
         `;
     });
 
-    // Set the table body's HTML only once, after the loop is finished
     tableBody.innerHTML = allRowsHTML;
 
-    // Now, attach the event listeners to the newly created buttons
     tableBody.querySelectorAll('.review-project-btn').forEach(btn => {
         btn.addEventListener('click', (e) => openReviewProjectModal(e.currentTarget.dataset.id));
     });
@@ -1317,6 +1344,7 @@ function renderAdminStatusTableWithHistory(projects, tableBody, emptyMessage) {
         });
     });
 }
+
 
 function renderAdminStatusTable(projects, tableBody, emptyMessage) {
     if (projects.length === 0) {
@@ -1373,6 +1401,27 @@ function renderAdminApprovedTable(projects, tableBody) {
         const visibilityClass = project.isVisible ? "bg-green-600 hover:bg-green-700" : "bg-gray-500 hover:bg-gray-600";
         const visibilityText = project.isVisible ? "Visible" : "Hidden";
         
+        let actionsHTML = '';
+        if (currentUserData.role === 'analyst') {
+            // Analyst now sees both "Add Due Diligence" and "Manage Investors"
+            actionsHTML = `<div class="flex items-center justify-center space-x-2">
+                            <button data-id="${project.id}" data-title="${project.title}" class="add-due-diligence-btn bg-teal-500 hover:bg-teal-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Add Due Diligence</button>
+                            <button data-id="${project.id}" data-title="${project.title}" class="manage-investors-btn bg-purple-500 hover:bg-purple-600 text-white font-bold py-1 px-3 rounded-lg text-xs">Manage Investors</button>
+                           </div>`;
+        } else { // Admin view
+            actionsHTML = `<div class="flex items-center justify-center space-x-2">
+                    <button data-id="${project.id}" class="assign-analyst-btn text-purple-600 hover:text-purple-900" title="Assign Analyst">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </button>
+                    <button data-id="${project.id}" class="add-progress-btn text-green-600 hover:text-green-900" title="Add Progress Update">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <button data-id="${project.id}" data-title="${project.title}" class="delete-project-btn text-red-600 hover:text-red-900" title="Delete Project">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>`;
+        }
+
         const row = `
             <tr class="${project.isFulfilled ? 'bg-green-50' : ''}">
                 <td data-label="Project" class="py-4 px-6 font-medium">${project.title}</td>
@@ -1382,17 +1431,24 @@ function renderAdminApprovedTable(projects, tableBody) {
                     <button data-id="${project.id}" data-title="${project.title}" class="visibility-toggle-btn text-white font-bold py-1 px-3 rounded-lg text-xs ${visibilityClass}">${visibilityText}</button>
                 </td>
                 <td class="py-4 px-6 whitespace-nowrap">
-                    <div class="flex items-center justify-center space-x-4">
-                        <button data-id="${project.id}" data-title="${project.title}" class="fulfill-project-btn ${project.isFulfilled ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'} text-white font-bold py-1 px-3 rounded-lg text-xs">${project.isFulfilled ? 'Re-open' : 'Fulfill'}</button>
-                        <button data-id="${project.id}" class="view-investment-details-btn text-blue-600 hover:text-blue-900" title="View Investors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></button>
-                        <button data-id="${project.id}" class="edit-project-btn text-indigo-600 hover:text-indigo-900" title="Edit Project"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
-                        <button data-id="${project.id}" class="add-progress-btn text-green-600 hover:text-green-900" title="Add Progress Update"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-                        <button data-id="${project.id}" data-title="${project.title}" class="delete-project-btn text-red-600 hover:text-red-900" title="Delete Project"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                    </div>
+                    ${actionsHTML}
                 </td>
             </tr>
         `;
         tableBody.innerHTML += row;
+    });
+    
+    // Add listener for the new manage investors button
+    tableBody.querySelectorAll('.manage-investors-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => openAssignInvestorModal(e.currentTarget.dataset.id, e.currentTarget.dataset.title));
+    });
+
+    tableBody.querySelectorAll('.assign-analyst-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => openAssignAnalystModal(e.currentTarget.dataset.id));
+    });
+
+    tableBody.querySelectorAll('.add-due-diligence-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => openDueDiligenceModal(e.currentTarget.dataset.id, e.currentTarget.dataset.title));
     });
 
     tableBody.querySelectorAll('.visibility-toggle-btn').forEach(btn => btn.addEventListener('click', e => handleVisibilityToggle(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
@@ -1683,8 +1739,17 @@ async function renderInvestmentReportTable() {
 }
 
 function listenToAdminProjects() {
-  const projectsCollection = collection(db, "projects");
-  onSnapshot(projectsCollection, (snapshot) => {
+  let projectsQuery;
+
+  if (currentUserData.role === 'analyst') {
+    // Analyst: only fetch projects assigned to them
+    projectsQuery = query(collection(db, "projects"), where("assignedAnalystId", "==", currentUser.uid));
+  } else {
+    // Admin: fetch all projects
+    projectsQuery = query(collection(db, "projects"));
+  }
+
+  onSnapshot(projectsQuery, (snapshot) => {
     allAdminProjects = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -1906,7 +1971,7 @@ async function openProjectModal(projectId = null) {
 projectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const projectId = document.getElementById('project-id').value;
+    let projectId = document.getElementById('project-id').value;
     
     // Get file inputs
     const imageUploadInput = document.getElementById('project-photo-upload');
@@ -1920,7 +1985,6 @@ projectForm.addEventListener('submit', async (e) => {
     let legalDocURL = document.getElementById('project-legal-doc-url').value;
     let financialDocURL = document.getElementById('project-financial-doc-url').value;
     
-    // Show the progress modal only if there are files to upload
     const filesToUpload = [imageUploadInput, companyProfileUploadInput, legalDocUploadInput, financialDocUploadInput].some(input => input.files[0]);
     if (filesToUpload) {
         showUploadProgressModal();
@@ -1929,21 +1993,26 @@ projectForm.addEventListener('submit', async (e) => {
     }
 
     try {
+        // If we are creating a new project, we need a temporary ID to build the path
+        if (!projectId) {
+            projectId = doc(collection(db, 'projects')).id;
+        }
+
         if (imageUploadInput.files[0]) {
             updateUploadStatus('Uploading project image...');
-            photoURL = await uploadFileWithProgress(imageUploadInput.files[0], 'project_images', updateProgressBar);
+            photoURL = await uploadFileWithProgress(imageUploadInput.files[0], `project_images/${projectId}`, updateProgressBar);
         }
         if (companyProfileUploadInput.files[0]) {
             updateUploadStatus('Uploading company profile...');
-            companyProfileURL = await uploadFileWithProgress(companyProfileUploadInput.files[0], 'company_profiles', updateProgressBar);
+            companyProfileURL = await uploadFileWithProgress(companyProfileUploadInput.files[0], `company_profiles/${projectId}`, updateProgressBar);
         }
         if (legalDocUploadInput.files[0]) {
             updateUploadStatus('Uploading legal document...');
-            legalDocURL = await uploadFileWithProgress(legalDocUploadInput.files[0], 'legal_docs', updateProgressBar);
+            legalDocURL = await uploadFileWithProgress(legalDocUploadInput.files[0], `legal_docs/${projectId}`, updateProgressBar);
         }
         if (financialDocUploadInput.files[0]) {
             updateUploadStatus('Uploading financial document...');
-            financialDocURL = await uploadFileWithProgress(financialDocUploadInput.files[0], 'financial_docs', updateProgressBar);
+            financialDocURL = await uploadFileWithProgress(financialDocUploadInput.files[0], `financial_docs/${projectId}`, updateProgressBar);
         }
         
         updateUploadStatus('Saving project details...');
@@ -1965,15 +2034,17 @@ projectForm.addEventListener('submit', async (e) => {
             projectData.slotPrice = price;
         }
         
-        if (projectId) {
-            await updateDoc(doc(db, "projects", projectId), projectData);
-            await logAdminAction(`Edited project: "${projectData.title}"`);
-            showMessage("Project updated successfully.");
-        } else {
+        // Check if we are updating an existing project or creating a new one
+        const isNewProject = !document.getElementById('project-id').value;
+
+        if (isNewProject) {
+            // Creating a new project
+            const newProjectRef = doc(db, "projects", projectId); // Use the pre-generated ID
             if (currentUserData.role === 'business-owner') {
                 projectData.ownerId = currentUser.uid;
                 projectData.ownerName = currentUserData.fullName;
                 projectData.status = 'Under Review';
+                projectData.statusHistory = [{ status: 'Under Review', comments: 'Initial proposal submitted.', timestamp: Timestamp.now(), author: 'Business Owner' }];
                 projectData.adminComments = '';
                 projectData.isVisible = false;
                 projectData.isFulfilled = false;
@@ -1982,9 +2053,8 @@ projectForm.addEventListener('submit', async (e) => {
                 projectData.totalSlots = 0;
                 projectData.slotPrice = 0;
                 projectData.dueDate = Timestamp.now();
-                await addDoc(collection(db, "projects"), projectData);
+                await setDoc(newProjectRef, projectData);
                 showMessage("Project proposed successfully. It is now under review by an admin.");
-
             } else if (currentUserData.role === 'admin') {
                 projectData.status = 'Approved';
                 projectData.investors = {};
@@ -1995,15 +2065,21 @@ projectForm.addEventListener('submit', async (e) => {
                 projectData.isVisible = true;
                 projectData.isFailed = false;
                 projectData.isExpired = false;
-                await addDoc(collection(db, "projects"), projectData);
+                await setDoc(newProjectRef, projectData);
                 await logAdminAction(`Created project: "${projectData.title}"`);
                 showMessage("Project created successfully.");
             }
+        } else {
+            // Updating an existing project
+            await updateDoc(doc(db, "projects", projectId), projectData);
+            await logAdminAction(`Edited project: "${projectData.title}"`);
+            showMessage("Project updated successfully.");
         }
+
         projectModal.style.display = 'none';
     } catch (error) {
         console.error("Error saving project:", error);
-        if (!filesToUpload) { // Only show generic message if it wasn't an upload error
+        if (!filesToUpload) {
              showMessage("An error occurred while saving the project.");
         }
     } finally {
@@ -2298,6 +2374,10 @@ document.getElementById('add-business-owner-btn').addEventListener('click', () =
 document.getElementById('add-admin-btn').addEventListener('click', () => {
     roleSelectionModal.style.display = 'none';
     openUserModal(null, 'admin');
+});
+document.getElementById('add-analyst-btn').addEventListener('click', () => {
+    roleSelectionModal.style.display = 'none';
+    openUserModal(null, 'analyst');
 });
 document
   .getElementById("cancel-user-form")
@@ -3669,17 +3749,14 @@ function renderMyProjectProgress(projects) {
         const history = project.statusHistory || [];
         const sortedHistory = [...history].sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
         
-        // --- START OF MODIFIED SECTION ---
         const latestStatus = project.status || 'N/A';
         let statusClass = 'bg-gray-100 text-gray-800';
         
-        // The "View History" button is now always present
         const viewHistoryButton = `<button data-project-id="${project.id}" class="toggle-history-btn text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-3 rounded-md">View History</button>`;
-        let updateButton = ''; // This will be empty unless the status is "Need Update"
+        let updateButton = '';
 
         if (latestStatus === 'Need Update') {
             statusClass = 'bg-blue-100 text-blue-800';
-            // The "Update" button is created only when needed
             updateButton = `<button data-id="${project.id}" class="update-project-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 text-sm rounded-md">Update & Resubmit</button>`;
         } else if (latestStatus === 'Under Review') {
             statusClass = 'bg-yellow-100 text-yellow-800';
@@ -3689,11 +3766,8 @@ function renderMyProjectProgress(projects) {
             statusClass = 'bg-red-100 text-red-800';
         }
 
-        // The buttons are combined here, wrapped in a flex container for nice spacing
         const actionButtonHTML = `<div class="flex items-center justify-center space-x-2">${updateButton}${viewHistoryButton}</div>`;
-        // --- END OF MODIFIED SECTION ---
 
-        // Generate the history table HTML for the detail row
         const historyTableHTML = `
             <div class="p-4 bg-gray-50">
                 <h4 class="font-bold text-md mb-2">Review History</h4>
@@ -3706,16 +3780,22 @@ function renderMyProjectProgress(projects) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${sortedHistory.map(entry => `
-                            <tr class="border-b">
-                                <td class="py-3 px-3 text-gray-600 whitespace-nowrap">${formatDetailedTimestamp(entry.timestamp)}</td>
-                                <td class="py-3 px-3 font-medium">${entry.status}</td>
-                                <td class="py-3 px-3 text-gray-700 whitespace-pre-wrap">
-                                    <span class="font-bold block">${entry.author === 'Business Owner' ? 'Your Comment:' : 'Admin Review:'}</span>
-                                    <span>${entry.comments || 'N/A'}</span>
-                                </td>
-                            </tr>
-                        `).join('') || '<tr><td colspan="3" class="text-center py-4 text-gray-500">No review history yet.</td></tr>'}
+                        ${sortedHistory.map(entry => {
+                            const authorLabel = entry.author === 'Business Owner' 
+                                ? 'Your Comment:' 
+                                : `${entry.author || 'Admin'} Review:`;
+
+                            return `
+                                <tr class="border-b">
+                                    <td class="py-3 px-3 text-gray-600 whitespace-nowrap">${formatDetailedTimestamp(entry.timestamp)}</td>
+                                    <td class="py-3 px-3 font-medium">${entry.status}</td>
+                                    <td class="py-3 px-3 text-gray-700">
+                                        <div class="font-bold">${authorLabel}</div>
+                                        <div class="whitespace-pre-wrap">${entry.comments || 'N/A'}</div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('') || '<tr><td colspan="3" class="text-center py-4 text-gray-500">No review history yet.</td></tr>'}
                     </tbody>
                 </table>
             </div>
@@ -3742,7 +3822,6 @@ function renderMyProjectProgress(projects) {
         container.innerHTML += rowHTML;
     });
 
-    // Add event listeners AFTER rendering
     container.querySelectorAll('.update-project-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             openBusinessOwnerUpdateModal(e.currentTarget.dataset.id);
@@ -3974,6 +4053,27 @@ async function openReviewProjectModal(projectId) {
     document.getElementById('review-project-owner').textContent = `Proposed by: ${project.ownerName}`;
     document.getElementById('review-project-comments').value = project.adminComments || '';
 
+    // Conditionally show and populate the analyst assignment section
+    const assignSection = document.getElementById('assign-analyst-section');
+    if (currentUserData.role === 'admin') {
+        assignSection.classList.remove('hidden'); // Show for Admins
+        const analystSelect = document.getElementById('review-assign-analyst-select');
+        analystSelect.innerHTML = '<option value="">-- Unassigned --</option>';
+        const analysts = allUsers.filter(user => user.role === 'analyst');
+        
+        analysts.forEach(analyst => {
+            const option = document.createElement('option');
+            option.value = analyst.id;
+            option.textContent = analyst.fullName || analyst.email;
+            if (project.assignedAnalystId === analyst.id) {
+                option.selected = true;
+            }
+            analystSelect.appendChild(option);
+        });
+    } else {
+        assignSection.classList.add('hidden'); // Hide for everyone else
+    }
+
     const detailsContainer = document.getElementById('review-project-details');
     
     let detailsHTML = `<p class="mb-4"><strong>Summary:</strong> ${project.summary}</p>`;
@@ -4044,11 +4144,16 @@ async function handleAdminReviewAction(projectId, comments, newStatus) {
 
         const updateData = {
             status: newStatus,
-            adminComments: comments
+            adminComments: comments,
         };
 
+        if (currentUserData.role === 'admin') {
+            const assignedAnalystId = document.getElementById('review-assign-analyst-select').value;
+            updateData.assignedAnalystId = assignedAnalystId || deleteField();
+        }
+
         if (newStatus === 'Approved') {
-            updateData.isVisible = true; // Make it visible to investors
+            updateData.isVisible = true; 
         } else {
             updateData.isVisible = false;
         }
@@ -4059,11 +4164,14 @@ async function handleAdminReviewAction(projectId, comments, newStatus) {
                 throw "Project does not exist!";
             }
             const existingHistory = freshProjectDoc.data().statusHistory || [];
+            
+            const authorRole = currentUserData.role === 'analyst' ? 'Analyst' : 'Admin';
+
             const newHistoryEntry = {
                 status: newStatus,
                 comments: comments,
                 timestamp: Timestamp.now(),
-                author: 'Admin' // Explicitly set the author
+                author: authorRole 
             };
             updateData.statusHistory = [...existingHistory, newHistoryEntry];
             transaction.update(projectRef, updateData);
@@ -4073,6 +4181,11 @@ async function handleAdminReviewAction(projectId, comments, newStatus) {
         showMessage("Project review saved successfully.");
         reviewProjectModal.style.display = 'none';
 
+        // After approving, open the investor assignment modal for the Analyst
+        if (newStatus === 'Approved' && currentUserData.role === 'analyst') {
+            openAssignInvestorModal(projectId, projectTitle);
+        }
+
     } catch (error) {
         console.error("Error saving review:", error);
         showMessage("Failed to save project review.");
@@ -4080,3 +4193,206 @@ async function handleAdminReviewAction(projectId, comments, newStatus) {
         loadingSpinner.style.display = 'none';
     }
 }
+
+async function openDueDiligenceModal(projectId, projectTitle) {
+    const diligenceModal = document.getElementById('due-diligence-modal');
+    const diligenceForm = document.getElementById('due-diligence-form');
+    diligenceForm.reset();
+    document.getElementById('diligence-project-id').value = projectId;
+    document.getElementById('due-diligence-modal-title').textContent = `Due Diligence for: ${projectTitle}`;
+
+    const reportsContainer = document.getElementById('previous-diligence-list');
+    reportsContainer.innerHTML = 'Loading...';
+    
+    const projectRef = doc(db, "projects", projectId);
+    const projectDoc = await getDoc(projectRef);
+
+    if (projectDoc.exists() && projectDoc.data().dueDiligenceReports) {
+        const reports = projectDoc.data().dueDiligenceReports;
+        if (reports.length > 0) {
+            reportsContainer.innerHTML = reports.map(report => `
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-semibold">${report.title}</p>
+                        <p class="text-sm text-gray-500">Added by ${report.authorName} on ${report.date.toDate().toLocaleDateString()}</p>
+                    </div>
+                    <a href="${report.pdfURL}" target="_blank" class="text-blue-600 hover:underline">View</a>
+                </div>
+            `).join('');
+        } else {
+            reportsContainer.innerHTML = '<p class="text-center text-gray-500">No due diligence reports added yet.</p>';
+        }
+    } else {
+        reportsContainer.innerHTML = '<p class="text-center text-gray-500">No due diligence reports added yet.</p>';
+    }
+
+    diligenceModal.style.display = 'flex';
+}
+
+document.getElementById('cancel-diligence-form').addEventListener('click', () => {
+    document.getElementById('due-diligence-modal').style.display = 'none';
+});
+
+document.getElementById('due-diligence-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const projectId = document.getElementById('diligence-project-id').value;
+    const title = document.getElementById('diligence-title').value;
+    const fileInput = document.getElementById('diligence-pdf-upload');
+    const file = fileInput.files[0];
+
+    if (!title || !file) {
+        showMessage("Please provide a title and select a PDF file.");
+        return;
+    }
+
+    showUploadProgressModal();
+    const projectRef = doc(db, "projects", projectId);
+
+    try {
+        updateUploadStatus('Uploading PDF...');
+        const downloadURL = await uploadFileWithProgress(file, `due_diligence_reports/${projectId}`, updateProgressBar);
+        
+        updateUploadStatus('Saving report details...');
+        await runTransaction(db, async (transaction) => {
+            const projectDoc = await transaction.get(projectRef);
+            if (!projectDoc.exists()) {
+                throw "Project not found!";
+            }
+            const existingReports = projectDoc.data().dueDiligenceReports || [];
+            const newReport = {
+                title: title,
+                pdfURL: downloadURL,
+                date: Timestamp.now(),
+                authorId: currentUser.uid,
+                authorName: currentUserData.fullName
+            };
+            transaction.update(projectRef, { dueDiligenceReports: [...existingReports, newReport] });
+        });
+
+        showMessage("Due diligence report added successfully.");
+        document.getElementById('due-diligence-modal').style.display = 'none';
+        
+    } catch (error) {
+        console.error("Error adding due diligence report:", error);
+        showMessage("Failed to add report.");
+    } finally {
+        hideUploadProgressModal();
+        fileInput.value = ''; // Clear file input
+    }
+});
+
+async function openAssignAnalystModal(projectId) {
+    const modal = document.getElementById('assign-analyst-modal');
+    const select = document.getElementById('assign-analyst-select');
+    document.getElementById('assign-project-id').value = projectId;
+    select.innerHTML = '<option value="">Unassigned</option>'; // Default option
+
+    const projectDoc = await getDoc(doc(db, "projects", projectId));
+    if (!projectDoc.exists()) {
+        showMessage("Project not found.");
+        return;
+    }
+    const project = projectDoc.data();
+
+    // Filter allUsers to find only analysts
+    const analysts = allUsers.filter(user => user.role === 'analyst');
+    analysts.forEach(analyst => {
+        const option = document.createElement('option');
+        option.value = analyst.id;
+        option.textContent = `${analyst.fullName} (${analyst.email})`;
+        if (project.assignedAnalystId === analyst.id) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+
+    modal.style.display = 'flex';
+}
+
+document.getElementById('cancel-assign-analyst-form').addEventListener('click', () => {
+    document.getElementById('assign-analyst-modal').style.display = 'none';
+});
+
+document.getElementById('assign-analyst-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const projectId = document.getElementById('assign-project-id').value;
+    const analystId = document.getElementById('assign-analyst-select').value;
+    
+    loadingSpinner.style.display = 'flex';
+    const projectRef = doc(db, "projects", projectId);
+    
+    try {
+        await updateDoc(projectRef, {
+            assignedAnalystId: analystId || deleteField() // If unassigned, remove the field
+        });
+        showMessage("Project assignment updated successfully.");
+        document.getElementById('assign-analyst-modal').style.display = 'none';
+    } catch (error) {
+        console.error("Error updating assignment:", error);
+        showMessage("Failed to update assignment.");
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+});
+
+async function openAssignInvestorModal(projectId, projectTitle) {
+    const modal = document.getElementById('assign-investor-modal');
+    document.getElementById('assign-investor-project-id').value = projectId;
+    document.getElementById('assign-investor-modal-title').textContent = `Assign Investors for: ${projectTitle}`;
+    
+    const investorListDiv = document.getElementById('assign-investor-list');
+    investorListDiv.innerHTML = '<p>Loading investors...</p>';
+    modal.style.display = 'flex'; // Show modal early to display loading state
+
+    try {
+        // Fetch the project document to see who is already assigned
+        const projectDoc = await getDoc(doc(db, "projects", projectId));
+        const assignedInvestors = projectDoc.exists() ? projectDoc.data().assignedInvestorIds || [] : [];
+
+        // Directly query Firestore for all users with the 'investor' role
+        const investorsQuery = query(collection(db, "users"), where("role", "==", "investor"));
+        const investorsSnapshot = await getDocs(investorsQuery);
+        const investors = investorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        if (investors.length > 0) {
+            investorListDiv.innerHTML = investors.map(investor => `
+                <div class="flex items-center">
+                    <input id="investor-${investor.id}" type="checkbox" value="${investor.id}" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" ${assignedInvestors.includes(investor.id) ? 'checked' : ''}>
+                    <label for="investor-${investor.id}" class="ml-3 block text-sm font-medium text-gray-700">${investor.fullName} (${investor.email})</label>
+                </div>
+            `).join('');
+        } else {
+            investorListDiv.innerHTML = '<p class="text-center text-gray-500">No investors found.</p>';
+        }
+    } catch (error) {
+        console.error("Error fetching investors:", error);
+        investorListDiv.innerHTML = '<p class="text-center text-red-500">Could not load investor list.</p>';
+    }
+}
+
+document.getElementById('cancel-assign-investor-form').addEventListener('click', () => {
+    document.getElementById('assign-investor-modal').style.display = 'none';
+});
+
+document.getElementById('assign-investor-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const projectId = document.getElementById('assign-investor-project-id').value;
+    const checkedBoxes = document.querySelectorAll('#assign-investor-list input[type="checkbox"]:checked');
+    
+    const assignedInvestorIds = Array.from(checkedBoxes).map(box => box.value);
+
+    loadingSpinner.style.display = 'flex';
+    const projectRef = doc(db, "projects", projectId);
+
+    try {
+        await updateDoc(projectRef, { assignedInvestorIds: assignedInvestorIds });
+        showMessage("Investor assignment saved successfully.");
+        document.getElementById('assign-investor-modal').style.display = 'none';
+    } catch (error)
+    {
+        console.error("Error saving investor assignment:", error);
+        showMessage("Failed to save assignment.");
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+});

@@ -1796,11 +1796,15 @@
           </div>
           <div class="mb-4" id="role-field-container">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="user-role">Role</label>
-            <select id="user-role" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700">
-              <option value="investor" selected>Investor</option>
-              <option value="business-owner">Business Owner</option>
-              <option value="admin">Admin</option>
-            </select>
+            <select
+  id="user-role"
+  class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700"
+>
+  <option value="investor" selected>Investor</option>
+  <option value="business-owner">Business Owner</option>
+  <option value="admin">Admin</option>
+  <option value="analyst">Analyst</option>
+  </select>
           </div>
 
           <div class="flex justify-end space-x-4 mt-8">
@@ -2105,6 +2109,21 @@
       ></div>
     </div>
 
+    <div id="assign-analyst-section" class="hidden">
+      <div class="mb-4">
+        <label
+          class="block text-gray-700 text-sm font-bold mb-2"
+          for="review-assign-analyst-select"
+          >Assign to Analyst (Optional)</label
+        >
+        <select
+          id="review-assign-analyst-select"
+          class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white"
+        >
+          </select>
+      </div>
+    </div>
+
     <div class="mb-4">
       <label
         class="block text-gray-700 text-sm font-bold mb-2"
@@ -2156,28 +2175,62 @@
   </div>
 </div>
 
-    <div id="role-selection-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">Add a New User</h2>
-            <button id="close-role-selection-modal" class="p-2 rounded-full text-gray-500 hover:bg-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-        </div>
-        <p class="text-gray-600 mb-6">What type of user would you like to add?</p>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button id="add-investor-btn" class="role-selection-btn flex flex-col items-center justify-center p-6 bg-blue-50 text-blue-800 rounded-lg border-2 border-transparent hover:border-blue-500 hover:bg-blue-100 transition">
-            <span class="text-lg font-bold">Investor</span>
-          </button>
-          <button id="add-business-owner-btn" class="role-selection-btn flex flex-col items-center justify-center p-6 bg-green-50 text-green-800 rounded-lg border-2 border-transparent hover:border-green-500 hover:bg-green-100 transition">
-            <span class="text-lg font-bold">Business Owner</span>
-          </button>
-          <button id="add-admin-btn" class="role-selection-btn flex flex-col items-center justify-center p-6 bg-gray-50 text-gray-800 rounded-lg border-2 border-transparent hover:border-gray-500 hover:bg-gray-100 transition">
-            <span class="text-lg font-bold">Admin</span>
-          </button>
-        </div>
-      </div>
+    <div
+  id="role-selection-modal"
+  class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+>
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold">Add a New User</h2>
+      <button
+        id="close-role-selection-modal"
+        class="p-2 rounded-full text-gray-500 hover:bg-gray-200"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
+    <p class="text-gray-600 mb-6">
+      What type of user would you like to add?
+    </p>
+    <div class="grid grid-cols-2 gap-4">
+      <button
+        id="add-investor-btn"
+        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-blue-50 text-blue-800 rounded-lg border-2 border-transparent hover:border-blue-500 hover:bg-blue-100 transition"
+      >
+        <span class="text-lg font-bold">Investor</span>
+      </button>
+      <button
+        id="add-business-owner-btn"
+        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-green-50 text-green-800 rounded-lg border-2 border-transparent hover:border-green-500 hover:bg-green-100 transition"
+      >
+        <span class="text-lg font-bold">Business Owner</span>
+      </button>
+      <button
+        id="add-admin-btn"
+        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-gray-50 text-gray-800 rounded-lg border-2 border-transparent hover:border-gray-500 hover:bg-gray-100 transition"
+      >
+        <span class="text-lg font-bold">Admin</span>
+      </button>
+      <button
+        id="add-analyst-btn"
+        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-yellow-50 text-yellow-800 rounded-lg border-2 border-transparent hover:border-yellow-500 hover:bg-yellow-100 transition"
+      >
+        <span class="text-lg font-bold">Analyst</span>
+      </button>
+    </div>
+  </div>
+</div>
 
     <div id="business-owner-update-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
@@ -2213,6 +2266,165 @@
         <p id="upload-percentage" class="text-right text-sm font-medium text-gray-700">0%</p>
       </div>
     </div>
+
+    <div
+  id="due-diligence-modal"
+  class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-hidden flex flex-col"
+    style="max-height: 90vh"
+  >
+    <div class="flex-shrink-0">
+      <h2
+        id="due-diligence-modal-title"
+        class="text-2xl font-bold mb-6"
+      ></h2>
+    </div>
+
+    <div class="flex-grow overflow-y-auto pr-4">
+      <form id="due-diligence-form" class="mb-8">
+        <h3 class="text-xl font-semibold mb-4">Add New Due Diligence Report</h3>
+        <input type="hidden" id="diligence-project-id" />
+        <div class="mb-4">
+          <label
+            class="block text-gray-700 text-sm font-bold mb-2"
+            for="diligence-title"
+            >Report Title</label
+          >
+          <input
+            class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+            id="diligence-title"
+            type="text"
+            placeholder="e.g., Legal Document Verification"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label
+            class="block text-gray-700 text-sm font-bold mb-2"
+            for="diligence-pdf-upload"
+            >Report PDF</label
+          >
+          <input
+            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            id="diligence-pdf-upload"
+            type="file"
+            accept=".pdf"
+            required
+          />
+        </div>
+      </form>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-4 border-t pt-6">
+          Existing Reports
+        </h3>
+        <div id="previous-diligence-list" class="space-y-3">
+          </div>
+      </div>
+    </div>
+
+    <div class="flex-shrink-0 pt-6 border-t">
+      <div class="flex justify-end space-x-4">
+        <button
+          id="cancel-diligence-form"
+          type="button"
+          class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Close
+        </button>
+        <button
+          type="submit"
+          form="due-diligence-form"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Add Report
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  id="assign-analyst-modal"
+  class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+>
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
+    <form id="assign-analyst-form">
+      <h2 id="assign-analyst-modal-title" class="text-2xl font-bold mb-6">
+        Assign Project to Analyst
+      </h2>
+      <input type="hidden" id="assign-project-id" />
+      <div class="mb-6">
+        <label
+          for="assign-analyst-select"
+          class="block text-sm font-medium text-gray-700 mb-2"
+          >Select an Analyst</label
+        >
+        <select
+          id="assign-analyst-select"
+          class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700"
+        >
+          </select>
+      </div>
+      <div class="flex justify-end space-x-4 mt-8">
+        <button
+          id="cancel-assign-analyst-form"
+          type="button"
+          class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Save Assignment
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div
+  id="assign-investor-modal"
+  class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4 flex flex-col"
+    style="max-height: 90vh"
+  >
+    <form id="assign-investor-form">
+      <h2 id="assign-investor-modal-title" class="text-2xl font-bold mb-2"></h2>
+      <p class="text-gray-600 mb-6">
+        Select which investors will be able to see this project. If no investors
+        are selected, the project will be visible to everyone.
+      </p>
+      <input type="hidden" id="assign-investor-project-id" />
+      <div
+        id="assign-investor-list"
+        class="max-h-64 overflow-y-auto border rounded-lg p-4 space-y-3"
+      >
+        </div>
+      <div class="flex justify-end space-x-4 mt-8">
+        <button
+          id="cancel-assign-investor-form"
+          type="button"
+          class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Close
+        </button>
+        <button
+          type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+        >
+          Save Assignment
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
     <script type="module" src="script.js"></script>
   </body>
