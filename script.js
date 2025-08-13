@@ -387,24 +387,6 @@ const proposedListViewBtn = document.getElementById("proposed-list-view-btn");
 const proposedGrid = document.getElementById("admin-proposed-projects-grid");
 const proposedListContainer = document.getElementById("admin-proposed-projects-list-container");
 
-proposedCardViewBtn.addEventListener("click", () => {
-  proposedGrid.style.display = "grid";
-  proposedListContainer.style.display = "none";
-  proposedCardViewBtn.classList.add("bg-white", "shadow");
-  proposedCardViewBtn.classList.remove("text-gray-600");
-  proposedListViewBtn.classList.remove("bg-white", "shadow");
-  proposedListViewBtn.classList.add("text-gray-600");
-});
-
-proposedListViewBtn.addEventListener("click", () => {
-  proposedGrid.style.display = "none";
-  proposedListContainer.style.display = "block";
-  proposedListViewBtn.classList.add("bg-white", "shadow");
-  proposedListViewBtn.classList.remove("text-gray-600");
-  proposedCardViewBtn.classList.remove("bg-white", "shadow");
-  proposedCardViewBtn.classList.add("text-gray-600");
-});
-
 myProjectsCardViewBtn.addEventListener("click", () => {
   myProjectsGrid.style.display = "grid";
   myProjectsListContainer.style.display = "none";
@@ -696,99 +678,65 @@ function uploadFileWithProgress(file, path, progressCallback) {
 }
 
 function listenToProjects() {
-  // Investors only see projects that are visible, not fulfilled, not failed, and not expired
-  const projectsCollection = query(
-    collection(db, "projects"),
-    where("isVisible", "==", true),
-    where("isFulfilled", "==", false),
-    where("isFailed", "==", false),
-    where("isExpired", "==", false)
-  );
-  onSnapshot(projectsCollection, (snapshot) => {
-    const projectsGrid = document.getElementById("projects-grid");
-    const projectsListBody = document.getElementById("projects-list-body");
+  if (!currentUser) return;
 
-    // Clear both view containers
-    projectsGrid.innerHTML = "";
-    projectsListBody.innerHTML = "";
+  const projectsRef = collection(db, "projects");
 
-    if (snapshot.empty) {
-      const emptyGridMessage =
-        '<p class="col-span-full text-center text-gray-500">No investment opportunities available at the moment.</p>';
-      projectsGrid.innerHTML = emptyGridMessage;
+  // Use a single listener on the entire collection and filter on the client-side.
+  // This is simpler and often more efficient for a moderate number of projects.
+  onSnapshot(projectsRef, (snapshot) => {
+    const allProjects = [];
+    snapshot.forEach(doc => {
+        const project = { id: doc.id, ...doc.data() };
+        
+        // 1. First, apply the basic filters to exclude inactive projects
+        if (!project.isVisible || project.isFulfilled || project.isFailed || project.isExpired) {
+            return; // Skip this project if it's not active
+        }
 
+        // 2. Next, determine if the current investor has permission to see it
+        const assignedIds = project.assignedInvestorIds;
+        const isPublic = !assignedIds || assignedIds.length === 0; // Project is public if the assignment array is missing or empty
+        const isAssignedToMe = assignedIds && assignedIds.includes(currentUser.uid); // Project is specifically assigned to this investor
+
+        // 3. Add the project to the list if it's public OR assigned to the user
+        if (isPublic || isAssignedToMe) {
+            allProjects.push(project);
+        }
+    });
+
+    const tableBody = document.getElementById("investor-projects-table-body");
+    tableBody.innerHTML = ""; // Clear the table before rendering
+
+    if (allProjects.length === 0) {
       const emptyListMessage =
         '<tr><td colspan="5" class="text-center py-4 text-gray-500">No investment opportunities available at the moment.</td></tr>';
-      projectsListBody.innerHTML = emptyListMessage;
+      tableBody.innerHTML = emptyListMessage;
       return;
     }
 
-    snapshot.forEach((doc) => {
-      const project = doc.data();
-      const projectId = doc.id;
+    // 4. Render the filtered list of projects into the new table
+    allProjects.forEach((project) => {
       const slotsTaken = Object.values(project.investors || {}).reduce(
         (sum, slots) => sum + slots,
         0
       );
 
-      const cardHTML = `
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 flex flex-col">
-                            <img src="${
-                              project.photoURL ||
-                              "https://placehold.co/600x400/e2e8f0/4a5568?text=Project+Image"
-                            }" 
-                                 alt="${project.title}" 
-                                 class="project-card-image"
-                                 onerror="this.onerror=null;this.src='https://placehold.co/600x400/e2e8f0/4a5568?text=Image+Not+Found';">
-                            <div class="p-6 flex-grow">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-xl font-bold truncate" title="${
-                                      project.title
-                                    }">${project.title}</h3>
-                                    ${formatCountdown(project.dueDate)}
-                                </div>
-                                <p class="text-gray-600 mb-4 h-12 overflow-hidden">${
-                                  project.summary
-                                }</p>
-                                <div class="mb-2">
-                                    <span class="font-semibold text-lg text-blue-600">${slotsTaken} / ${
-        project.totalSlots
-      }</span>
-                                    <span class="text-gray-500">slots filled</span>
-                                </div>
-                                <p class="text-lg font-semibold text-right">${formatRupiah(
-                                  project.slotPrice
-                                )} / slot</p>
-                            </div>
-                            <div class="p-6 pt-0">
-                                <button data-id="${projectId}" class="view-details-btn w-full mt-2 bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-900">View Details</button>
-                            </div>
-                        </div>
-                    `;
-      projectsGrid.innerHTML += cardHTML;
-
-      const listRowHTML = `
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${
-                              project.title
-                            }</td>
-                            <td class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatCountdown(
-                              project.dueDate
-                            )}</td>
-                            <td class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatRupiah(
-                              project.slotPrice
-                            )}</td>
-                            <td class="py-4 px-6 text-gray-700 whitespace-nowrap">${slotsTaken} / ${
-        project.totalSlots
-      }</td>
-                            <td class="py-4 px-6 text-center">
-                                <button data-id="${projectId}" class="view-details-btn bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-900 text-xs">View</button>
-                            </td>
-                        </tr>
-                    `;
-      projectsListBody.innerHTML += listRowHTML;
+      const rowHTML = `
+        <tr class="hover:bg-gray-50">
+            <td data-label="Project Title" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${project.title}</td>
+            <td data-label="Time Left" class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatCountdown(project.dueDate)}</td>
+            <td data-label="Price Per Slot" class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatRupiah(project.slotPrice)}</td>
+            <td data-label="Slots Available" class="py-4 px-6 text-gray-700 whitespace-nowrap">${slotsTaken} / ${project.totalSlots}</td>
+            <td data-label="Action" class="py-4 px-6 text-center">
+                <button data-id="${project.id}" class="view-details-btn bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-900 text-xs">View</button>
+            </td>
+        </tr>
+      `;
+      tableBody.innerHTML += rowHTML;
     });
 
+    // 5. Re-attach event listeners to the new "View" buttons
     document.querySelectorAll(".view-details-btn").forEach((button) => {
       button.addEventListener("click", () =>
         viewProjectDetails(button.dataset.id)
@@ -3504,31 +3452,6 @@ async function handleDeleteCancellation(
 
 const mobileMenuButton = document.getElementById("mobile-menu-button");
 const mobileMenu = document.getElementById("mobile-menu");
-
-const cardViewBtn = document.getElementById("card-view-btn");
-const listViewBtn = document.getElementById("list-view-btn");
-const projectsGrid = document.getElementById("projects-grid");
-const projectsListContainer = document.getElementById(
-  "projects-list-container"
-);
-
-cardViewBtn.addEventListener("click", () => {
-  projectsGrid.style.display = "grid";
-  projectsListContainer.style.display = "none";
-  cardViewBtn.classList.add("bg-white", "shadow");
-  cardViewBtn.classList.remove("text-gray-600");
-  listViewBtn.classList.remove("bg-white", "shadow");
-  listViewBtn.classList.add("text-gray-600");
-});
-
-listViewBtn.addEventListener("click", () => {
-  projectsGrid.style.display = "none";
-  projectsListContainer.style.display = "block";
-  listViewBtn.classList.add("bg-white", "shadow");
-  listViewBtn.classList.remove("text-gray-600");
-  cardViewBtn.classList.remove("bg-white", "shadow");
-  cardViewBtn.classList.add("text-gray-600");
-});
 
 mobileMenuButton.addEventListener("click", () => {
   mobileMenu.classList.toggle("hidden");
