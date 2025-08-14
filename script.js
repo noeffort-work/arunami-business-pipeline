@@ -771,7 +771,6 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
         
         projectDetailModalHeaderTitle.textContent = project.title;
         
-        const slotsTaken = Object.values(project.investors || {}).reduce((sum, slots) => sum + slots, 0);
         const isClosed = project.dueDate.toDate() < new Date() || project.isFulfilled || project.isFailed || project.isExpired;
         const userSlots = project.investors?.[currentUser.uid] || 0;
         const hasRequestedInfo = project.prospects?.[currentUser.uid];
@@ -798,20 +797,21 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
             `;
         }
         
+        // --- UPDATED: This section now builds both document lists ---
         let documentsSectionHTML = '<h3 class="text-2xl font-semibold mb-4 border-b pb-2">Project Documents</h3>';
-        let hasDocs = false;
+        let hasOwnerDocs = false;
         
         if (project.companyProfileURL) {
-            hasDocs = true;
+            hasOwnerDocs = true;
             documentsSectionHTML += `<div class="mb-2"><a href="${project.companyProfileURL}" target="_blank" class="text-blue-600 hover:underline">View Company Profile</a></div>`;
         }
         if (project.legalDocURL) {
-            hasDocs = true;
+            hasOwnerDocs = true;
             documentsSectionHTML += `<div class="mb-2"><a href="${project.legalDocURL}" target="_blank" class="text-blue-600 hover:underline">View Legal Document</a></div>`;
         }
          if (project.financialDocURL) {
-            if (hasRequestedInfo || currentUserData.role === 'admin') {
-                 hasDocs = true;
+            if (hasRequestedInfo || currentUserData.role === 'admin' || currentUserData.role === 'analyst') {
+                 hasOwnerDocs = true;
                  documentsSectionHTML += `<div class="mb-2"><a href="${project.financialDocURL}" target="_blank" class="text-blue-600 hover:underline">View Financial Document (Confidential)</a></div>`;
             } else {
                 documentsSectionHTML += `
@@ -822,8 +822,21 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
                 `;
             }
         }
-        if (!hasDocs) {
+        if (!hasOwnerDocs) {
             documentsSectionHTML += '<p class="text-gray-500">No documents have been uploaded for this project yet.</p>';
+        }
+
+        // Add Due Diligence Reports section
+        documentsSectionHTML += '<h3 class="text-2xl font-semibold mt-8 mb-4 border-b pb-2">Due Diligence Reports</h3>';
+        if (project.dueDiligenceReports && project.dueDiligenceReports.length > 0) {
+            documentsSectionHTML += project.dueDiligenceReports.map(report => `
+                <div class="mb-2 p-3 bg-gray-50 rounded-md">
+                    <a href="${report.pdfURL}" target="_blank" class="text-blue-600 hover:underline font-semibold">${report.title}</a>
+                    <p class="text-xs text-gray-500">Uploaded by ${report.authorName} on ${report.date.toDate().toLocaleDateString()}</p>
+                </div>
+            `).join('');
+        } else {
+            documentsSectionHTML += '<p class="text-gray-500">No due diligence reports are available yet.</p>';
         }
 
         projectDetailModalContent.innerHTML = `
@@ -834,16 +847,15 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
                  onerror="this.onerror=null;this.src='https://placehold.co/800x400/e2e8f0/4a5568?text=Image+Not+Found';">
             <div class="flex justify-between items-start mb-2">
                  <h2 class="text-4xl font-bold">${project.title}</h2>
-                 ${formatCountdown(project.dueDate)}
+                 ${project.dueDate ? formatCountdown(project.dueDate) : ''}
             </div>
             <p class="text-gray-500 text-lg mb-6">${project.summary}</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-gray-100 p-4 rounded-lg"><div class="text-sm text-gray-500">Investment Ask</div><div class="text-2xl font-bold">${formatRupiah(project.investmentAsk || 0)}</div></div>
-                <div class="bg-gray-100 p-4 rounded-lg"><div class="text-sm text-gray-500">Price Per Slot</div><div class="text-2xl font-bold">${formatRupiah(project.slotPrice)}</div></div>
-                <div class="bg-gray-100 p-4 rounded-lg"><div class="text-sm text-gray-500">Slots Filled</div><div class="text-2xl font-bold text-blue-600">${slotsTaken} / ${project.totalSlots}</div></div>
-                <div class="bg-gray-100 p-4 rounded-lg"><div class="text-sm text-gray-500">Total Value</div><div class="text-2xl font-bold">${formatRupiah(project.totalSlots * project.slotPrice)}</div></div>
+            <div class="bg-gray-100 p-4 rounded-lg mb-8 text-center">
+                <div class="text-sm font-medium text-gray-600">Investment Ask</div>
+                <div class="text-3xl font-bold text-gray-900">${formatRupiah(project.investmentAsk || 0)}</div>
             </div>
+            
             <h3 class="text-2xl font-semibold mb-4">About the Project</h3>
             <p class="text-gray-700 whitespace-pre-wrap mb-8">${project.description}</p>
             
@@ -1193,10 +1205,11 @@ function renderAdminProposalTable(projects, tableBody, emptyMessage) {
         
         // --- NEW LOGIC: Generate role-specific action buttons ---
         let actionsHTML = '';
-        if (currentUserData.role === 'analyst') {
+        if (currentUserData.role === 'analyst' && project.status === 'Assigned to Analyst') {
             actionsHTML = `
                 <div class="flex items-center justify-center space-x-2">
-                    <button data-id="${project.id}" class="view-detail-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded-lg text-xs">View Detail</button>
+                    <button data-id="${project.id}" data-title="${project.title}" class="analyst-approve-btn bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-lg text-xs">Approve</button>
+                    <button data-id="${project.id}" data-title="${project.title}" class="analyst-reject-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-lg text-xs">Reject</button>
                     <button data-project-id="${project.id}" class="toggle-admin-history-btn text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-3 rounded-md">History</button>
                     <button data-id="${project.id}" data-title="${project.title}" class="due-diligence-btn bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded-lg text-xs">Due Diligence</button>
                 </div>
@@ -1262,8 +1275,23 @@ function renderAdminProposalTable(projects, tableBody, emptyMessage) {
         const detailRow = document.getElementById(`admin-history-row-${projectId}`);
         detailRow.classList.toggle('hidden');
     }));
-    tableBody.querySelectorAll('.view-detail-btn').forEach(btn => btn.addEventListener('click', (e) => openProjectModal(e.currentTarget.dataset.id)));
     tableBody.querySelectorAll('.due-diligence-btn').forEach(btn => btn.addEventListener('click', (e) => openDueDiligenceModal(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
+    tableBody.querySelectorAll('.analyst-approve-btn').forEach(btn => btn.addEventListener('click', (e) => handleAnalystApprove(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
+    tableBody.querySelectorAll('.analyst-reject-btn').forEach(btn => btn.addEventListener('click', (e) => handleAnalystReject(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
+}
+
+// --- NEW ANALYST ACTION HANDLERS ---
+function handleAnalystApprove(projectId, projectTitle) {
+    if (confirm(`Are you sure you want to approve the project "${projectTitle}"?`)) {
+        handleAdminReviewAction(projectId, 'Approved by Analyst.', 'Approved');
+    }
+}
+
+function handleAnalystReject(projectId, projectTitle) {
+    const reason = prompt(`Please provide a reason for rejecting the project "${projectTitle}":`);
+    if (reason) { // Only proceed if the user provides a reason
+        handleAdminReviewAction(projectId, reason, 'Rejected');
+    }
 }
 
 function renderAdminApprovedTable(projects, tableBody) {
