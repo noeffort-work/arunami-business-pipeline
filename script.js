@@ -650,13 +650,13 @@ function hideUploadProgressModal() {
  * @param {function(number): void} progressCallback A function to call with the upload percentage.
  * @returns {Promise<string>} The public URL of the uploaded file.
  */
-function uploadFileWithProgress(file, path, progressCallback) {
+function uploadFileWithProgress(file, fullPath, progressCallback) {
     return new Promise((resolve, reject) => {
         if (!file) {
             resolve(null);
             return;
         }
-        const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+        const storageRef = ref(storage, fullPath);
         const uploadTask = uploadBytesResumable(storageRef, file);
 
         uploadTask.on('state_changed',
@@ -797,22 +797,42 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
             `;
         }
         
-        // --- UPDATED: This section now builds both document lists ---
+        // --- MODIFICATION START ---
+        // This section is refactored to build the project documents with a "View" button.
         let documentsSectionHTML = '<h3 class="text-2xl font-semibold mb-4 border-b pb-2">Project Documents</h3>';
-        let hasOwnerDocs = false;
-        
-        if (project.companyProfileURL) {
-            hasOwnerDocs = true;
-            documentsSectionHTML += `<div class="mb-2"><a href="${project.companyProfileURL}" target="_blank" class="text-blue-600 hover:underline">View Company Profile</a></div>`;
+        const publicDocs = [];
+        if (project.companyProfileURL) publicDocs.push({ title: 'Company Profile', url: project.companyProfileURL });
+        if (project.legalDocURL) publicDocs.push({ title: 'Legal Document', url: project.legalDocURL });
+
+        if (publicDocs.length > 0) {
+            documentsSectionHTML += publicDocs.map(doc => `
+                <div class="flex justify-between items-center mb-2 p-3 bg-gray-50 rounded-md">
+                    <p class="font-semibold">${doc.title}</p>
+                    <button 
+                        data-pdf-url="${doc.url}" 
+                        data-pdf-title="${doc.title}: ${project.title}" 
+                        class="view-update-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-xs">
+                        View
+                    </button>
+                </div>
+            `).join('');
         }
-        if (project.legalDocURL) {
-            hasOwnerDocs = true;
-            documentsSectionHTML += `<div class="mb-2"><a href="${project.legalDocURL}" target="_blank" class="text-blue-600 hover:underline">View Legal Document</a></div>`;
-        }
-         if (project.financialDocURL) {
-            if (hasRequestedInfo || currentUserData.role === 'admin' || currentUserData.role === 'analyst') {
-                 hasOwnerDocs = true;
-                 documentsSectionHTML += `<div class="mb-2"><a href="${project.financialDocURL}" target="_blank" class="text-blue-600 hover:underline">View Financial Document (Confidential)</a></div>`;
+
+        // Handle confidential financial document separately
+        if (project.financialDocURL) {
+            const hasAccess = hasRequestedInfo || currentUserData.role === 'admin' || currentUserData.role === 'analyst';
+            if (hasAccess) {
+                documentsSectionHTML += `
+                    <div class="flex justify-between items-center mb-2 p-3 bg-gray-50 rounded-md">
+                        <p class="font-semibold">Financial Document (Confidential)</p>
+                        <button 
+                            data-pdf-url="${project.financialDocURL}" 
+                            data-pdf-title="Financial Document: ${project.title}" 
+                            class="view-update-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-xs">
+                            View
+                        </button>
+                    </div>
+                `;
             } else {
                 documentsSectionHTML += `
                     <div class="mt-4 text-center border-t pt-4">
@@ -822,17 +842,27 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
                 `;
             }
         }
-        if (!hasOwnerDocs) {
+
+        if (publicDocs.length === 0 && !project.financialDocURL) {
             documentsSectionHTML += '<p class="text-gray-500">No documents have been uploaded for this project yet.</p>';
         }
+        // --- MODIFICATION END ---
 
         // Add Due Diligence Reports section
         documentsSectionHTML += '<h3 class="text-2xl font-semibold mt-8 mb-4 border-b pb-2">Due Diligence Reports</h3>';
         if (project.dueDiligenceReports && project.dueDiligenceReports.length > 0) {
             documentsSectionHTML += project.dueDiligenceReports.map(report => `
-                <div class="mb-2 p-3 bg-gray-50 rounded-md">
-                    <a href="${report.pdfURL}" target="_blank" class="text-blue-600 hover:underline font-semibold">${report.title}</a>
-                    <p class="text-xs text-gray-500">Uploaded by ${report.authorName} on ${report.date.toDate().toLocaleDateString()}</p>
+                <div class="flex justify-between items-center mb-2 p-3 bg-gray-50 rounded-md">
+                    <div>
+                        <p class="font-semibold">${report.title}</p>
+                        <p class="text-xs text-gray-500">Uploaded by ${report.authorName} on ${report.date.toDate().toLocaleDateString()}</p>
+                    </div>
+                    <button 
+                        data-pdf-url="${report.pdfURL}" 
+                        data-pdf-title="Due Diligence: ${report.title}" 
+                        class="view-update-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-xs">
+                        View
+                    </button>
                 </div>
             `).join('');
         } else {
@@ -868,6 +898,7 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
         
         projectDetailModal.style.display = 'flex';
 
+        // --- ATTACH ALL EVENT LISTENERS FOR THE MODAL CONTENT ---
         document.getElementById('back-to-dashboard-btn').addEventListener('click', () => {
             projectDetailModal.style.display = 'none';
         });
@@ -879,6 +910,14 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
         if (!isClosed && context !== 'portfolio') {
             document.getElementById('booking-form')?.addEventListener('submit', handleBooking);
         }
+        
+        // This ensures ALL "View" buttons in the modal work correctly
+        projectDetailModalContent.querySelectorAll('.view-update-pdf-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const { pdfUrl, pdfTitle } = e.currentTarget.dataset;
+                openPdfViewerModal(pdfUrl, pdfTitle);
+            });
+        });
 
     } catch (error) {
         console.error("Error fetching project details:", error);
@@ -2009,18 +2048,14 @@ async function openProjectModal(projectId = null) {
 projectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const projectId = document.getElementById('project-id').value;
-    
     const imageUploadInput = document.getElementById('project-photo-upload');
     const companyProfileUploadInput = document.getElementById('project-company-profile-upload');
     const legalDocUploadInput = document.getElementById('project-legal-doc-upload');
     const financialDocUploadInput = document.getElementById('project-financial-doc-upload');
-
-    let photoURL = document.getElementById('project-photo-url').value;
-    let companyProfileURL = document.getElementById('project-company-profile-url').value;
-    let legalDocURL = document.getElementById('project-legal-doc-url').value;
-    let financialDocURL = document.getElementById('project-financial-doc-url').value;
     
+    let projectId = document.getElementById('project-id').value;
+    
+    // Show progress modal if any file is being uploaded
     const filesToUpload = [imageUploadInput, companyProfileUploadInput, legalDocUploadInput, financialDocUploadInput].some(input => input.files[0]);
     if (filesToUpload) {
         showUploadProgressModal();
@@ -2029,81 +2064,109 @@ projectForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        if (imageUploadInput.files[0]) {
-            updateUploadStatus('Uploading project image...');
-            photoURL = await uploadFileWithProgress(imageUploadInput.files[0], 'project_images', updateProgressBar);
-        }
-        if (companyProfileUploadInput.files[0]) {
-            updateUploadStatus('Uploading company profile...');
-            companyProfileURL = await uploadFileWithProgress(companyProfileUploadInput.files[0], 'company_profiles', updateProgressBar);
-        }
-        if (legalDocUploadInput.files[0]) {
-            updateUploadStatus('Uploading legal document...');
-            legalDocURL = await uploadFileWithProgress(legalDocUploadInput.files[0], 'legal_docs', updateProgressBar);
-        }
-        if (financialDocUploadInput.files[0]) {
-            updateUploadStatus('Uploading financial document...');
-            financialDocURL = await uploadFileWithProgress(financialDocUploadInput.files[0], 'financial_docs', updateProgressBar);
-        }
-        
-        updateUploadStatus('Saving project details...');
-
         const projectData = {
             title: document.getElementById('project-title').value,
-            photoURL: photoURL,
             summary: document.getElementById('project-summary').value,
             description: document.getElementById('project-description').value,
-            investmentAsk: parseInt(document.getElementById('project-investment-ask').value.replace(/\./g, ''), 10),
-            companyProfileURL: companyProfileURL,
-            legalDocURL: legalDocURL,
-            financialDocURL: financialDocURL,
+            investmentAsk: parseInt(document.getElementById('project-investment-ask').value.replace(/\./g, ''), 10)
         };
-        
-        if (currentUserData.role === 'admin') {
-            const price = parseInt(document.getElementById('project-slot-price').value.replace(/\./g, ''), 10);
-            projectData.dueDate = Timestamp.fromDate(new Date(document.getElementById('project-due-date').value));
-            projectData.totalSlots = parseInt(document.getElementById('project-total-slots').value, 10);
-            projectData.slotPrice = price;
-        }
-        
+
+        // --- NEW LOGIC: Handle project creation and editing differently ---
+        let projectRef;
         if (projectId) {
-            await updateDoc(doc(db, "projects", projectId), projectData);
-            await logAdminAction(`Edited project: "${projectData.title}"`);
-            showMessage("Project updated successfully.");
+            // We are EDITING an existing project
+            projectRef = doc(db, "projects", projectId);
         } else {
+            // We are CREATING a new project
+            // Set owner and initial status fields first
             if (currentUserData.role === 'business-owner') {
                 projectData.ownerId = currentUser.uid;
                 projectData.ownerName = currentUserData.fullName;
                 projectData.status = 'Under Review';
-                projectData.adminComments = '';
+                projectData.statusHistory = [{
+                    status: 'Under Review',
+                    comments: 'Project proposed by Business Owner.',
+                    timestamp: Timestamp.now(),
+                    author: 'Business Owner'
+                }];
+                // Set default values for fields not on the BO form
                 projectData.isVisible = false;
                 projectData.isFulfilled = false;
                 projectData.isFailed = false;
                 projectData.isExpired = false;
-                projectData.totalSlots = 0;
+                projectData.totalSlots = 0; 
                 projectData.slotPrice = 0;
-                projectData.dueDate = Timestamp.now();
-                await addDoc(collection(db, "projects"), projectData);
-                showMessage("Project proposed successfully. It is now under review by an admin.");
-
+                projectData.dueDate = Timestamp.now(); 
             } else if (currentUserData.role === 'admin') {
                 projectData.status = 'Approved';
+                // Add admin-specific fields
+                projectData.dueDate = Timestamp.fromDate(new Date(document.getElementById('project-due-date').value));
+                projectData.totalSlots = parseInt(document.getElementById('project-total-slots').value, 10);
+                projectData.slotPrice = parseInt(document.getElementById('project-slot-price').value.replace(/\./g, ''), 10);
                 projectData.investors = {};
                 projectData.investorStatus = {};
                 projectData.prospects = {};
                 projectData.progressUpdates = [];
                 projectData.isFulfilled = false;
                 projectData.isVisible = true;
-                projectData.isFailed = false;
-                projectData.isExpired = false;
-                await addDoc(collection(db, "projects"), projectData);
-                await logAdminAction(`Created project: "${projectData.title}"`);
-                showMessage("Project created successfully.");
+            }
+            
+            // Create the document in Firestore to get the ID
+            updateUploadStatus('Creating project record...');
+            projectRef = await addDoc(collection(db, "projects"), projectData);
+            projectId = projectRef.id; // Get the newly created project ID
+        }
+
+        // --- UPLOAD FILES using the now-guaranteed projectId ---
+        const urlsToUpdate = {};
+        if (imageUploadInput.files[0]) {
+            updateUploadStatus('Uploading project image...');
+            const fullPath = `project_images/${projectId}/${Date.now()}_${imageUploadInput.files[0].name}`;
+            urlsToUpdate.photoURL = await uploadFileWithProgress(imageUploadInput.files[0], fullPath, updateProgressBar);
+        }
+        if (companyProfileUploadInput.files[0]) {
+            updateUploadStatus('Uploading company profile...');
+            const fullPath = `company_profiles/${projectId}/${Date.now()}_${companyProfileUploadInput.files[0].name}`;
+            urlsToUpdate.companyProfileURL = await uploadFileWithProgress(companyProfileUploadInput.files[0], fullPath, updateProgressBar);
+        }
+        if (legalDocUploadInput.files[0]) {
+            updateUploadStatus('Uploading legal document...');
+            const fullPath = `legal_docs/${projectId}/${Date.now()}_${legalDocUploadInput.files[0].name}`;
+            urlsToUpdate.legalDocURL = await uploadFileWithProgress(legalDocUploadInput.files[0], fullPath, updateProgressBar);
+        }
+        if (financialDocUploadInput.files[0]) {
+            updateUploadStatus('Uploading financial document...');
+            const fullPath = `financial_docs/${projectId}/${Date.now()}_${financialDocUploadInput.files[0].name}`;
+            urlsToUpdate.financialDocURL = await uploadFileWithProgress(financialDocUploadInput.files[0], fullPath, updateProgressBar);
+        }
+
+        // --- UPDATE a final time with URLs and text fields for editing mode ---
+        updateUploadStatus('Finalizing project details...');
+        // For editing, add the text fields to the update object
+        if (document.getElementById('project-id').value) {
+            Object.assign(urlsToUpdate, projectData);
+            // Include admin-only fields if the user is an admin
+            if (currentUserData.role === 'admin') {
+                urlsToUpdate.dueDate = Timestamp.fromDate(new Date(document.getElementById('project-due-date').value));
+                urlsToUpdate.totalSlots = parseInt(document.getElementById('project-total-slots').value, 10);
+                urlsToUpdate.slotPrice = parseInt(document.getElementById('project-slot-price').value.replace(/\./g, ''), 10);
             }
         }
+        
+        await updateDoc(projectRef, urlsToUpdate);
+        
+        // Final success message
+        if (document.getElementById('project-id').value) {
+             showMessage("Project updated successfully.");
+        } else {
+             showMessage("Project proposed successfully. It is now under review by an admin.");
+        }
+        
         projectModal.style.display = 'none';
+
     } catch (error) {
         console.error("Error saving project:", error);
+        // Ensure the general error message is shown if uploads failed
         if (!filesToUpload) { 
              showMessage("An error occurred while saving the project.");
         }
