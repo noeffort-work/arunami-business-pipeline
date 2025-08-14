@@ -1393,182 +1393,180 @@
     </div>
 
       <div
-        id="project-modal"
-        class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+      id="project-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-y-auto"
+        style="max-height: 90vh"
       >
-        <div
-          class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-8 m-4 overflow-y-auto"
-          style="max-height: 90vh"
-        >
-          <form id="project-form">
-            <h2 id="project-modal-title" class="text-2xl font-bold mb-6">
-              Create Project
-            </h2>
-            <input type="hidden" id="project-id" />
-            <div class="mb-4">
-              <label
-                class="block text-gray-700 text-sm font-bold mb-2"
-                for="project-title"
-                >Project Title</label
-              >
-              <input
-                class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-                id="project-title"
-                type="text"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label
-                class="block text-gray-700 text-sm font-bold mb-2"
-                for="project-photo-upload"
-                >Project Photo</label
-              >
-              <div class="mt-2 flex items-center space-x-4">
-                <img
-                  id="project-image-preview"
-                  src="https://placehold.co/100x100/e2e8f0/4a5568?text=Preview"
-                  alt="Image Preview"
-                  class="h-24 w-24 object-cover rounded-md bg-gray-200"
-                />
-                <div>
-                  <input
-                    type="file"
-                    id="project-photo-upload"
-                    accept="image/*"
-                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                  <p class="text-xs text-gray-500 mt-1">
-                    Upload new image from your device
-                  </p>
-                </div>
-              </div>
-              <input type="hidden" id="project-photo-url" />
-            </div>
-            <div class="space-y-4">
-              <input type="hidden" id="project-company-profile-url">
-              <input type="hidden" id="project-legal-doc-url">
-              <input type="hidden" id="project-financial-doc-url">
+        <form id="project-form">
+          <h2 id="project-modal-title" class="text-2xl font-bold mb-6">
+            Create Project
+          </h2>
+          <input type="hidden" id="project-id" />
 
-              <div class="p-4 border rounded-lg bg-gray-50">
-                  <label class="block text-gray-700 text-sm font-bold mb-2" for="project-company-profile-upload">Company Profiles (PDF)</label>
-                  <div id="company-profile-link-container" class="mb-2"></div>
-                  <input class="block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" id="project-company-profile-upload" type="file" accept=".pdf" />
-              </div>
-
-              <div class="p-4 border rounded-lg bg-gray-50">
-                  <label class="block text-gray-700 text-sm font-bold mb-2" for="project-legal-doc-upload">Legal Document (PDF)</label>
-                  <div id="legal-doc-link-container" class="mb-2"></div>
-                  <input class="block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" id="project-legal-doc-upload" type="file" accept=".pdf" />
-              </div>
-
-              <div class="p-4 border rounded-lg bg-gray-50">
-                  <label class="block text-gray-700 text-sm font-bold mb-2" for="project-financial-doc-upload">Financial Document (PDF)</label>
-                  <div id="financial-doc-link-container" class="mb-2"></div>
-                  <input class="block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" id="project-financial-doc-upload" type="file" accept=".pdf" />
-              </div>
-            </div>
-            <div class="mb-4">
-              <label
-                class="block text-gray-700 text-sm font-bold mb-2"
-                for="project-summary"
-                >Summary (One-liner)</label
-              >
-              <input
-                class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-                id="project-summary"
-                type="text"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label
-                class="block text-gray-700 text-sm font-bold mb-2"
-                for="project-description"
-                >Full Description</label
-              >
-              <textarea
-                class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-                id="project-description"
-                rows="5"
-                required
-              ></textarea>
-            </div>
-            <div class="mb-4">
+          <div class="mb-4">
             <label
               class="block text-gray-700 text-sm font-bold mb-2"
-              for="project-investment-ask"
-              >Investment Ask (Rp)</label
+              for="project-title"
+              >Project Title</label
             >
             <input
               class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-              id="project-investment-ask"
+              id="project-title"
               type="text"
               required
             />
           </div>
-            <div id="admin-only-project-fields">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label
-                    class="block text-gray-700 text-sm font-bold mb-2"
-                    for="project-due-date"
-                    >Due Date</label
-                  >
-                  <input
-                    class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-                    id="project-due-date"
-                    type="date"
-                    required
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-gray-700 text-sm font-bold mb-2"
-                    for="project-total-slots"
-                    >Total Slots</label
-                  >
-                  <input
-                    class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-                    id="project-total-slots"
-                    type="number"
-                    min="1"
-                    required
-                  />
-                </div>
+
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="project-photo-upload"
+              >Project Photo</label
+            >
+            <div class="mt-2 flex items-center space-x-4">
+              <img
+                id="project-image-preview"
+                src="https://placehold.co/100x100/e2e8f0/4a5568?text=Preview"
+                alt="Image Preview"
+                class="h-24 w-24 object-cover rounded-md bg-gray-200"
+              />
+              <div>
+                <input
+                  type="file"
+                  id="project-photo-upload"
+                  accept="image/*"
+                  class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                  Upload new image from your device
+                </p>
               </div>
-              <div class="mb-4">
+            </div>
+            <input type="hidden" id="project-photo-url" />
+          </div>
+
+          <div class="space-y-4 mb-4">
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="project-company-profile-url">Company Profile Folder Link (Google Drive)</label>
+                <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="project-company-profile-url" type="url" placeholder="https://drive.google.com/drive/folders/..." />
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="project-legal-doc-url">Legal Documents Folder Link (Google Drive)</label>
+                <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="project-legal-doc-url" type="url" placeholder="https://drive.google.com/drive/folders/..." />
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="project-financial-doc-url">Financial Documents Folder Link (Google Drive)</label>
+                <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="project-financial-doc-url" type="url" placeholder="https://drive.google.com/drive/folders/..." />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="project-summary"
+              >Summary (One-liner)</label
+            >
+            <input
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="project-summary"
+              type="text"
+              required
+            />
+          </div>
+
+          <div class="mb-4">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="project-description"
+              >Full Description</label
+            >
+            <textarea
+              class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+              id="project-description"
+              rows="5"
+              required
+            ></textarea>
+          </div>
+
+          <div class="mb-4">
+          <label
+            class="block text-gray-700 text-sm font-bold mb-2"
+            for="project-investment-ask"
+            >Investment Ask (Rp)</label
+          >
+          <input
+            class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+            id="project-investment-ask"
+            type="text"
+            required
+          />
+        </div>
+
+          <div id="admin-only-project-fields">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
-                  for="project-slot-price"
-                  >Price per Slot (Rp)</label
+                  for="project-due-date"
+                  >Due Date</label
                 >
                 <input
                   class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
-                  id="project-slot-price"
-                  type="text"
+                  id="project-due-date"
+                  type="date"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="project-total-slots"
+                  >Total Slots</label
+                >
+                <input
+                  class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                  id="project-total-slots"
+                  type="number"
+                  min="1"
                   required
                 />
               </div>
             </div>
-            <div class="flex justify-end space-x-4 mt-8">
-              <button
-                id="cancel-project-form"
-                type="button"
-                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            <div class="mb-4">
+              <label
+                class="block text-gray-700 text-sm font-bold mb-2"
+                for="project-slot-price"
+                >Price per Slot (Rp)</label
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
-              >
-                Save Project
-              </button>
+              <input
+                class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                id="project-slot-price"
+                type="text"
+                required
+              />
             </div>
-          </form>
-        </div>
+          </div>
+
+          <div class="flex justify-end space-x-4 mt-8">
+            <button
+              id="cancel-project-form"
+              type="button"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              Save Project
+            </button>
+          </div>
+        </form>
       </div>
+    </div>
 
     <div
       id="investment-details-modal"
@@ -2384,6 +2382,38 @@
     </form>
   </div>
 </div>
+
+<div
+      id="folder-viewer-modal"
+      class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-5xl h-full max-h-[90vh] p-4 m-4 flex flex-col"
+      >
+        <div class="flex justify-between items-center border-b pb-2 mb-4">
+          <h2 id="folder-viewer-title" class="text-2xl font-bold">
+            Folder Preview
+          </h2>
+          <button
+            id="close-folder-viewer-modal"
+            class="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:outline-none"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="flex-grow">
+          <iframe
+            id="folder-iframe"
+            src=""
+            class="w-full h-full"
+            frameborder="0"
+          ></iframe>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="script.js"></script>
   </body>

@@ -1972,12 +1972,10 @@ async function openProjectModal(projectId = null) {
   projectForm.reset();
   document.getElementById("project-id").value = "";
   
-  // --- NEW: Get form controls for read-only mode ---
   const allFormControls = projectForm.querySelectorAll('input, textarea, select');
   const saveButton = projectForm.querySelector('button[type="submit"]');
   const cancelButton = document.getElementById('cancel-project-form');
 
-  // Reset all controls to their default state
   allFormControls.forEach(control => control.disabled = false);
   saveButton.textContent = 'Save Project';
   saveButton.style.display = 'inline-flex';
@@ -1985,11 +1983,7 @@ async function openProjectModal(projectId = null) {
 
   const imagePreview = document.getElementById("project-image-preview");
   imagePreview.src = "https://placehold.co/100x100/e2e8f0/4a5568?text=Preview";
-  document.getElementById('company-profile-link-container').innerHTML = '';
-  document.getElementById('legal-doc-link-container').innerHTML = '';
-  document.getElementById('financial-doc-link-container').innerHTML = '';
-
-
+  
   const adminOnlyFields = document.getElementById('admin-only-project-fields');
   adminOnlyFields.style.display = (currentUserData.role === 'admin') ? 'block' : 'none';
   adminOnlyFields.querySelectorAll('input').forEach(input => input.required = (currentUserData.role === 'admin'));
@@ -2000,7 +1994,6 @@ async function openProjectModal(projectId = null) {
       const data = projectDoc.data();
       document.getElementById("project-modal-title").textContent = (currentUserData.role === 'analyst') ? `Viewing Details for: ${data.title}` : `Edit Project`;
       
-      // Populate all fields
       document.getElementById("project-id").value = projectId;
       document.getElementById("project-title").value = data.title;
       document.getElementById("project-photo-url").value = data.photoURL || '';
@@ -2009,18 +2002,10 @@ async function openProjectModal(projectId = null) {
       document.getElementById("project-description").value = data.description;
       document.getElementById('project-investment-ask').value = data.investmentAsk ? data.investmentAsk.toLocaleString("id-ID") : '';
 
-      if (data.companyProfileURL) {
-        document.getElementById('project-company-profile-url').value = data.companyProfileURL;
-        document.getElementById('company-profile-link-container').innerHTML = `<a href="${data.companyProfileURL}" target="_blank" class="text-blue-600 text-sm hover:underline">View Current Company Profile</a>`;
-      }
-      if (data.legalDocURL) {
-        document.getElementById('project-legal-doc-url').value = data.legalDocURL;
-        document.getElementById('legal-doc-link-container').innerHTML = `<a href="${data.legalDocURL}" target="_blank" class="text-blue-600 text-sm hover:underline">View Current Legal Document</a>`;
-      }
-      if (data.financialDocURL) {
-        document.getElementById('project-financial-doc-url').value = data.financialDocURL;
-        document.getElementById('financial-doc-link-container').innerHTML = `<a href="${data.financialDocURL}" target="_blank" class="text-blue-600 text-sm hover:underline">View Current Financial Document</a>`;
-      }
+      // MODIFICATION: Populate URL fields instead of file upload placeholders
+      document.getElementById('project-company-profile-url').value = data.companyProfileURL || '';
+      document.getElementById('project-legal-doc-url').value = data.legalDocURL || '';
+      document.getElementById('project-financial-doc-url').value = data.financialDocURL || '';
       
       if (data.dueDate) {
           document.getElementById('project-due-date').value = data.dueDate.toDate().toISOString().split("T")[0];
@@ -2032,11 +2017,10 @@ async function openProjectModal(projectId = null) {
           document.getElementById('project-slot-price').value = data.slotPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
       }
 
-      // --- NEW: Apply read-only mode for Analyst ---
       if (currentUserData.role === 'analyst') {
         allFormControls.forEach(control => control.disabled = true);
-        saveButton.textContent = 'Close'; // Change button text
-        cancelButton.style.display = 'none'; // Hide the original cancel button
+        saveButton.textContent = 'Close';
+        cancelButton.style.display = 'none';
       }
     }
   } else {
@@ -2044,6 +2028,110 @@ async function openProjectModal(projectId = null) {
   }
   projectModal.style.display = "flex";
 }
+
+
+projectForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const imageUploadInput = document.getElementById('project-photo-upload');
+    let projectId = document.getElementById('project-id').value;
+    
+    // Only show progress modal for image upload
+    const isUploadingImage = imageUploadInput.files[0];
+    if (isUploadingImage) {
+        showUploadProgressModal();
+    } else {
+        loadingSpinner.style.display = 'flex';
+    }
+
+    try {
+        // MODIFICATION: Get PDF links directly from the input fields
+        const projectData = {
+            title: document.getElementById('project-title').value,
+            summary: document.getElementById('project-summary').value,
+            description: document.getElementById('project-description').value,
+            investmentAsk: parseInt(document.getElementById('project-investment-ask').value.replace(/\./g, ''), 10),
+            companyProfileURL: document.getElementById('project-company-profile-url').value,
+            legalDocURL: document.getElementById('project-legal-doc-url').value,
+            financialDocURL: document.getElementById('project-financial-doc-url').value
+        };
+
+        let projectRef;
+
+        if (projectId) {
+            // Editing an existing project
+            projectRef = doc(db, "projects", projectId);
+        } else {
+            // Creating a new project
+            if (currentUserData.role === 'business-owner') {
+                projectData.ownerId = currentUser.uid;
+                projectData.ownerName = currentUserData.fullName;
+                projectData.status = 'Under Review';
+                projectData.statusHistory = [{
+                    status: 'Under Review',
+                    comments: 'Project proposed by Business Owner.',
+                    timestamp: Timestamp.now(),
+                    author: 'Business Owner'
+                }];
+                // Set default values
+                projectData.isVisible = false;
+                projectData.isFulfilled = false;
+            } else if (currentUserData.role === 'admin') {
+                projectData.status = 'Approved';
+                projectData.isVisible = true;
+                projectData.isFulfilled = false;
+            }
+            // Create doc to get ID
+            updateUploadStatus('Creating project record...');
+            projectRef = await addDoc(collection(db, "projects"), projectData);
+            projectId = projectRef.id; // Get new ID
+        }
+
+        // Handle image upload if a new one is provided
+        const urlsToUpdate = {};
+        if (isUploadingImage) {
+            updateUploadStatus('Uploading project image...');
+            const fullPath = `project_images/${projectId}/${Date.now()}_${imageUploadInput.files[0].name}`;
+            urlsToUpdate.photoURL = await uploadFileWithProgress(imageUploadInput.files[0], fullPath, updateProgressBar);
+        }
+
+        // Finalize the update
+        updateUploadStatus('Finalizing project details...');
+        // For editing, add all text fields to the update object
+        if (document.getElementById('project-id').value) {
+            Object.assign(urlsToUpdate, projectData);
+        }
+        
+        if (currentUserData.role === 'admin') {
+            urlsToUpdate.dueDate = Timestamp.fromDate(new Date(document.getElementById('project-due-date').value));
+            urlsToUpdate.totalSlots = parseInt(document.getElementById('project-total-slots').value, 10);
+            urlsToUpdate.slotPrice = parseInt(document.getElementById('project-slot-price').value.replace(/\./g, ''), 10);
+        }
+        
+        await updateDoc(projectRef, urlsToUpdate);
+        
+        // Success message
+        if (document.getElementById('project-id').value) {
+             showMessage("Project updated successfully.");
+        } else {
+             showMessage("Project proposed successfully. It is now under review by an admin.");
+        }
+        
+        projectModal.style.display = 'none';
+
+    } catch (error) {
+        console.error("Error saving project:", error);
+        if (!isUploadingImage) { 
+             showMessage("An error occurred while saving the project.");
+        }
+    } finally {
+        if (isUploadingImage) {
+            hideUploadProgressModal();
+        } else {
+            loadingSpinner.style.display = 'none';
+        }
+    }
+});
 
 projectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -3118,6 +3206,26 @@ document
     pdfViewerModal.style.display = "none";
     document.getElementById("pdf-iframe").src = "about:blank";
   });
+
+  const folderViewerModal = document.getElementById("folder-viewer-modal");
+document
+  .getElementById("close-folder-viewer-modal")
+  .addEventListener("click", () => {
+    folderViewerModal.style.display = "none";
+    document.getElementById("folder-iframe").src = "about:blank"; // Stop loading
+  });
+
+function openFolderViewerModal(folderUrl, folderTitle) {
+    const iframe = document.getElementById('folder-iframe');
+    const titleEl = document.getElementById('folder-viewer-title');
+    
+    titleEl.textContent = folderTitle;
+    
+    // Use the existing function to transform the URL into an embeddable format
+    iframe.src = transformGoogleDriveFolderLink(folderUrl);
+    
+    folderViewerModal.style.display = 'flex';
+}
   
 function openPdfViewerModal(pdfUrl, pdfTitle) {
     const iframe = document.getElementById('pdf-iframe');
@@ -4122,13 +4230,13 @@ async function openReviewProjectModal(projectId) {
     
     const docButtons = [];
     if (project.companyProfileURL) {
-        docButtons.push(`<button type="button" class="view-review-pdf-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-pdf-url="${project.companyProfileURL}" data-pdf-title="Company Profile: ${project.title}">View Company Profile</button>`);
+        docButtons.push(`<button type="button" class="view-folder-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-folder-url="${project.companyProfileURL}" data-folder-title="Company Profile: ${project.title}">View Company Profile</button>`);
     }
     if (project.legalDocURL) {
-        docButtons.push(`<button type="button" class="view-review-pdf-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-pdf-url="${project.legalDocURL}" data-pdf-title="Legal Document: ${project.title}">View Legal Doc</button>`);
+        docButtons.push(`<button type="button" class="view-folder-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-folder-url="${project.legalDocURL}" data-folder-title="Legal Document: ${project.title}">View Legal Doc</button>`);
     }
     if (project.financialDocURL) {
-        docButtons.push(`<button type="button" class="view-review-pdf-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-pdf-url="${project.financialDocURL}" data-pdf-title="Financial Document: ${project.title}">View Financial Doc</button>`);
+        docButtons.push(`<button type="button" class="view-folder-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-folder-url="${project.financialDocURL}" data-folder-title="Financial Document: ${project.title}">View Financial Doc</button>`);
     }
 
     if (docButtons.length > 0) {
@@ -4137,10 +4245,13 @@ async function openReviewProjectModal(projectId) {
     
     detailsContainer.innerHTML = detailsHTML;
     
-    detailsContainer.querySelectorAll('.view-review-pdf-btn').forEach(btn => {
+    // This listener now calls the new folder viewer modal function
+    detailsContainer.querySelectorAll('.view-folder-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const { pdfUrl, pdfTitle } = e.currentTarget.dataset;
-            openPdfViewerModal(pdfUrl, pdfTitle);
+            const { folderUrl, folderTitle } = e.currentTarget.dataset;
+            if (folderUrl) {
+                openFolderViewerModal(folderUrl, folderTitle);
+            }
         });
     });
     
