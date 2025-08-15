@@ -682,66 +682,72 @@ function listenToProjects() {
 
   const projectsRef = collection(db, "projects");
 
-  // Use a single listener on the entire collection and filter on the client-side.
-  // This is simpler and often more efficient for a moderate number of projects.
-  onSnapshot(projectsRef, (snapshot) => {
-    const allProjects = [];
+  onSnapshot(projectsRef, async (snapshot) => { // The callback is now async
+    const allVisibleProjects = [];
     snapshot.forEach(doc => {
         const project = { id: doc.id, ...doc.data() };
         
-        // 1. First, apply the basic filters to exclude inactive projects
+        // Exclude inactive projects
         if (!project.isVisible || project.isFulfilled || project.isFailed || project.isExpired) {
-            return; // Skip this project if it's not active
+            return;
         }
 
-        // 2. Next, determine if the current investor has permission to see it
+        // Determine if the current investor has permission to see it
         const assignedIds = project.assignedInvestorIds;
-        const isPublic = !assignedIds || assignedIds.length === 0; // Project is public if the assignment array is missing or empty
-        const isAssignedToMe = assignedIds && assignedIds.includes(currentUser.uid); // Project is specifically assigned to this investor
+        const isPublic = !assignedIds || assignedIds.length === 0;
+        const isAssignedToMe = assignedIds && assignedIds.includes(currentUser.uid);
 
-        // 3. Add the project to the list if it's public OR assigned to the user
         if (isPublic || isAssignedToMe) {
-            allProjects.push(project);
+            allVisibleProjects.push(project);
         }
     });
 
     const tableBody = document.getElementById("investor-projects-table-body");
     tableBody.innerHTML = ""; // Clear the table before rendering
 
-    if (allProjects.length === 0) {
-      const emptyListMessage =
-        '<tr><td colspan="5" class="text-center py-4 text-gray-500">No investment opportunities available at the moment.</td></tr>';
-      tableBody.innerHTML = emptyListMessage;
+    if (allVisibleProjects.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No investment opportunities available at the moment.</td></tr>';
       return;
     }
 
-    // 4. Render the filtered list of projects into the new table
-    allProjects.forEach((project) => {
-      const slotsTaken = Object.values(project.investors || {}).reduce(
-        (sum, slots) => sum + slots,
-        0
-      );
+    // Use a for...of loop to handle async fetching inside the loop
+    for (const project of allVisibleProjects) {
+      let companyName = 'N/A';
+      // Fetch the business owner's company name from the users collection
+      if (project.ownerId) {
+          try {
+              const ownerDoc = await getDoc(doc(db, "users", project.ownerId));
+              if (ownerDoc.exists()) {
+                  companyName = ownerDoc.data().companyName || 'N/A';
+              }
+          } catch (e) {
+              console.error("Could not fetch owner data for project:", project.id, e);
+          }
+      }
 
       const rowHTML = `
         <tr class="hover:bg-gray-50">
-            <td data-label="Project Title" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${project.title}</td>
-            <td data-label="Time Left" class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatCountdown(project.dueDate)}</td>
-            <td data-label="Price Per Slot" class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatRupiah(project.slotPrice)}</td>
-            <td data-label="Slots Available" class="py-4 px-6 text-gray-700 whitespace-nowrap">${slotsTaken} / ${project.totalSlots}</td>
-            <td data-label="Action" class="py-4 px-6 text-center">
-                <button data-id="${project.id}" class="view-details-btn bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-900 text-xs">View</button>
+            <td data-label="Title" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${project.title}</td>
+            <td data-label="Company Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${companyName}</td>
+            <td data-label="Investment Asked" class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatRupiah(project.investmentAsk || 0)}</td>
+            <td data-label="View Detail" class="py-4 px-6 text-center">
+                <button data-id="${project.id}" class="view-details-btn bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-900 text-xs">View Detail</button>
+            </td>
+            <td data-label="Interested" class="py-4 px-6 text-center">
+                <button data-id="${project.id}" class="interested-btn bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 text-xs">Interested</button>
             </td>
         </tr>
       `;
       tableBody.innerHTML += rowHTML;
-    });
+    }
 
-    // 5. Re-attach event listeners to the new "View" buttons
+    // Re-attach event listeners to the "View Detail" buttons
     document.querySelectorAll(".view-details-btn").forEach((button) => {
       button.addEventListener("click", () =>
         viewProjectDetails(button.dataset.id)
       );
     });
+    // The "Interested" button is a placeholder and has no listener yet.
   });
 }
 
