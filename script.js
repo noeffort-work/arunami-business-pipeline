@@ -76,6 +76,17 @@ const navbar = document.getElementById("navbar");
 const adminNavLinks = document.getElementById("admin-nav-links");
 const projectDetailModal = document.getElementById("project-detail-modal");
 const progressModal = document.getElementById("progress-modal");
+const uploadGuideModal = document.getElementById('upload-guide-modal');
+
+// Add these event listeners somewhere in your script
+document.getElementById('show-upload-guide-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    uploadGuideModal.style.display = 'flex';
+});
+
+document.getElementById('close-upload-guide-modal').addEventListener('click', () => {
+    uploadGuideModal.style.display = 'none';
+});
 
 // --- UI & NAVIGATION LOGIC ---
 

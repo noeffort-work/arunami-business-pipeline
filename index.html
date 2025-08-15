@@ -1404,6 +1404,33 @@
       <h2 id="project-modal-title" class="text-2xl font-bold mb-6">
         Create Project
       </h2>
+
+      <div class="mb-6 text-sm text-gray-600">
+        <button
+          type="button"
+          id="show-upload-guide-btn"
+          class="inline-flex items-center text-blue-600 hover:underline"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="mr-2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span>Don't know what to upload? Check the guide here.</span>
+        </button>
+      </div>
+      
       <input type="hidden" id="project-id" />
       <div class="mb-4">
         <label
@@ -2379,6 +2406,128 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+<div
+  id="upload-guide-modal"
+  class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-3xl p-6 m-4 flex flex-col"
+    style="max-height: 90vh"
+  >
+    <div class="flex justify-between items-center border-b pb-3 mb-4">
+      <h2 class="text-2xl font-bold">Document Upload Guide</h2>
+      <button
+        id="close-upload-guide-modal"
+        class="text-gray-500 hover:text-gray-800 text-3xl font-bold"
+      >
+        &times;
+      </button>
+    </div>
+    <div class="overflow-y-auto pr-4 text-gray-700">
+      <p class="mb-4 italic">
+        Please create the following folders in your Google Drive and upload the
+        relevant documents to each. Then, provide the shareable link for each
+        folder in the form.
+      </p>
+
+      <h3 class="text-xl font-semibold mt-6 mb-3 text-green-700">
+        Legal Folder
+      </h3>
+      <dl class="space-y-2 border-l-4 border-green-200 pl-4">
+        <dt class="font-semibold">Deed of Company Establishment</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Include any amendments, if applicable.
+        </dd>
+        <dt class="font-semibold">Business Identification Number (NIB)</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Or other business licenses.
+        </dd>
+        <dt class="font-semibold">Business License Certificate (SIUP)</dt>
+        <dd class="text-sm text-gray-600 pl-4">Or equivalent licenses.</dd>
+        <dt class="font-semibold">Company Registration Certificate (TDP)</dt>
+        <dt class="font-semibold">Special Permits</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          e.g., industrial permits, etc.
+        </dd>
+        <dt class="font-semibold">Shareholding Documents</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          List of shareholders, share purchase agreements, etc.
+        </dd>
+        <dt class="font-semibold">Important Agreements</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          e.g., joint ventures, partnerships, or third-party agreements.
+        </dd>
+      </dl>
+
+      <h3 class="text-xl font-semibold mt-6 mb-3 text-green-700">
+        Business Folder
+      </h3>
+      <dl class="space-y-2 border-l-4 border-green-200 pl-4">
+        <dt class="font-semibold">Organizational Structure</dt>
+        <dt class="font-semibold">Company Profile & Future Business Plan</dt>
+        <dt class="font-semibold">Business and Operational Processes</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Standard Operating Procedures (SOP).
+        </dd>
+        <dt class="font-semibold">Supply Chain Documents</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Supplier and distributor agreements.
+        </dd>
+        <dt class="font-semibold">Marketing and Sales Documents</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Marketing strategy, customer list, etc.
+        </dd>
+        <dt class="font-semibold">Client/Customer List</dt>
+      </dl>
+
+      <h3 class="text-xl font-semibold mt-6 mb-3 text-purple-700">
+        Finance Folder
+      </h3>
+      <dl class="space-y-2 border-l-4 border-purple-200 pl-4">
+        <dt class="font-semibold">Financial Statements</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Cash flow, balance sheet, income statement for the last 1-3 years.
+        </dd>
+        <dt class="font-semibold">Financial Projections</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Investment returns, revenue projection, cash flow projection, etc.
+        </dd>
+        <dt class="font-semibold">Tax Reports</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Annual SPT, PPN, PPh, etc.
+        </dd>
+        <dt class="font-semibold">Debt and Receivable Documents</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Loan agreements, credit letters, etc.
+        </dd>
+        <dt class="font-semibold">Company Assets</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          List of fixed assets, land certificates, vehicle ownership documents
+          (BPKB), etc.
+        </dd>
+      </dl>
+
+      <h3 class="text-xl font-semibold mt-6 mb-3 text-blue-700">
+        Other Folder
+      </h3>
+      <dl class="space-y-2 border-l-4 border-blue-200 pl-4">
+        <dt class="font-semibold">Legal Compliance Reports</dt>
+        <dd class="text-sm text-gray-600 pl-4">
+          Details of ongoing disputes, if any.
+        </dd>
+        <dt class="font-semibold">Environmental Impact Documents</dt>
+        <dd class="text-sm text-gray-600 pl-4">AMDAL, etc.</dd>
+        <dt class="font-semibold">Risk Management Policies & Procedures</dt>
+        <dt class="font-semibold">Intellectual Property Certificates</dt>
+        <dd class="text-sm text-gray-600 pl-4">Trademarks, patents, copyrights.</dd>
+        <dt class="font-semibold">Licenses</dt>
+        <dd class="text-sm text-gray-600 pl-4">If applicable.</dd>
+        <dt class="font-semibold">Technology Documents</dt>
+        <dd class="text-sm text-gray-600 pl-4">IT systems, software, hardware, etc.</dd>
+      </dl>
+    </div>
   </div>
 </div>
 
