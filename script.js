@@ -1209,13 +1209,73 @@ function renderAdminProjectsTable() {
     const approvedProjects = allAdminProjects.filter(p => p.status === 'Approved');
     const rejectedProjects = allAdminProjects.filter(p => p.status === 'Rejected');
     
-    // Render all six tables
+    // Render the first five tables which are the same for Admin and Analyst
     renderAdminProposalTable(underReviewProjects, underReviewBody, 'No new projects are awaiting review.');
     renderAdminProposalTable(needUpdateProjects, needUpdateBody, 'No projects currently need updates.');
     renderAdminProposalTable(resubmittedProjects, resubmittedBody, 'No projects have been resubmitted.');
     renderAdminProposalTable(assignedAnalystProjects, assignedAnalystBody, 'No projects are currently assigned to an analyst.');
-    renderAdminApprovedTable(approvedProjects, approvedBody);
     renderAdminProposalTable(rejectedProjects, rejectedBody, 'No projects have been rejected.');
+
+    // --- NEW LOGIC: Render the "Approved" table based on user role ---
+    const approvedThead = approvedBody.parentElement.querySelector('thead');
+
+    if (currentUserData.role === 'analyst') {
+        // --- Analyst View for Approved Table ---
+        approvedThead.innerHTML = `
+            <tr class="bg-gray-50">
+                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
+                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Owner</th>
+                <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        `;
+
+        if (approvedProjects.length === 0) {
+            approvedBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No projects have been approved.</td></tr>`;
+            return;
+        }
+
+        approvedProjects.forEach(project => {
+            const owner = allUsers.find(u => u.id === project.ownerId);
+            const companyName = owner ? owner.companyName || 'N/A' : 'N/A';
+            const ownerName = owner ? owner.fullName : 'N/A';
+
+            const row = `
+                <tr>
+                    <td data-label="Project" class="py-4 px-6 font-medium">${project.title}</td>
+                    <td data-label="Company Name" class="py-4 px-6">${companyName}</td>
+                    <td data-label="Business Owner" class="py-4 px-6">${ownerName}</td>
+                    <td class="py-4 px-6 whitespace-nowrap">
+                        <div class="flex items-center justify-center space-x-4">
+                             <button data-id="${project.id}" data-title="${project.title}" class="assign-investors-btn text-purple-600 hover:text-purple-900" title="Assign Investors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="m19 11-2-2-2 2"/></svg>
+                             </button>
+                             <button data-id="${project.id}" class="view-investment-details-btn text-blue-600 hover:text-blue-900" title="View Investment Details">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                             </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            approvedBody.innerHTML += row;
+        });
+
+        approvedBody.querySelectorAll('.assign-investors-btn').forEach(btn => btn.addEventListener('click', e => openAssignInvestorModal(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
+        approvedBody.querySelectorAll('.view-investment-details-btn').forEach(btn => btn.addEventListener('click', e => openInvestmentDetailsModal(e.currentTarget.dataset.id)));
+
+    } else {
+        // --- Admin View for Approved Table (Original Logic) ---
+        approvedThead.innerHTML = `
+             <tr class="bg-gray-50">
+                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Title</th>
+                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booked Slots</th>
+                <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified Slots</th>
+                <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Visibility</th>
+                <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        `;
+        renderAdminApprovedTable(approvedProjects, approvedBody);
+    }
 }
 
 function renderAdminProposalTable(projects, tableBody, emptyMessage) {
