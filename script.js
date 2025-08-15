@@ -779,7 +779,6 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
         
         const isClosed = project.dueDate.toDate() < new Date() || project.isFulfilled || project.isFailed || project.isExpired;
         const userSlots = project.investors?.[currentUser.uid] || 0;
-        const hasRequestedInfo = project.prospects?.[currentUser.uid];
 
         let bookingSectionHTML = '';
         if (context === 'portfolio') {
@@ -803,56 +802,29 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
             `;
         }
         
-        // --- MODIFICATION START ---
-        // This section is refactored to build the project documents with a "View" button.
+        // --- MODIFICATION: Build document section with folder links ---
         let documentsSectionHTML = '<h3 class="text-2xl font-semibold mb-4 border-b pb-2">Project Documents</h3>';
-        const publicDocs = [];
-        if (project.companyProfileURL) publicDocs.push({ title: 'Company Profile', url: project.companyProfileURL });
-        if (project.legalDocURL) publicDocs.push({ title: 'Legal Document', url: project.legalDocURL });
+        const docFolders = [];
+        if (project.businessFolderURL) docFolders.push({ title: 'Business Folder', url: project.businessFolderURL });
+        if (project.legalFolderURL) docFolders.push({ title: 'Legal Folder', url: project.legalFolderURL });
+        if (project.financeFolderURL) docFolders.push({ title: 'Finance Folder', url: project.financeFolderURL });
+        if (project.otherFolderURL) docFolders.push({ title: 'Other Folder', url: project.otherFolderURL });
 
-        if (publicDocs.length > 0) {
-            documentsSectionHTML += publicDocs.map(doc => `
+        if (docFolders.length > 0) {
+            documentsSectionHTML += docFolders.map(folder => `
                 <div class="flex justify-between items-center mb-2 p-3 bg-gray-50 rounded-md">
-                    <p class="font-semibold">${doc.title}</p>
+                    <p class="font-semibold">${folder.title}</p>
                     <button 
-                        data-pdf-url="${doc.url}" 
-                        data-pdf-title="${doc.title}: ${project.title}" 
-                        class="view-update-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-xs">
-                        View
+                        data-folder-url="${folder.url}" 
+                        data-folder-title="${folder.title}: ${project.title}" 
+                        class="view-folder-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-xs">
+                        View Folder
                     </button>
                 </div>
             `).join('');
+        } else {
+            documentsSectionHTML += '<p class="text-gray-500">No document folders have been provided for this project yet.</p>';
         }
-
-        // Handle confidential financial document separately
-        if (project.financialDocURL) {
-            const hasAccess = hasRequestedInfo || currentUserData.role === 'admin' || currentUserData.role === 'analyst';
-            if (hasAccess) {
-                documentsSectionHTML += `
-                    <div class="flex justify-between items-center mb-2 p-3 bg-gray-50 rounded-md">
-                        <p class="font-semibold">Financial Document (Confidential)</p>
-                        <button 
-                            data-pdf-url="${project.financialDocURL}" 
-                            data-pdf-title="Financial Document: ${project.title}" 
-                            class="view-update-pdf-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-lg text-xs">
-                            View
-                        </button>
-                    </div>
-                `;
-            } else {
-                documentsSectionHTML += `
-                    <div class="mt-4 text-center border-t pt-4">
-                        <p class="text-gray-600 mb-2">Confidential financial documents are available upon request.</p>
-                        <button id="request-info-btn" data-id="${projectId}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Request Access</button>
-                    </div>
-                `;
-            }
-        }
-
-        if (publicDocs.length === 0 && !project.financialDocURL) {
-            documentsSectionHTML += '<p class="text-gray-500">No documents have been uploaded for this project yet.</p>';
-        }
-        // --- MODIFICATION END ---
 
         // Add Due Diligence Reports section
         documentsSectionHTML += '<h3 class="text-2xl font-semibold mt-8 mb-4 border-b pb-2">Due Diligence Reports</h3>';
@@ -904,24 +876,27 @@ async function viewProjectDetails(projectId, context = 'dashboard') {
         
         projectDetailModal.style.display = 'flex';
 
-        // --- ATTACH ALL EVENT LISTENERS FOR THE MODAL CONTENT ---
         document.getElementById('back-to-dashboard-btn').addEventListener('click', () => {
             projectDetailModal.style.display = 'none';
         });
-        
-        if (!hasRequestedInfo && project.financialDocURL) {
-            document.getElementById('request-info-btn')?.addEventListener('click', (e) => showNdaModal(e.target.dataset.id));
-        }
 
         if (!isClosed && context !== 'portfolio') {
             document.getElementById('booking-form')?.addEventListener('submit', handleBooking);
         }
         
-        // This ensures ALL "View" buttons in the modal work correctly
         projectDetailModalContent.querySelectorAll('.view-update-pdf-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const { pdfUrl, pdfTitle } = e.currentTarget.dataset;
                 openPdfViewerModal(pdfUrl, pdfTitle);
+            });
+        });
+
+        // New listener for folder buttons
+        projectDetailModalContent.querySelectorAll('.view-folder-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const { folderUrl, folderTitle } = e.currentTarget.dataset;
+                const embedUrl = transformGoogleDriveFolderLink(folderUrl);
+                openPdfViewerModal(embedUrl, folderTitle); // Re-using the same modal
             });
         });
 
@@ -1222,7 +1197,7 @@ function renderAdminProjectsTable() {
     renderAdminProposalTable(assignedAnalystProjects, assignedAnalystBody, 'No projects are currently assigned to an analyst.');
     renderAdminProposalTable(rejectedProjects, rejectedBody, 'No projects have been rejected.');
 
-    // --- NEW LOGIC: Render the "Approved" table based on user role ---
+    // Render the "Approved" table based on user role
     const approvedThead = approvedBody.parentElement.querySelector('thead');
 
     if (currentUserData.role === 'analyst') {
@@ -1256,6 +1231,9 @@ function renderAdminProjectsTable() {
                              <button data-id="${project.id}" data-title="${project.title}" class="assign-investors-btn text-purple-600 hover:text-purple-900" title="Assign Investors">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="m19 11-2-2-2 2"/></svg>
                              </button>
+                             <button data-id="${project.id}" data-title="${project.title}" class="due-diligence-btn text-green-600 hover:text-green-900" title="Add Due Diligence Report">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                             </button>
                              <button data-id="${project.id}" class="view-investment-details-btn text-blue-600 hover:text-blue-900" title="View Investment Details">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                              </button>
@@ -1267,6 +1245,7 @@ function renderAdminProjectsTable() {
         });
 
         approvedBody.querySelectorAll('.assign-investors-btn').forEach(btn => btn.addEventListener('click', e => openAssignInvestorModal(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
+        approvedBody.querySelectorAll('.due-diligence-btn').forEach(btn => btn.addEventListener('click', e => openDueDiligenceModal(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
         approvedBody.querySelectorAll('.view-investment-details-btn').forEach(btn => btn.addEventListener('click', e => openInvestmentDetailsModal(e.currentTarget.dataset.id)));
 
     } else {
@@ -1308,11 +1287,12 @@ function renderAdminProposalTable(projects, tableBody, emptyMessage) {
             customColumns = `<td data-label="Analyst In Charge" class="py-4 px-6 font-medium">${project.assignedAnalystName || 'N/A'}</td>`;
         }
         
-        // --- NEW LOGIC: Generate role-specific action buttons ---
+        // --- LOGIC: Generate role-specific action buttons ---
         let actionsHTML = '';
         if (currentUserData.role === 'analyst' && project.status === 'Assigned to Analyst') {
             actionsHTML = `
                 <div class="flex items-center justify-center space-x-2">
+                    <button data-id="${project.id}" class="view-project-details-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded-lg text-xs">View Details</button>
                     <button data-id="${project.id}" data-title="${project.title}" class="analyst-approve-btn bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-lg text-xs">Approve</button>
                     <button data-id="${project.id}" data-title="${project.title}" class="analyst-reject-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-lg text-xs">Reject</button>
                     <button data-project-id="${project.id}" class="toggle-admin-history-btn text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-3 rounded-md">History</button>
@@ -1383,6 +1363,9 @@ function renderAdminProposalTable(projects, tableBody, emptyMessage) {
     tableBody.querySelectorAll('.due-diligence-btn').forEach(btn => btn.addEventListener('click', (e) => openDueDiligenceModal(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
     tableBody.querySelectorAll('.analyst-approve-btn').forEach(btn => btn.addEventListener('click', (e) => handleAnalystApprove(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
     tableBody.querySelectorAll('.analyst-reject-btn').forEach(btn => btn.addEventListener('click', (e) => handleAnalystReject(e.currentTarget.dataset.id, e.currentTarget.dataset.title)));
+    
+    // Add the new listener for the view details button
+    tableBody.querySelectorAll('.view-project-details-btn').forEach(btn => btn.addEventListener('click', (e) => viewProjectDetails(e.currentTarget.dataset.id)));
 }
 
 // --- NEW ANALYST ACTION HANDLERS ---
@@ -2038,12 +2021,10 @@ async function openProjectModal(projectId = null) {
   projectForm.reset();
   document.getElementById("project-id").value = "";
   
-  // --- NEW: Get form controls for read-only mode ---
   const allFormControls = projectForm.querySelectorAll('input, textarea, select');
   const saveButton = projectForm.querySelector('button[type="submit"]');
   const cancelButton = document.getElementById('cancel-project-form');
 
-  // Reset all controls to their default state
   allFormControls.forEach(control => control.disabled = false);
   saveButton.textContent = 'Save Project';
   saveButton.style.display = 'inline-flex';
@@ -2051,10 +2032,11 @@ async function openProjectModal(projectId = null) {
 
   const imagePreview = document.getElementById("project-image-preview");
   imagePreview.src = "https://placehold.co/100x100/e2e8f0/4a5568?text=Preview";
-  document.getElementById('company-profile-link-container').innerHTML = '';
-  document.getElementById('legal-doc-link-container').innerHTML = '';
-  document.getElementById('financial-doc-link-container').innerHTML = '';
-
+  
+  // Clear old PDF link containers if they exist from a previous version
+  document.getElementById('company-profile-link-container')?.remove();
+  document.getElementById('legal-doc-link-container')?.remove();
+  document.getElementById('financial-doc-link-container')?.remove();
 
   const adminOnlyFields = document.getElementById('admin-only-project-fields');
   adminOnlyFields.style.display = (currentUserData.role === 'admin') ? 'block' : 'none';
@@ -2066,7 +2048,6 @@ async function openProjectModal(projectId = null) {
       const data = projectDoc.data();
       document.getElementById("project-modal-title").textContent = (currentUserData.role === 'analyst') ? `Viewing Details for: ${data.title}` : `Edit Project`;
       
-      // Populate all fields
       document.getElementById("project-id").value = projectId;
       document.getElementById("project-title").value = data.title;
       document.getElementById("project-photo-url").value = data.photoURL || '';
@@ -2075,18 +2056,11 @@ async function openProjectModal(projectId = null) {
       document.getElementById("project-description").value = data.description;
       document.getElementById('project-investment-ask').value = data.investmentAsk ? data.investmentAsk.toLocaleString("id-ID") : '';
 
-      if (data.companyProfileURL) {
-        document.getElementById('project-company-profile-url').value = data.companyProfileURL;
-        document.getElementById('company-profile-link-container').innerHTML = `<a href="${data.companyProfileURL}" target="_blank" class="text-blue-600 text-sm hover:underline">View Current Company Profile</a>`;
-      }
-      if (data.legalDocURL) {
-        document.getElementById('project-legal-doc-url').value = data.legalDocURL;
-        document.getElementById('legal-doc-link-container').innerHTML = `<a href="${data.legalDocURL}" target="_blank" class="text-blue-600 text-sm hover:underline">View Current Legal Document</a>`;
-      }
-      if (data.financialDocURL) {
-        document.getElementById('project-financial-doc-url').value = data.financialDocURL;
-        document.getElementById('financial-doc-link-container').innerHTML = `<a href="${data.financialDocURL}" target="_blank" class="text-blue-600 text-sm hover:underline">View Current Financial Document</a>`;
-      }
+      // Populate new folder URL fields
+      document.getElementById('project-legal-folder').value = data.legalFolderURL || '';
+      document.getElementById('project-business-folder').value = data.businessFolderURL || '';
+      document.getElementById('project-finance-folder').value = data.financeFolderURL || '';
+      document.getElementById('project-other-folder').value = data.otherFolderURL || '';
       
       if (data.dueDate) {
           document.getElementById('project-due-date').value = data.dueDate.toDate().toISOString().split("T")[0];
@@ -2098,11 +2072,10 @@ async function openProjectModal(projectId = null) {
           document.getElementById('project-slot-price').value = data.slotPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
       }
 
-      // --- NEW: Apply read-only mode for Analyst ---
       if (currentUserData.role === 'analyst') {
         allFormControls.forEach(control => control.disabled = true);
-        saveButton.textContent = 'Close'; // Change button text
-        cancelButton.style.display = 'none'; // Hide the original cancel button
+        saveButton.textContent = 'Close';
+        cancelButton.style.display = 'none';
       }
     }
   } else {
@@ -2115,15 +2088,10 @@ projectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const imageUploadInput = document.getElementById('project-photo-upload');
-    const companyProfileUploadInput = document.getElementById('project-company-profile-upload');
-    const legalDocUploadInput = document.getElementById('project-legal-doc-upload');
-    const financialDocUploadInput = document.getElementById('project-financial-doc-upload');
-    
     let projectId = document.getElementById('project-id').value;
     
-    // Show progress modal if any file is being uploaded
-    const filesToUpload = [imageUploadInput, companyProfileUploadInput, legalDocUploadInput, financialDocUploadInput].some(input => input.files[0]);
-    if (filesToUpload) {
+    // Show progress modal only if the project photo is being uploaded
+    if (imageUploadInput.files[0]) {
         showUploadProgressModal();
     } else {
         loadingSpinner.style.display = 'flex';
@@ -2134,17 +2102,19 @@ projectForm.addEventListener('submit', async (e) => {
             title: document.getElementById('project-title').value,
             summary: document.getElementById('project-summary').value,
             description: document.getElementById('project-description').value,
-            investmentAsk: parseInt(document.getElementById('project-investment-ask').value.replace(/\./g, ''), 10)
+            investmentAsk: parseInt(document.getElementById('project-investment-ask').value.replace(/\./g, ''), 10),
+            // Add the new folder URLs
+            legalFolderURL: document.getElementById('project-legal-folder').value,
+            businessFolderURL: document.getElementById('project-business-folder').value,
+            financeFolderURL: document.getElementById('project-finance-folder').value,
+            otherFolderURL: document.getElementById('project-other-folder').value,
         };
 
-        // --- NEW LOGIC: Handle project creation and editing differently ---
         let projectRef;
         if (projectId) {
-            // We are EDITING an existing project
             projectRef = doc(db, "projects", projectId);
         } else {
-            // We are CREATING a new project
-            // Set owner and initial status fields first
+            // Set owner and initial status for new projects
             if (currentUserData.role === 'business-owner') {
                 projectData.ownerId = currentUser.uid;
                 projectData.ownerName = currentUserData.fullName;
@@ -2155,7 +2125,6 @@ projectForm.addEventListener('submit', async (e) => {
                     timestamp: Timestamp.now(),
                     author: 'Business Owner'
                 }];
-                // Set default values for fields not on the BO form
                 projectData.isVisible = false;
                 projectData.isFulfilled = false;
                 projectData.isFailed = false;
@@ -2165,7 +2134,6 @@ projectForm.addEventListener('submit', async (e) => {
                 projectData.dueDate = Timestamp.now(); 
             } else if (currentUserData.role === 'admin') {
                 projectData.status = 'Approved';
-                // Add admin-specific fields
                 projectData.dueDate = Timestamp.fromDate(new Date(document.getElementById('project-due-date').value));
                 projectData.totalSlots = parseInt(document.getElementById('project-total-slots').value, 10);
                 projectData.slotPrice = parseInt(document.getElementById('project-slot-price').value.replace(/\./g, ''), 10);
@@ -2177,41 +2145,21 @@ projectForm.addEventListener('submit', async (e) => {
                 projectData.isVisible = true;
             }
             
-            // Create the document in Firestore to get the ID
             updateUploadStatus('Creating project record...');
             projectRef = await addDoc(collection(db, "projects"), projectData);
-            projectId = projectRef.id; // Get the newly created project ID
+            projectId = projectRef.id;
         }
 
-        // --- UPLOAD FILES using the now-guaranteed projectId ---
         const urlsToUpdate = {};
         if (imageUploadInput.files[0]) {
             updateUploadStatus('Uploading project image...');
             const fullPath = `project_images/${projectId}/${Date.now()}_${imageUploadInput.files[0].name}`;
             urlsToUpdate.photoURL = await uploadFileWithProgress(imageUploadInput.files[0], fullPath, updateProgressBar);
         }
-        if (companyProfileUploadInput.files[0]) {
-            updateUploadStatus('Uploading company profile...');
-            const fullPath = `company_profiles/${projectId}/${Date.now()}_${companyProfileUploadInput.files[0].name}`;
-            urlsToUpdate.companyProfileURL = await uploadFileWithProgress(companyProfileUploadInput.files[0], fullPath, updateProgressBar);
-        }
-        if (legalDocUploadInput.files[0]) {
-            updateUploadStatus('Uploading legal document...');
-            const fullPath = `legal_docs/${projectId}/${Date.now()}_${legalDocUploadInput.files[0].name}`;
-            urlsToUpdate.legalDocURL = await uploadFileWithProgress(legalDocUploadInput.files[0], fullPath, updateProgressBar);
-        }
-        if (financialDocUploadInput.files[0]) {
-            updateUploadStatus('Uploading financial document...');
-            const fullPath = `financial_docs/${projectId}/${Date.now()}_${financialDocUploadInput.files[0].name}`;
-            urlsToUpdate.financialDocURL = await uploadFileWithProgress(financialDocUploadInput.files[0], fullPath, updateProgressBar);
-        }
 
-        // --- UPDATE a final time with URLs and text fields for editing mode ---
         updateUploadStatus('Finalizing project details...');
-        // For editing, add the text fields to the update object
-        if (document.getElementById('project-id').value) {
+        if (document.getElementById('project-id').value) { // If editing, merge text data
             Object.assign(urlsToUpdate, projectData);
-            // Include admin-only fields if the user is an admin
             if (currentUserData.role === 'admin') {
                 urlsToUpdate.dueDate = Timestamp.fromDate(new Date(document.getElementById('project-due-date').value));
                 urlsToUpdate.totalSlots = parseInt(document.getElementById('project-total-slots').value, 10);
@@ -2221,7 +2169,6 @@ projectForm.addEventListener('submit', async (e) => {
         
         await updateDoc(projectRef, urlsToUpdate);
         
-        // Final success message
         if (document.getElementById('project-id').value) {
              showMessage("Project updated successfully.");
         } else {
@@ -2232,12 +2179,11 @@ projectForm.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error("Error saving project:", error);
-        // Ensure the general error message is shown if uploads failed
-        if (!filesToUpload) { 
+        if (!imageUploadInput.files[0]) { 
              showMessage("An error occurred while saving the project.");
         }
     } finally {
-        if (filesToUpload) {
+        if (imageUploadInput.files[0]) {
             hideUploadProgressModal();
         } else {
             loadingSpinner.style.display = 'none';
@@ -4187,15 +4133,18 @@ async function openReviewProjectModal(projectId) {
     `;
     
     const docButtons = [];
-    if (project.companyProfileURL) {
-        docButtons.push(`<button type="button" class="view-review-pdf-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-pdf-url="${project.companyProfileURL}" data-pdf-title="Company Profile: ${project.title}">View Company Profile</button>`);
-    }
-    if (project.legalDocURL) {
-        docButtons.push(`<button type="button" class="view-review-pdf-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-pdf-url="${project.legalDocURL}" data-pdf-title="Legal Document: ${project.title}">View Legal Doc</button>`);
-    }
-    if (project.financialDocURL) {
-        docButtons.push(`<button type="button" class="view-review-pdf-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-pdf-url="${project.financialDocURL}" data-pdf-title="Financial Document: ${project.title}">View Financial Doc</button>`);
-    }
+    const folders = [
+        { title: 'Business Folder', url: project.businessFolderURL },
+        { title: 'Legal Folder', url: project.legalFolderURL },
+        { title: 'Finance Folder', url: project.financeFolderURL },
+        { title: 'Other Folder', url: project.otherFolderURL },
+    ];
+
+    folders.forEach(folder => {
+        if (folder.url) {
+            docButtons.push(`<button type="button" class="view-review-folder-btn text-white bg-gray-700 hover:bg-gray-800 font-medium rounded-lg text-sm px-4 py-2 mr-2 mb-2" data-folder-url="${folder.url}" data-folder-title="${folder.title}: ${project.title}">View ${folder.title}</button>`);
+        }
+    });
 
     if (docButtons.length > 0) {
         detailsHTML += `<div class="mt-4 border-t pt-4">${docButtons.join('')}</div>`;
@@ -4203,10 +4152,11 @@ async function openReviewProjectModal(projectId) {
     
     detailsContainer.innerHTML = detailsHTML;
     
-    detailsContainer.querySelectorAll('.view-review-pdf-btn').forEach(btn => {
+    detailsContainer.querySelectorAll('.view-review-folder-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const { pdfUrl, pdfTitle } = e.currentTarget.dataset;
-            openPdfViewerModal(pdfUrl, pdfTitle);
+            const { folderUrl, folderTitle } = e.currentTarget.dataset;
+            const embedUrl = transformGoogleDriveFolderLink(folderUrl);
+            openPdfViewerModal(embedUrl, folderTitle); // Re-using the same modal
         });
     });
     
