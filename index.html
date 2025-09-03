@@ -1023,313 +1023,113 @@
         </div>
 
         <div id="investment-report-section" class="page-section">
-          <h1 class="text-2xl md:text-3xl font-bold mb-6">
-            Investment Workflow
-          </h1>
+  <h1 class="text-2xl md:text-3xl font-bold mb-6">Investment Workflow</h1>
 
-          <div class="mb-12">
-            <h2 class="text-xl md:text-2xl font-semibold mb-4">
-              Prospects (Requested Information)
-            </h2>
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-              <div class="overflow-x-auto">
-                <table class="min-w-full bg-white responsive-table">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Project
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Prospect Name
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Prospect Email
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Date Requested
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    id="prospects-table-body"
-                    class="divide-y divide-gray-200 md:divide-y-0"
-                  ></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+  <div class="mb-12">
+    <h2 class="text-xl md:text-2xl font-semibold mb-4">
+      Interested Investors
+    </h2>
+    <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white responsive-table">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Project
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Investor
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Email
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Phone
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Date Interested
+              </th>
+              <th
+                class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Contacted
+              </th>
+              <th
+                class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            id="interested-table-body"
+            class="divide-y divide-gray-200 md:divide-y-0"
+          >
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-          <div class="mb-12">
-            <h2 class="text-xl md:text-2xl font-semibold mb-4">New Booking</h2>
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-              <div class="overflow-x-auto">
-                <table class="min-w-full bg-white responsive-table">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Project
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor Email
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Phone
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Slots
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Amount
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Date Booked
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Contacted
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    id="new-booking-table-body"
-                    class="divide-y divide-gray-200 md:divide-y-0"
-                  ></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-12">
-            <h2 class="text-xl md:text-2xl font-semibold mb-4">
-              Contacted Investors (Awaiting Payment)
-            </h2>
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-              <div class="overflow-x-auto">
-                <table class="min-w-full bg-white responsive-table">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Project
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor Email
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Phone
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Slots
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Amount
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Date Contacted
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Contacted
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Payment Verified
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Cancelled
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    id="contacted-investors-table-body"
-                    class="divide-y divide-gray-200 md:divide-y-0"
-                  ></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-12">
-            <h2 class="text-xl md:text-2xl font-semibold mb-4">
-              Cancelled Bookings
-            </h2>
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-              <div class="overflow-x-auto">
-                <table class="min-w-full bg-white responsive-table">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Project
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor Email
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Slots
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Date Cancelled
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    id="cancelled-booking-table-body"
-                    class="divide-y divide-gray-200 md:divide-y-0"
-                  ></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-12">
-            <div
-              class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4"
-            >
-              <h2 class="text-xl md:text-2xl font-semibold">
-                Verified Investments
-              </h2>
-              <div>
-                <label for="verified-project-filter" class="sr-only"
-                  >Filter by project:</label
-                >
-                <select
-                  id="verified-project-filter"
-                  class="w-full sm:w-auto h-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
-                >
-                  <option value="all">Filter by Project</option>
-                </select>
-              </div>
-            </div>
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
-              <div class="overflow-x-auto">
-                <table class="min-w-full bg-white responsive-table">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Project
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Investor Email
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Phone
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Slots
-                      </th>
-                      <th
-                        class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Amount
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Payment Verified
-                      </th>
-                      <th
-                        class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    id="verified-investments-table-body"
-                    class="divide-y divide-gray-200 md:divide-y-0"
-                  ></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div class="mb-12">
+    <h2 class="text-xl md:text-2xl font-semibold mb-4">Contacted Investors</h2>
+    <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white responsive-table">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Project
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Investor
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Email
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Phone
+              </th>
+              <th
+                class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Date Contacted
+              </th>
+              <th
+                class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            id="contacted-table-body"
+            class="divide-y divide-gray-200 md:divide-y-0"
+          >
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
         <div id="admin-logs-section" class="page-section">
           <h1 class="text-2xl md:text-3xl font-bold mb-6">
             Admin Activity Logs
@@ -2113,7 +1913,7 @@
     <div class="flex justify-between items-center mt-8">
       <div>
         <div class="flex justify-between items-center mt-8">
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 hidden">
               <button
                 id="approve-project-btn"
                 type="button"
@@ -2133,7 +1933,7 @@
               <button
                 id="cancel-review-project-form"
                 type="button"
-                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hidden"
               >
                 Cancel
               </button>

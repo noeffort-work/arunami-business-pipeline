@@ -55,6 +55,7 @@ let projectsListenerUnsubscribe = null;
 let userDocListenerUnsubscribe = null;
 let reportData = { investments: [], prospects: [] };
 let tempUserDataForDisclaimer = null;
+let isResubmitFlowActive = false;
 
 try {
   app = initializeApp(firebaseConfig);
@@ -158,12 +159,6 @@ document
   .addEventListener("click", (e) => {
     e.preventDefault();
     showPage("investment-report-section");
-  });
-
-document
-  .getElementById("verified-project-filter")
-  .addEventListener("change", () => {
-    renderInvestmentReportTable();
   });
 
 // Click-based dropdown logic
@@ -344,6 +339,11 @@ document.getElementById('cancel-bo-update-form').addEventListener('click', () =>
 
 document.getElementById('bo-edit-project-btn').addEventListener('click', () => {
     const projectId = document.getElementById('bo-update-project-id').value;
+    const boUpdateModal = document.getElementById('business-owner-update-modal');
+    
+    // Set the flag and swap the modals
+    isResubmitFlowActive = true;
+    boUpdateModal.style.display = 'none'; 
     openProjectModal(projectId);
 });
 
@@ -698,12 +698,10 @@ function listenToProjects() {
     snapshot.forEach(doc => {
         const project = { id: doc.id, ...doc.data() };
         
-        // Exclude inactive projects
         if (!project.isVisible || project.isFulfilled || project.isFailed || project.isExpired) {
             return;
         }
 
-        // Determine if the current investor has permission to see it
         const assignedIds = project.assignedInvestorIds;
         const isPublic = !assignedIds || assignedIds.length === 0;
         const isAssignedToMe = assignedIds && assignedIds.includes(currentUser.uid);
@@ -714,17 +712,15 @@ function listenToProjects() {
     });
 
     const tableBody = document.getElementById("investor-projects-table-body");
-    tableBody.innerHTML = ""; // Clear the table before rendering
+    tableBody.innerHTML = ""; 
 
     if (allVisibleProjects.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No investment opportunities available at the moment.</td></tr>';
       return;
     }
 
-    // Use a for...of loop to handle async fetching inside the loop
     for (const project of allVisibleProjects) {
       let companyName = 'N/A';
-      // Fetch the business owner's company name from the users collection
       if (project.ownerId) {
           try {
               const ownerDoc = await getDoc(doc(db, "users", project.ownerId));
@@ -732,35 +728,59 @@ function listenToProjects() {
                   companyName = ownerDoc.data().companyName || 'N/A';
               }
           } catch (e) {
-              console.error("Could not fetch owner data for project:", project.id, e);
+              // This error is expected if using restrictive rules. We can ignore it here.
           }
       }
+
+      // --- NEW LOGIC START ---
+      const hasShownInterest = project.prospects && project.prospects[currentUser.uid];
+      let interestedButtonHTML = '';
+
+      if (hasShownInterest) {
+          interestedButtonHTML = `
+              <button class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg text-xs cursor-not-allowed" disabled>
+                  Interest Expressed
+              </button>
+          `;
+      } else {
+          interestedButtonHTML = `
+              <button data-id="${project.id}" class="interested-btn bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 text-xs">
+                  Interested
+              </button>
+          `;
+      }
+      // --- NEW LOGIC END ---
 
       const rowHTML = `
         <tr class="hover:bg-gray-50">
             <td data-label="Title" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${project.title}</td>
-            <td data-label="Company Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${companyName}</td>
+            <td data-label="Company Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${project.companyName || companyName}</td>
             <td data-label="Investment Asked" class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatRupiah(project.investmentAsk || 0)}</td>
             <td data-label="View Detail" class="py-4 px-6 text-center">
                 <button data-id="${project.id}" class="view-details-btn bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-900 text-xs">View Detail</button>
             </td>
             <td data-label="Interested" class="py-4 px-6 text-center">
-                <button data-id="${project.id}" class="interested-btn bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 text-xs">Interested</button>
+                ${interestedButtonHTML}
             </td>
         </tr>
       `;
       tableBody.innerHTML += rowHTML;
     }
 
-    // Re-attach event listeners to the "View Detail" buttons
     document.querySelectorAll(".view-details-btn").forEach((button) => {
       button.addEventListener("click", () =>
         viewProjectDetails(button.dataset.id)
       );
     });
-    // The "Interested" button is a placeholder and has no listener yet.
+    
+    document.querySelectorAll(".interested-btn").forEach((button) => {
+      button.addEventListener("click", () =>
+        handleInterestedClick(button.dataset.id)
+      );
+    });
   });
 }
+
 
 function transformGoogleDriveLink(url) {
   if (!url) return "";
@@ -1675,113 +1695,57 @@ function renderAdminUsersTable(roleFilter = 'all') {
     document.querySelectorAll('.delete-user-btn').forEach(btn => btn.addEventListener('click', (e) => deleteUser(e.currentTarget.dataset.id, e.currentTarget.dataset.name)));
 }
 
-async function renderInvestmentReportTable() {
-    const { investments, prospects } = reportData;
-    const projectIdFilter = document.getElementById('verified-project-filter').value;
+function renderInvestmentReportTable() {
+    const { interested = [], contacted = [] } = reportData;
 
-    const newBookingBody = document.getElementById('new-booking-table-body');
-    const contactedBody = document.getElementById('contacted-investors-table-body');
-    const cancelledBody = document.getElementById('cancelled-booking-table-body');
-    const verifiedBody = document.getElementById('verified-investments-table-body');
-    const prospectsBody = document.getElementById('prospects-table-body');
+    const interestedBody = document.getElementById('interested-table-body');
+    const contactedBody = document.getElementById('contacted-table-body');
     
-    newBookingBody.innerHTML = '';
+    interestedBody.innerHTML = '';
     contactedBody.innerHTML = '';
-    cancelledBody.innerHTML = '';
-    verifiedBody.innerHTML = '';
-    prospectsBody.innerHTML = '';
 
-    const activeInvestments = investments.filter(inv => !inv.cancelled);
-    const cancelledBookings = investments.filter(inv => inv.cancelled);
-
-    const newBookings = activeInvestments.filter(inv => !inv.contacted && !inv.paymentVerified);
-    const contacted = activeInvestments.filter(inv => inv.contacted && !inv.paymentVerified);
-    let verified = activeInvestments.filter(inv => inv.paymentVerified);
-
-    if (projectIdFilter !== 'all') {
-        verified = verified.filter(inv => inv.projectId === projectIdFilter);
-    }
-
-    if (prospects.length === 0) {
-        prospectsBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No prospects yet.</td></tr>';
+    // Render Interested Table
+    if (interested.length === 0) {
+        interestedBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No investors have expressed interest yet.</td></tr>';
     } else {
-        prospects.forEach(prospect => {
+        interested.forEach(item => {
             const row = `
                 <tr>
-                    <td data-label="Project" class="py-4 px-6 whitespace-nowrap"><a href="#" class="view-project-link text-blue-600 hover:underline" data-id="${prospect.projectId}">${prospect.projectName}</a></td>
-                    <td data-label="Prospect Name" class="py-4 px-6 whitespace-nowrap">${prospect.prospectName}</td>
-                    <td data-label="Prospect Email" class="py-4 px-6 whitespace-nowrap"><a href="mailto:${prospect.prospectEmail}" class="text-blue-600 hover:underline">${prospect.prospectEmail}</a></td>
-                    <td data-label="Date Requested" class="py-4 px-6 whitespace-nowrap">${formatDetailedTimestamp(prospect.requestedAt)}</td>
+                    <td data-label="Project" class="py-4 px-6 whitespace-nowrap">${item.projectName}</td>
+                    <td data-label="Investor" class="py-4 px-6 whitespace-nowrap">${item.prospectName}</td>
+                    <td data-label="Email" class="py-4 px-6 whitespace-nowrap"><a href="mailto:${item.prospectEmail}" class="text-blue-600 hover:underline">${item.prospectEmail}</a></td>
+                    <td data-label="Phone" class="py-4 px-6 whitespace-nowrap"><a href="${formatWhatsAppLink(item.prospectPhone)}" target="_blank" class="text-blue-600 hover:underline">${item.prospectPhone}</a></td>
+                    <td data-label="Date Interested" class="py-4 px-6 whitespace-nowrap">${formatDetailedTimestamp(item.interestedAt)}</td>
+                    <td data-label="Contacted" class="py-4 px-6 text-center">
+                        <input type="checkbox" class="contacted-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
+                               data-project-id="${item.projectId}" data-prospect-id="${item.prospectId}">
+                    </td>
                     <td data-label="Actions" class="py-4 px-6 text-center">
-                        <button data-project-id="${prospect.projectId}" data-prospect-id="${prospect.prospectId}" data-project-name="${prospect.projectName}" data-prospect-name="${prospect.prospectName}" class="delete-prospect-btn p-1 text-red-600 hover:text-red-900" title="Delete Prospect">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <button data-project-id="${item.projectId}" data-prospect-id="${item.prospectId}" data-project-name="${item.projectName}" data-prospect-name="${item.prospectName}" class="delete-interest-btn p-1 text-red-600 hover:text-red-900" title="Delete Interest">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </td>
                 </tr>
             `;
-            prospectsBody.innerHTML += row;
+            interestedBody.innerHTML += row;
         });
     }
 
-    if (newBookings.length === 0) {
-        newBookingBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">No new bookings.</td></tr>`;
-    } else {
-        newBookings.forEach(investment => {
-            // --- Start of Updated Copywriting ---
-            const confirmationMessage = `Halo Bapak/Ibu ${investment.investorName},\n\nKami ingin konfirmasi Booking slot Investasi yang telah Bapak/Ibu buat.\n\nProject : ${investment.projectName}\nJumlah Slot : ${investment.slots}\nNilai Investasi : ${formatRupiah(investment.amount)}\n\nJika benar, mohon balas pesan ini agar kami dapat melanjutkan ke proses berikutnya.\nTerima kasih.\n\nHormat kami,\nArunami`;
-            const emailSubject = `Arunami - Konfirmasi Investasi Proyek ${investment.projectName}`;
-
-            const mailtoLink = `mailto:${investment.investorEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(confirmationMessage)}`;
-            const whatsappLink = formatWhatsAppLink(investment.investorPhone, confirmationMessage);
-            // --- End of Updated Copywriting ---
-
-            const row = `
-                <tr>
-                    <td data-label="Project" class="py-4 px-6 whitespace-nowrap"><a href="#" class="view-project-link text-blue-600 hover:underline" data-id="${investment.projectId}">${investment.projectName}</a></td>
-                    <td data-label="Investor" class="py-4 px-6 whitespace-nowrap">${investment.investorName}</td>
-                    <td data-label="Email" class="py-4 px-6 whitespace-nowrap"><a href="${mailtoLink}" target="_blank" class="text-blue-600 hover:underline">${investment.investorEmail}</a></td>
-                    <td data-label="Phone" class="py-4 px-6 whitespace-nowrap"><a href="${whatsappLink}" target="_blank" class="text-blue-600 hover:underline">${investment.investorPhone || 'N/A'}</a></td>
-                    <td data-label="Slots" class="py-4 px-6 whitespace-nowrap">${investment.slots}</td>
-                    <td data-label="Amount" class="py-4 px-6 whitespace-nowrap">${formatRupiah(investment.amount)}</td>
-                    <td data-label="Date Booked" class="py-4 px-6 whitespace-nowrap">${formatDetailedTimestamp(investment.bookedAt)}</td>
-                    <td data-label="Contacted" class="py-4 px-6 text-center">
-                        <input type="checkbox" class="contacted-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
-                               data-project-id="${investment.projectId}" data-user-id="${investment.investorId}" data-project-name="${investment.projectName}" data-user-name="${investment.investorName}" ${investment.contacted ? 'checked' : ''}>
-                    </td>
-                </tr>
-            `;
-            newBookingBody.innerHTML += row;
-        });
-    }
-
+    // Render Contacted Table
     if (contacted.length === 0) {
-        contactedBody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-gray-500">No contacted investors.</td></tr>`;
+        contactedBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No investors have been contacted.</td></tr>';
     } else {
-        contacted.forEach(investment => {
+        contacted.forEach(item => {
             const row = `
                 <tr class="bg-green-50">
-                    <td data-label="Project" class="py-4 px-6 whitespace-nowrap"><a href="#" class="view-project-link text-blue-600 hover:underline" data-id="${investment.projectId}">${investment.projectName}</a></td>
-                    <td data-label="Investor" class="py-4 px-6 whitespace-nowrap">${investment.investorName}</td>
-                    <td data-label="Email" class="py-4 px-6 whitespace-nowrap"><a href="mailto:${investment.investorEmail}" class="text-blue-600 hover:underline">${investment.investorEmail}</a></td>
-                    <td data-label="Phone" class="py-4 px-6 whitespace-nowrap"><a href="${formatWhatsAppLink(investment.investorPhone)}" target="_blank" class="text-blue-600 hover:underline">${investment.investorPhone || 'N/A'}</a></td>
-                    <td data-label="Slots" class="py-4 px-6 whitespace-nowrap">${investment.slots}</td>
-                    <td data-label="Amount" class="py-4 px-6 whitespace-nowrap">${formatRupiah(investment.amount)}</td>
-                    <td data-label="Date Contacted" class="py-4 px-6 whitespace-nowrap">${formatDetailedTimestamp(investment.contactedAt)}</td>
-                    <td data-label="Contacted" class="py-4 px-6 text-center">
-                         <input type="checkbox" class="contacted-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
-                               data-project-id="${investment.projectId}" data-user-id="${investment.investorId}" data-project-name="${investment.projectName}" data-user-name="${investment.investorName}" checked>
-                    </td>
-                    <td data-label="Payment Verified" class="py-4 px-6 text-center">
-                        <input type="checkbox" class="payment-verified-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
-                               data-project-id="${investment.projectId}" data-user-id="${investment.investorId}" data-project-name="${investment.projectName}" data-user-name="${investment.investorName}">
-                    </td>
-                    <td data-label="Cancelled" class="py-4 px-6 text-center">
-                        <input type="checkbox" class="cancel-booking-checkbox h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" 
-                               data-project-id="${investment.projectId}" data-user-id="${investment.investorId}" data-slots="${investment.slots}" data-project-name="${investment.projectName}" data-user-name="${investment.investorName}">
-                    </td>
+                    <td data-label="Project" class="py-4 px-6 whitespace-nowrap">${item.projectName}</td>
+                    <td data-label="Investor" class="py-4 px-6 whitespace-nowrap">${item.prospectName}</td>
+                    <td data-label="Email" class="py-4 px-6 whitespace-nowrap"><a href="mailto:${item.prospectEmail}" class="text-blue-600 hover:underline">${item.prospectEmail}</a></td>
+                    <td data-label="Phone" class="py-4 px-6 whitespace-nowrap"><a href="${formatWhatsAppLink(item.prospectPhone)}" target="_blank" class="text-blue-600 hover:underline">${item.prospectPhone}</a></td>
+                    <td data-label="Date Contacted" class="py-4 px-6 whitespace-nowrap">${formatDetailedTimestamp(item.contactedAt)}</td>
                     <td data-label="Actions" class="py-4 px-6 text-center">
-                        <button data-project-id="${investment.projectId}" data-user-id="${investment.investorId}" data-user-name="${investment.investorName}" data-slots="${investment.slots}" class="edit-investment-btn p-1 text-indigo-600 hover:text-indigo-900" title="Edit Investment">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        <button data-project-id="${item.projectId}" data-prospect-id="${item.prospectId}" data-project-name="${item.projectName}" data-prospect-name="${item.prospectName}" class="delete-interest-btn p-1 text-red-600 hover:text-red-900" title="Delete Record">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </td>
                 </tr>
@@ -1790,89 +1754,18 @@ async function renderInvestmentReportTable() {
         });
     }
 
-    if (cancelledBookings.length === 0) {
-        cancelledBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No cancelled bookings.</td></tr>`;
-    } else {
-        cancelledBookings.forEach(investment => {
-            const row = `
-                <tr class="bg-red-50">
-                    <td data-label="Project" class="py-4 px-6 whitespace-nowrap"><a href="#" class="view-project-link text-blue-600 hover:underline" data-id="${investment.projectId}">${investment.projectName}</a></td>
-                    <td data-label="Investor" class="py-4 px-6 whitespace-nowrap">${investment.investorName}</td>
-                    <td data-label="Email" class="py-4 px-6 whitespace-nowrap"><a href="mailto:${investment.investorEmail}" class="text-blue-600 hover:underline">${investment.investorEmail}</a></td>
-                    <td data-label="Slots" class="py-4 px-6 whitespace-nowrap">${investment.slots}</td>
-                    <td data-label="Date Cancelled" class="py-4 px-6 whitespace-nowrap">${formatDetailedTimestamp(investment.cancelledAt)}</td>
-                    <td data-label="Actions" class="py-4 px-6 text-center">
-                        <button data-project-id="${investment.projectId}" data-user-id="${investment.investorId}" data-project-name="${investment.projectName}" data-user-name="${investment.investorName}" class="delete-cancellation-btn p-1 text-red-600 hover:text-red-900" title="Delete Record Permanently">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-            cancelledBody.innerHTML += row;
-        });
-    }
-
-    if (verified.length === 0) {
-        verifiedBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">No verified investments found for this filter.</td></tr>`;
-    } else {
-        verified.forEach(investment => {
-            const row = `
-                <tr class="bg-blue-100">
-                    <td data-label="Project" class="py-4 px-6 whitespace-nowrap"><a href="#" class="view-project-link text-blue-600 hover:underline" data-id="${investment.projectId}">${investment.projectName}</a></td>
-                    <td data-label="Investor" class="py-4 px-6 whitespace-nowrap">${investment.investorName}</td>
-                    <td data-label="Email" class="py-4 px-6 whitespace-nowrap"><a href="mailto:${investment.investorEmail}" class="text-blue-600 hover:underline">${investment.investorEmail}</a></td>
-                    <td data-label="Phone" class="py-4 px-6 whitespace-nowrap"><a href="${formatWhatsAppLink(investment.investorPhone)}" target="_blank" class="text-blue-600 hover:underline">${investment.investorPhone || 'N/A'}</a></td>
-                    <td data-label="Slots" class="py-4 px-6 whitespace-nowrap">${investment.slots}</td>
-                    <td data-label="Amount" class="py-4 px-6 whitespace-nowrap">${formatRupiah(investment.amount)}</td>
-                    <td data-label="Payment Verified" class="py-4 px-6 text-center">
-                        <input type="checkbox" class="payment-verified-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
-                               data-project-id="${investment.projectId}" data-user-id="${investment.investorId}" data-project-name="${investment.projectName}" data-user-name="${investment.investorName}" checked>
-                    </td>
-                    <td data-label="Actions" class="py-4 px-6 text-center">
-                         <button data-id="${investment.projectId}" class="view-investment-details-btn flex items-center text-blue-600 hover:text-blue-900 mx-auto" title="View Investors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-            verifiedBody.innerHTML += row;
-        });
-    }
-
+    // Attach Event Listeners
     document.querySelectorAll('.contacted-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', handleContactedCheckboxChange);
-    });
-    document.querySelectorAll('.payment-verified-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', handlePaymentVerifiedCheckboxChange);
-    });
-    document.querySelectorAll('.cancel-booking-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', handleCancelBooking);
-    });
-    document.querySelectorAll('.delete-cancellation-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const { projectId, userId, projectName, userName } = e.currentTarget.dataset;
-            handleDeleteCancellation(e, projectId, userId, projectName, userName);
+        checkbox.addEventListener('change', (e) => {
+            const { projectId, prospectId } = e.target.dataset;
+            handleMarkAsContacted(projectId, prospectId, e.target.checked);
         });
     });
-    document.querySelectorAll('.view-project-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            viewProjectDetails(e.target.dataset.id);
-        });
-    });
-    document.querySelectorAll('.view-investment-details-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => openInvestmentDetailsModal(e.currentTarget.dataset.id));
-    });
-    document.querySelectorAll('#contacted-investors-table-body .edit-investment-btn').forEach(btn => {
+
+    document.querySelectorAll('.delete-interest-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const { projectId, userId, userName, slots } = e.currentTarget.dataset;
-            openEditInvestmentModal(projectId, userId, userName, slots);
-        });
-    });
-    document.querySelectorAll('.delete-prospect-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const { projectId, prospectId, projectName, prospectName } = e.currentTarget.dataset;
-            handleDeleteProspect(projectId, prospectId, projectName, prospectName);
+            const { projectId, prospectId, prospectName, projectName } = e.currentTarget.dataset;
+            handleDeleteInterest(projectId, prospectId, prospectName, projectName);
         });
     });
 }
@@ -1915,101 +1808,42 @@ async function listenToAllInvestments() {
       usersSnapshot.docs.map((doc) => [doc.id, doc.data()])
     );
 
-    const portfolioPromises = [];
-    usersSnapshot.forEach((userDoc) => {
-      const portfolioQuery = query(
-        collection(db, "users", userDoc.id, "portfolio")
-      );
-      portfolioPromises.push(getDocs(portfolioQuery));
-    });
-    const portfolioSnapshots = await Promise.all(portfolioPromises);
-    const portfolioMap = new Map();
-    portfolioSnapshots.forEach((snapshot) => {
-      snapshot.forEach((doc) => {
-        portfolioMap.set(
-          `${doc.data().projectId}-${doc.ref.parent.parent.id}`,
-          doc.data()
-        );
-      });
-    });
-
-    let allInvestments = [];
-    let allProspects = [];
+    let allInterested = [];
+    let allContacted = [];
 
     projectsSnapshot.forEach((projectDoc) => {
       const project = projectDoc.data();
       const projectId = projectDoc.id;
 
-      const allUserIds = new Set([
-        ...Object.keys(project.investors || {}),
-        ...Object.keys(project.investorStatus || {}),
-      ]);
-
-      allUserIds.forEach((userId) => {
-        const user = usersMap.get(userId);
-        if (user) {
-          const portfolioData = portfolioMap.get(`${projectId}-${userId}`);
-          const statusData = project.investorStatus?.[userId] || {};
-
-          allInvestments.push({
-            projectId: projectId,
-            investorId: userId,
-            projectName: project.title,
-            investorName: user.fullName,
-            investorEmail: user.email,
-            investorPhone: user.phone || "",
-            slots: project.investors?.[userId] || statusData.slots || 0,
-            amount:
-              (project.investors?.[userId] || statusData.slots || 0) *
-              project.slotPrice,
-            bookedAt: portfolioData?.bookedAt,
-            contacted: statusData.contacted || false,
-            contactedAt: statusData.contactedAt,
-            paymentVerified: statusData.paymentVerified || false,
-            cancelled: statusData.cancelled || false,
-            cancelledAt: statusData.cancelledAt,
-          });
-        }
-      });
-
       if (project.prospects) {
         Object.entries(project.prospects).forEach(([userId, prospectData]) => {
           const user = usersMap.get(userId);
           if (user) {
-            allProspects.push({
+            const prospectEntry = {
               projectId: projectId,
               prospectId: userId,
               projectName: project.title,
               prospectName: user.fullName,
               prospectEmail: user.email,
-              requestedAt: prospectData.requestedAt,
-            });
+              prospectPhone: user.phone || "N/A",
+              interestedAt: prospectData.interestedAt,
+              contactedAt: prospectData.contactedAt,
+            };
+            
+            if (prospectData.contacted) {
+                allContacted.push(prospectEntry);
+            } else {
+                allInterested.push(prospectEntry);
+            }
           }
         });
       }
     });
 
-    reportData = { investments: allInvestments, prospects: allProspects };
-
-    const verifiedInvestments = allInvestments.filter(
-      (inv) => inv.paymentVerified
-    );
-    const uniqueProjectIds = [
-      ...new Set(verifiedInvestments.map((inv) => inv.projectId)),
-    ];
-    const projectDetails = uniqueProjectIds.map((id) => ({
-      id: id,
-      name: allInvestments.find((inv) => inv.projectId === id).projectName,
-    }));
-
-    const filterDropdown = document.getElementById("verified-project-filter");
-    const currentSelection = filterDropdown.value;
-    filterDropdown.innerHTML = '<option value="all">All Projects</option>';
-    projectDetails.forEach((proj) => {
-      filterDropdown.innerHTML += `<option value="${proj.id}">${proj.name}</option>`;
-    });
-    filterDropdown.value = currentSelection;
-
+    // Store the processed data in the global variable for rendering
+    reportData = { interested: allInterested, contacted: allContacted };
+    
+    // Re-render the tables with the new data
     renderInvestmentReportTable();
   });
 }
@@ -2020,8 +1854,15 @@ document
   .getElementById("show-create-project-modal-btn")
   .addEventListener("click", () => openProjectModal());
 
-  document.getElementById("cancel-project-form").addEventListener("click", () => {
+ document.getElementById("cancel-project-form").addEventListener("click", () => {
+    const projectModal = document.getElementById("project-modal");
     projectModal.style.display = "none";
+
+    // If we were in the resubmit flow, show the feedback modal again
+    if (isResubmitFlowActive) {
+        document.getElementById('business-owner-update-modal').style.display = 'flex';
+        isResubmitFlowActive = false; // Reset the flag
+    }
 });
 
 document.getElementById("cancel-progress-form").addEventListener("click", () => {
@@ -2101,7 +1942,6 @@ projectForm.addEventListener('submit', async (e) => {
     const imageUploadInput = document.getElementById('project-photo-upload');
     let projectId = document.getElementById('project-id').value;
     
-    // Show progress modal only if the project photo is being uploaded
     if (imageUploadInput.files[0]) {
         showUploadProgressModal();
     } else {
@@ -2114,7 +1954,6 @@ projectForm.addEventListener('submit', async (e) => {
             summary: document.getElementById('project-summary').value,
             description: document.getElementById('project-description').value,
             investmentAsk: parseInt(document.getElementById('project-investment-ask').value.replace(/\./g, ''), 10),
-            // Add the new folder URLs
             legalFolderURL: document.getElementById('project-legal-folder').value,
             businessFolderURL: document.getElementById('project-business-folder').value,
             financeFolderURL: document.getElementById('project-finance-folder').value,
@@ -2125,10 +1964,10 @@ projectForm.addEventListener('submit', async (e) => {
         if (projectId) {
             projectRef = doc(db, "projects", projectId);
         } else {
-            // Set owner and initial status for new projects
             if (currentUserData.role === 'business-owner') {
                 projectData.ownerId = currentUser.uid;
                 projectData.ownerName = currentUserData.fullName;
+                projectData.companyName = currentUserData.companyName || 'N/A';
                 projectData.status = 'Under Review';
                 projectData.statusHistory = [{
                     status: 'Under Review',
@@ -2169,7 +2008,7 @@ projectForm.addEventListener('submit', async (e) => {
         }
 
         updateUploadStatus('Finalizing project details...');
-        if (document.getElementById('project-id').value) { // If editing, merge text data
+        if (document.getElementById('project-id').value) { 
             Object.assign(urlsToUpdate, projectData);
             if (currentUserData.role === 'admin') {
                 urlsToUpdate.dueDate = Timestamp.fromDate(new Date(document.getElementById('project-due-date').value));
@@ -2187,6 +2026,12 @@ projectForm.addEventListener('submit', async (e) => {
         }
         
         projectModal.style.display = 'none';
+
+        // If we were in the resubmit flow, show the feedback modal again
+        if (isResubmitFlowActive) {
+            document.getElementById('business-owner-update-modal').style.display = 'flex';
+            isResubmitFlowActive = false; // Reset the flag
+        }
 
     } catch (error) {
         console.error("Error saving project:", error);
@@ -4490,3 +4335,60 @@ document.getElementById('assign-investor-form').addEventListener('submit', async
         loadingSpinner.style.display = 'none';
     }
 });
+
+// ADD THIS NEW FUNCTION
+async function handleInterestedClick(projectId) {
+    if (!currentUser) return;
+    const projectRef = doc(db, "projects", projectId);
+    try {
+        const fieldToUpdate = `prospects.${currentUser.uid}`;
+        await updateDoc(projectRef, {
+            [fieldToUpdate]: {
+                interestedAt: Timestamp.now(),
+                contacted: false // Initialize contacted status
+            }
+        });
+        showMessage("Your interest has been noted. Our team will be in touch with you shortly.");
+    } catch (error) {
+        console.error("Error marking interest:", error);
+        showMessage("An error occurred. Please try again.");
+    }
+}
+
+// ADD THIS NEW FUNCTION
+async function handleMarkAsContacted(projectId, prospectId, isContacted) {
+    const projectRef = doc(db, "projects", projectId);
+    try {
+        const fieldPath = `prospects.${prospectId}`;
+        const updateData = {
+            [`${fieldPath}.contacted`]: isContacted,
+            [`${fieldPath}.contactedAt`]: Timestamp.now()
+        };
+        await updateDoc(projectRef, updateData);
+    } catch (error) {
+        console.error("Error updating contacted status:", error);
+        showMessage("Failed to update status. The page will refresh.");
+    }
+}
+
+// ADD THIS NEW FUNCTION
+async function handleDeleteInterest(projectId, prospectId, prospectName, projectName) {
+    if (!window.confirm(`Are you sure you want to delete the interest record for "${prospectName}" on project "${projectName}"?`)) {
+        return;
+    }
+    loadingSpinner.style.display = 'flex';
+    const projectRef = doc(db, "projects", projectId);
+    try {
+        const fieldToDelete = `prospects.${prospectId}`;
+        await updateDoc(projectRef, {
+            [fieldToDelete]: deleteField()
+        });
+        await logAdminAction(`Deleted interest record for "${prospectName}" on project "${projectName}"`);
+        showMessage("Interest record deleted successfully.");
+    } catch (error) {
+        console.error("Error deleting interest record:", error);
+        showMessage("Failed to delete record: " + error.message);
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+}
