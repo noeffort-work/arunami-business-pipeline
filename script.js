@@ -4392,3 +4392,74 @@ async function handleDeleteInterest(projectId, prospectId, prospectName, project
         loadingSpinner.style.display = 'none';
     }
 }
+
+// --- NEW: Auth Form Toggling ---
+const signInContainer = document.getElementById("sign-in-form-container");
+const signUpContainer = document.getElementById("sign-up-form-container");
+const showSignUpLink = document.getElementById("show-signup-link");
+const showSignInLink = document.getElementById("show-signin-link");
+
+showSignUpLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    signInContainer.style.display = 'none';
+    signUpContainer.style.display = 'block';
+});
+
+showSignInLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    signInContainer.style.display = 'block';
+    signUpContainer.style.display = 'none';
+});
+
+// --- NEW: Business Owner Sign-Up Form Handler ---
+document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fullName = document.getElementById('signup-fullname').value;
+    const companyName = document.getElementById('signup-company-name').value;
+    const phone = document.getElementById('signup-phone').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const confirmPassword = document.getElementById('signup-confirm-password').value;
+    const errorDiv = document.getElementById('sign-up-error');
+    
+    errorDiv.classList.add('hidden');
+
+    if (password !== confirmPassword) {
+        errorDiv.textContent = 'Passwords do not match.';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+
+    loadingSpinner.style.display = 'flex';
+
+    try {
+        // Step 1: Create the user in Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Step 2: Create the user's profile document in Firestore
+        const userData = {
+            fullName: fullName,
+            companyName: companyName,
+            phone: phone,
+            email: email,
+            role: 'business-owner',
+            profilePictureURL: "",
+            generalReports: [],
+            createdAt: Timestamp.now(),
+            hasChangedPassword: false, // You might want this for consistency
+        };
+
+        await setDoc(doc(db, "users", user.uid), userData);
+        
+        // No need to hide the spinner or redirect here.
+        // The onAuthStateChanged listener will automatically detect the new login
+        // and initialize the app UI for the new business owner.
+
+    } catch (error) {
+        console.error("Sign up error:", error);
+        errorDiv.textContent = error.message;
+        errorDiv.classList.remove('hidden');
+        loadingSpinner.style.display = 'none';
+    }
+});
