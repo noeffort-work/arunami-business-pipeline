@@ -89,6 +89,18 @@ document.getElementById('close-upload-guide-modal').addEventListener('click', ()
     uploadGuideModal.style.display = 'none';
 });
 
+document.getElementById("nav-business-profile").addEventListener("click", (e) => {
+    e.preventDefault();
+    renderBusinessProfile();
+    showPage("business-profile-section");
+});
+document.getElementById("mobile-nav-business-profile").addEventListener("click", (e) => {
+    e.preventDefault();
+    mobileMenu.classList.add("hidden");
+    renderBusinessProfile();
+    showPage("business-profile-section");
+});
+
 // --- UI & NAVIGATION LOGIC ---
 
 function showPage(pageId) {
@@ -287,21 +299,24 @@ onAuthStateChanged(auth, (user) => {
             if (userDoc.exists()) {
                 currentUserData = userDoc.data();
                 
-                // Handle investors who must change their password first
                 if (currentUserData.role === 'investor' && currentUserData.hasChangedPassword === false) {
                     mainContent.style.display = 'block';
                     navbar.style.display = 'none';
                     showPage('force-change-password-section');
                     loadingSpinner.style.display = 'none';
-                } 
-                // Handle regular investor logins
-                else if (currentUserData.role === 'investor') {
+                
+                } else if (currentUserData.role === 'business-owner' && currentUserData.isProfileComplete === false) {
+                    mainContent.style.display = 'block';
+                    navbar.style.display = 'none';
+                    showPage('complete-profile-section'); // <-- Important gating logic
+                    document.getElementById('complete-profile-submit-btn').disabled = false;
+                    loadingSpinner.style.display = 'none';
+
+                } else if (currentUserData.role === 'investor') {
                     tempUserDataForDisclaimer = currentUserData;
                     document.getElementById('disclaimer-modal').style.display = 'flex';
-                    loadingSpinner.style.display = 'none'; // Hide spinner to show the modal
-                }
-                // Handle admin logins
-                else {
+                    loadingSpinner.style.display = 'none';
+                } else {
                     initializeAppUI(currentUserData);
                 }
 
@@ -321,6 +336,8 @@ onAuthStateChanged(auth, (user) => {
         loadingSpinner.style.display = 'none';
     }
 });
+
+
 
 // --- NEW EVENT LISTENERS FOR BUSINESS OWNER & ADMIN ---
 
@@ -4414,15 +4431,24 @@ showSignInLink.addEventListener('click', (e) => {
 // --- NEW: Business Owner Sign-Up Form Handler ---
 document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const errorDiv = document.getElementById('sign-up-error');
+    errorDiv.classList.add('hidden');
+
     const fullName = document.getElementById('signup-fullname').value;
-    const companyName = document.getElementById('signup-company-name').value;
-    const phone = document.getElementById('signup-phone').value;
     const email = document.getElementById('signup-email').value;
+    const companyName = document.getElementById('signup-company-name').value;
+    const link1 = document.getElementById('signup-link1').value;
+    const link2 = document.getElementById('signup-link2').value;
+    const link3 = document.getElementById('signup-link3').value;
+    const establishmentDate = document.getElementById('signup-establishment-date').value;
+    const location = document.getElementById('signup-location').value;
+    const industry = document.getElementById('signup-industry').value;
+    const employeeCount = document.getElementById('signup-employee-count').value;
+    const tradeActivity = document.getElementById('signup-trade-activity').value;
+    const checkedFundingNodes = document.querySelectorAll('input[name="funding-source"]:checked');
+    const externalFundingSources = Array.from(checkedFundingNodes).map(node => node.value);
     const password = document.getElementById('signup-password').value;
     const confirmPassword = document.getElementById('signup-confirm-password').value;
-    const errorDiv = document.getElementById('sign-up-error');
-    
-    errorDiv.classList.add('hidden');
 
     if (password !== confirmPassword) {
         errorDiv.textContent = 'Passwords do not match.';
@@ -4433,29 +4459,30 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
     loadingSpinner.style.display = 'flex';
 
     try {
-        // Step 1: Create the user in Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Step 2: Create the user's profile document in Firestore
         const userData = {
-            fullName: fullName,
-            companyName: companyName,
-            phone: phone,
-            email: email,
+            fullName,
+            email,
+            phone: "",
+            companyName,
+            links: [link1, link2, link3].filter(link => link),
+            establishmentDate,
+            location,
+            industry,
+            employeeCount,
+            tradeActivity,
+            externalFundingSources,
             role: 'business-owner',
             profilePictureURL: "",
-            generalReports: [],
             createdAt: Timestamp.now(),
-            hasChangedPassword: false, // You might want this for consistency
+            hasChangedPassword: false, 
+            isProfileComplete: false, // <-- Important flag
         };
 
         await setDoc(doc(db, "users", user.uid), userData);
         
-        // No need to hide the spinner or redirect here.
-        // The onAuthStateChanged listener will automatically detect the new login
-        // and initialize the app UI for the new business owner.
-
     } catch (error) {
         console.error("Sign up error:", error);
         errorDiv.textContent = error.message;
@@ -4463,3 +4490,128 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
         loadingSpinner.style.display = 'none';
     }
 });
+
+// Add this entire new function to script.js
+// Add this entire new function to handle the Step 2 form
+document.getElementById('complete-profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorDiv = document.getElementById('complete-profile-error');
+    errorDiv.classList.add('hidden');
+    loadingSpinner.style.display = 'flex';
+
+    try {
+        // --- Collect all data from the new form ---
+        const companyProfileLink = document.getElementById('profile-company-profile-link').value;
+        const financingProposalLink = document.getElementById('profile-financing-proposal-link').value;
+        const lastYearRevenue = document.getElementById('profile-last-year-revenue').value;
+        const previousFunding = document.getElementById('profile-previous-funding').value;
+        const gpm = parseFloat(document.getElementById('profile-gpm').value);
+        const npm = parseFloat(document.getElementById('profile-npm').value);
+        const activeDebt = document.querySelector('input[name="active-debt"]:checked').value;
+        const monthlyOcf = document.getElementById('profile-monthly-ocf').value;
+        const financingType = document.querySelector('input[name="financing-type"]:checked').value;
+        const financingPreference = document.querySelector('input[name="financing-preference"]:checked').value;
+        
+        const fundPurposeNodes = document.querySelectorAll('input[name="fund-purpose"]:checked');
+        const fundPurpose = Array.from(fundPurposeNodes).map(node => node.value);
+        
+        const collateralNodes = document.querySelectorAll('input[name="collateral"]:checked');
+        const collateral = Array.from(collateralNodes).map(node => node.value);
+
+        // --- Prepare the data object for Firestore ---
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const dataToUpdate = {
+            step2Details: { 
+                companyProfileLink,
+                financingProposalLink,
+                lastYearRevenue,
+                previousFunding,
+                gpm,
+                npm,
+                activeDebt,
+                monthlyOcf,
+                financingType,
+                financingPreference,
+                fundPurpose,
+                collateral,
+            },
+            isProfileComplete: true, 
+        };
+
+        // Update the user's document in Firestore
+        await updateDoc(userDocRef, dataToUpdate);
+        
+        // --- THE FIX: Manually re-initialize the UI ---
+        // This new line tells the app to immediately show the dashboard.
+        initializeAppUI(currentUserData); 
+        // ---------------------------------------------
+
+    } catch (error) {
+        console.error("Error completing profile:", error);
+        errorDiv.textContent = "Failed to save profile. Please ensure all required fields are filled.";
+        errorDiv.classList.remove('hidden');
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+});
+
+// Add this entire new function to script.js
+function renderBusinessProfile() {
+    if (!currentUserData) return;
+
+    // Helper function to safely display data
+    const display = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = value || 'N/A';
+        }
+    };
+    
+    // Populate Owner & Business Info
+    display('bp-fullname', currentUserData.fullName);
+    display('bp-email', currentUserData.email);
+    display('bp-company-name', currentUserData.companyName);
+    display('bp-establishment-date', currentUserData.establishmentDate);
+    display('bp-location', currentUserData.location);
+    display('bp-industry', currentUserData.industry);
+    display('bp-employee-count', currentUserData.employeeCount);
+    display('bp-trade-activity', currentUserData.tradeActivity);
+
+    // Populate array data
+    const linksEl = document.getElementById('bp-links');
+    if (linksEl) {
+        linksEl.innerHTML = currentUserData.links?.map(link => 
+            `<a href="${link}" target="_blank" class="text-blue-600 hover:underline">${link}</a>`
+        ).join('') || 'N/A';
+    }
+    display('bp-external-funding', currentUserData.externalFundingSources?.join(', '));
+
+    // Populate Financials (accessing the nested step2Details object)
+    const details = currentUserData.step2Details || {};
+    display('bp-last-year-revenue', details.lastYearRevenue);
+    display('bp-monthly-ocf', details.monthlyOcf);
+    display('bp-gpm', details.gpm);
+    display('bp-npm', details.npm);
+    display('bp-active-debt', details.activeDebt);
+
+    // Populate Funding Details
+    display('bp-financing-type', details.financingType);
+    display('bp-financing-preference', details.financingPreference);
+    display('bp-fund-purpose', details.fundPurpose?.join(', '));
+    display('bp-collateral', details.collateral?.join(', '));
+    
+    // Populate Document Links
+    const profileLinkEl = document.getElementById('bp-company-profile-link');
+    if (profileLinkEl && details.companyProfileLink) {
+        profileLinkEl.innerHTML = `<strong>Company Profile:</strong> <a href="${details.companyProfileLink}" target="_blank" class="text-blue-600 hover:underline">View Document</a>`;
+    } else if (profileLinkEl) {
+        profileLinkEl.innerHTML = '<strong>Company Profile:</strong> N/A';
+    }
+
+    const proposalLinkEl = document.getElementById('bp-financing-proposal-link');
+    if (proposalLinkEl && details.financingProposalLink) {
+        proposalLinkEl.innerHTML = `<strong>Financing Proposal:</strong> <a href="${details.financingProposalLink}" target="_blank" class="text-blue-600 hover:underline">View Document</a>`;
+    } else if (proposalLinkEl) {
+        proposalLinkEl.innerHTML = '<strong>Financing Proposal:</strong> Not Provided';
+    }
+}
