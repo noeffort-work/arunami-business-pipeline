@@ -76,207 +76,91 @@
   <body class="text-gray-800">
     <div id="app" class="min-h-screen">
       <header id="navbar" class="bg-white shadow-md hidden">
-        <nav class="container mx-auto px-4 md:px-6 py-3">
-          <div class="flex justify-between items-center">
+    <nav class="container mx-auto px-4 md:px-6 py-3">
+        <div class="flex justify-between items-center">
             <a href="#">
-              <img
-                src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FArunami%20Logo%20Horizontal.png?alt=media&token=ca2a7a9e-1d68-45c7-b5ae-8cb88bd8f4f7"
-                alt="Arunami Logo"
-                class="h-16 md:h-20 w-auto"
-              />
+                <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FArunami%20Logo%20Horizontal.png?alt=media&token=ca2a7a9e-1d68-45c7-b5ae-8cb88bd8f4f7" alt="Arunami Logo" class="h-16 md:h-20 w-auto" />
             </a>
             <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
-              <a
-                href="#"
-                id="nav-dashboard"
-                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
-                >Projects</a
-              >
-              <a
-                href="#"
-                id="nav-bookings"
-                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
-                >My Bookings</a
-              >
-              <a href="#" id="nav-verified-investments" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Portfolio</a>
-              <a href="https://wa.me/6285647718853" id="nav-contact-us" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200 flex items-center">
-    <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FWA%20Logo.png?alt=media&token=dd9a7789-96bb-4988-bc31-cfbf65c47452" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="mr-2 text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
-    Contact Us
-</a>
-              <span id="admin-nav-links" class="hidden">
-                <a
-                  href="#"
-                  id="nav-admin-proposed-projects"
-                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
-                  >Proposed Projects</a
-                >
-                <a
-                  href="#"
-                  id="nav-admin-projects"
-                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
-                  >Manage Projects</a
-                >
-                <a
-                  href="#"
-                  id="nav-admin-users"
-                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
-                  >Manage Users</a
-                >
-                <a
-                  href="#"
-                  id="nav-investment-report"
-                  class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
-                  >Investment Report</a
-                >
-              </span>
-              <span id="business-owner-nav-links" class="hidden">
-    <a href="#" id="nav-business-profile" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Business Profile</a>
-    <a href="#" id="nav-my-project" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Projects</a>
-    <a href="#" id="nav-project-progress" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Project Progress</a>
-    <a href="#" id="nav-my-approved-project" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Approved Projects</a>
-</span>
-              <div
-                id="profile-dropdown-container"
-                class="relative inline-block group"
-              >
-                <button
-                  id="profile-dropdown-btn"
-                  class="flex items-center space-x-2"
-                >
-                  <span
-                    id="navbar-user-name"
-                    class="font-medium text-sm hidden lg:block"
-                    >Profile</span
-                  >
-                  <img
-                    id="navbar-user-avatar"
-                    class="h-8 w-8 rounded-full object-cover"
-                    src="https://placehold.co/40x40/e2e8f0/4a5568?text=A"
-                    alt="Avatar"
-                  />
-                </button>
-                <div
-                  id="profile-dropdown-menu"
-                  class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden"
-                >
-                  <a
-                    href="#"
-                    id="nav-profile"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >My Profile</a
-                  >
-                  <a
-                    href="#"
-                    id="sign-out-btn"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >Sign Out</a
-                  >
-                  <a
-                    href="#"
-                    id="nav-admin-logs"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    style="display: none"
-                    >Admin Logs</a
-                  >
+                <a href="#" id="nav-dashboard" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Projects</a>
+                <a href="#" id="nav-bookings" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Bookings</a>
+                <a href="#" id="nav-verified-investments" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Portfolio</a>
+                <a href="https://wa.me/6285647718853" id="nav-contact-us" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200 flex items-center">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FWA%20Logo.png?alt=media&token=dd9a7789-96bb-4988-bc31-cfbf65c47452" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="mr-2 text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+                    Contact Us
+                </a>
+                <span id="admin-nav-links" class="hidden">
+                    <a href="#" id="nav-admin-business-data" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Business Data</a>
+                    <a href="#" id="nav-admin-proposed-projects" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Proposed Projects</a>
+                    <a href="#" id="nav-admin-projects" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Manage Projects</a>
+                    <a href="#" id="nav-admin-users" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Manage Users</a>
+                    <a href="#" id="nav-investment-report" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Investment Report</a>
+                </span>
+                <span id="business-owner-nav-links" class="hidden">
+                    <a href="#" id="nav-business-profile" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Business Profile</a>
+                    <a href="#" id="nav-my-project" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Projects</a>
+                    <a href="#" id="nav-project-progress" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Project Progress</a>
+                    <a href="#" id="nav-my-approved-project" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">My Approved Projects</a>
+                </span>
+                <span id="analyst-nav-links" class="hidden">
+                    <a href="#" id="nav-analyst-business-data" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Business Data to Review</a>
+                    <a href="#" id="nav-admin-projects" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Manage Projects</a>
+                </span>
+                <div id="profile-dropdown-container" class="relative inline-block group">
+                    <button id="profile-dropdown-btn" class="flex items-center space-x-2">
+                        <span id="navbar-user-name" class="font-medium text-sm hidden lg:block">Profile</span>
+                        <img id="navbar-user-avatar" class="h-8 w-8 rounded-full object-cover" src="https://placehold.co/40x40/e2e8f0/4a5568?text=A" alt="Avatar" />
+                    </button>
+                    <div id="profile-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden">
+                        <a href="#" id="nav-profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</a>
+                        <a href="#" id="sign-out-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+                        <a href="#" id="nav-admin-logs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" style="display: none">Admin Logs</a>
+                    </div>
                 </div>
-              </div>
             </div>
             <div class="md:hidden">
-              <button
-                id="mobile-menu-button"
-                class="text-gray-800 focus:outline-none"
-              >
-                <svg
-                  class="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 6h16M4 12h16m-7 6h7"
-                  />
-                </svg>
-              </button>
+                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
             </div>
-          </div>
-          <div id="mobile-menu" class="hidden md:hidden mt-4">
-            <a
-              href="#"
-              id="mobile-nav-dashboard"
-              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-              >Projects</a
-            >
-            <a
-              href="#"
-              id="mobile-nav-bookings"
-              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-              >My Bookings</a
-            >
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden mt-4">
+            <a href="#" id="mobile-nav-dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Projects</a>
+            <a href="#" id="mobile-nav-bookings" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Bookings</a>
             <a href="#" id="mobile-nav-verified-investments" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Portfolio</a>
+            
             <div id="mobile-business-owner-nav-links" class="hidden border-t mt-2 pt-2">
-    <a href="#" id="mobile-nav-business-profile" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Business Profile</a>
-    <a href="#" id="mobile-nav-my-project" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Projects</a>
-    <a href="#" id="mobile-nav-project-progress" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Project Progress</a>
-    <a href="#" id="mobile-nav-my-approved-project" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Approved Projects</a>
-</div>
-<a href="https://wa.me/6285647718853" id="mobile-nav-contact-us" target="_blank" rel="noopener noreferrer" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 flex items-center">
-    <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FWA%20Logo.png?alt=media&token=dd9a7789-96bb-4988-bc31-cfbf65c47452" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="mr-3 text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
-    Contact Us
-</a>
-
+                <a href="#" id="mobile-nav-business-profile" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Business Profile</a>
+                <a href="#" id="mobile-nav-my-project" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Projects</a>
+                <a href="#" id="mobile-nav-project-progress" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Project Progress</a>
+                <a href="#" id="mobile-nav-my-approved-project" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Approved Projects</a>
+            </div>
             <div id="mobile-admin-nav-links" class="hidden border-t mt-2 pt-2">
-              <a
-                href="#"
-                id="mobile-nav-admin-projects"
-                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-                >Manage Projects</a
-              >
-              <a
-                href="#"
-                id="mobile-nav-admin-users"
-                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-                >Manage Users</a
-              >
-              <a
-                href="#"
-                id="mobile-nav-investment-report"
-                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-                >Investment Report</a
-              >
-              <a
-                href="#"
-                id="mobile-nav-admin-proposed-projects"
-                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-                >Proposed Projects</a
-              >
-              <a
-                href="#"
-                id="mobile-nav-admin-logs"
-                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-                >Admin Logs</a
-              >
+                <a href="#" id="mobile-nav-admin-business-data" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Business Data</a>
+                <a href="#" id="mobile-nav-admin-projects" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Manage Projects</a>
+                <a href="#" id="mobile-nav-admin-users" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Manage Users</a>
+                <a href="#" id="mobile-nav-investment-report" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Investment Report</a>
+                <a href="#" id="mobile-nav-admin-proposed-projects" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Proposed Projects</a>
+                <a href="#" id="mobile-nav-admin-logs" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Admin Logs</a>
             </div>
+            <div id="mobile-analyst-nav-links" class="hidden border-t mt-2 pt-2">
+                <a href="#" id="mobile-nav-analyst-business-data" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Business Data to Review</a>
+                <a href="#" id="mobile-nav-admin-projects" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Manage Projects</a>
+            </div>
+
+            <a href="https://wa.me/6285647718853" id="mobile-nav-contact-us" target="_blank" rel="noopener noreferrer" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 flex items-center">
+                <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FWA%20Logo.png?alt=media&token=dd9a7789-96bb-4988-bc31-cfbf65c47452" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="mr-3 text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+                Contact Us
+            </a>
             <div class="border-t mt-2 pt-2">
-              <a
-                href="#"
-                id="mobile-nav-profile"
-                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-                >My Profile</a
-              >
-              <a
-                href="#"
-                id="mobile-sign-out-btn"
-                class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200"
-                >Sign Out</a
-              >
+                <a href="#" id="mobile-nav-profile" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">My Profile</a>
+                <a href="#" id="mobile-sign-out-btn" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Sign Out</a>
             </div>
-          </div>
-        </nav>
-      </header>
+        </div>
+    </nav>
+</header>
 
       <div
         id="loading-spinner"
@@ -341,12 +225,12 @@
                 </button>
               </div>
               <p class="text-center text-sm text-gray-600 mt-6">
-                Are you a Business Owner?
+                Belum punya akun?
                 <a
                   href="#"
                   id="show-signup-link"
                   class="font-bold text-blue-600 hover:text-blue-800"
-                  >Propose a Project</a
+                  >Buat disini</a
                 >
               </p>
             </form>
@@ -381,7 +265,7 @@
             </div>
             <div class="mb-4">
                  <label class="block text-gray-700 text-sm font-bold mb-2">Link Website / Social Media</label>
-                 <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-2" id="signup-link1" type="url" placeholder="https://example.com (Required)" required />
+                 <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-2" id="signup-link1" type="text" placeholder="https://example.com (Required)" required />
                  <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-2" id="signup-link2" type="url" placeholder="https://instagram.com/yourbusiness (Optional)" />
                  <input class="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="signup-link3" type="url" placeholder="Publication or other link (Optional)" />
             </div>
@@ -529,6 +413,19 @@
       </div>
 
       <main id="main-content" class="container mx-auto p-4 md:p-6 hidden">
+        <div id="incomplete-profile-banner" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded-r-lg shadow-md" role="alert">
+        <div class="flex items-center">
+            <div class="py-1"><svg class="fill-current h-6 w-6 text-yellow-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM9 5v6h2V5H9zm0 8v2h2v-2H9z"/></svg></div>
+            <div>
+                <p class="font-bold">Your profile is incomplete!</p>
+                <p class="text-sm">Please complete your business profile to be eligible for analyst review and to propose new projects.</p>
+            </div>
+            <div class="ml-auto">
+                <button id="go-to-complete-profile-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">Complete Profile</button>
+            </div>
+        </div>
+    </div>
+
         <div
           id="force-change-password-section"
           class="page-section flex items-center justify-center min-h-[80vh]"
@@ -702,6 +599,46 @@
 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="analyst-business-data-section" class="page-section">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6">Business Data to Review</h1>
+    <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+    <tr>
+        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
+        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner Name</th>
+        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approval Status</th>
+        <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+    </tr>
+</thead>
+                <tbody id="analyst-business-data-tbody" class="divide-y divide-gray-200 md:divide-y-0">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="admin-business-data-section" class="page-section">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6">Business Owner Data</h1>
+    <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white responsive-table">
+                <thead class="bg-gray-50">
+    <tr>
+        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
+        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner Name</th>
+        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
+        <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+    </tr>
+</thead>
+                <tbody id="admin-business-data-tbody" class="divide-y divide-gray-200 md:divide-y-0">
+                    </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -1025,10 +962,13 @@
                   <button id="my-projects-card-view-btn" class="px-3 py-1 text-sm font-medium text-gray-800 rounded-md bg-white shadow">Card View</button>
                   <button id="my-projects-list-view-btn" class="px-3 py-1 text-sm font-medium text-gray-600 rounded-md">List View</button>
                 </div>
-                <button id="show-create-my-project-modal-btn" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  Propose New Project
-                </button>
+                <div class="flex flex-col items-end">
+    <button id="show-create-my-project-modal-btn" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Propose New Project
+    </button>
+    <p id="propose-project-status-message" class="text-xs text-gray-500 mt-1 hidden"></p>
+</div>
             </div>
           </div>
           
@@ -2653,6 +2593,76 @@
         <dd class="text-sm text-gray-600 pl-4">IT systems, software, hardware, etc.</dd>
       </dl>
     </div>
+  </div>
+</div>
+
+<div id="business-detail-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 m-4 flex flex-col" style="max-height: 90vh">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h2 id="modal-bd-company-name" class="text-3xl font-bold">Business Details</h2>
+            <button id="close-business-detail-modal" class="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="overflow-y-auto pr-4 text-sm">
+            <div class="pb-6 border-b">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Owner & Business Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div><strong class="text-gray-600 block">Owner Name:</strong> <span id="modal-bd-fullname"></span></div>
+                    <div><strong class="text-gray-600 block">Owner Email:</strong> <span id="modal-bd-email"></span></div>
+                    <div><strong class="text-gray-600 block">Establishment Date:</strong> <span id="modal-bd-establishment-date"></span></div>
+                    <div><strong class="text-gray-600 block">Location:</strong> <span id="modal-bd-location"></span></div>
+                    <div><strong class="text-gray-600 block">Industry:</strong> <span id="modal-bd-industry"></span></div>
+                    <div><strong class="text-gray-600 block">Employee Count:</strong> <span id="modal-bd-employee-count"></span></div>
+                    <div><strong class="text-gray-600 block">Trade Activity:</strong> <span id="modal-bd-trade-activity"></span></div>
+                    <div class="md:col-span-2"><strong class="text-gray-600 block">Previous External Funding:</strong> <span id="modal-bd-external-funding"></span></div>
+                    <div class="md:col-span-2"><strong class="text-gray-600 block">Online Links:</strong> <span id="modal-bd-links" class="flex flex-col space-y-1"></span></div>
+                </div>
+            </div>
+            <div class="py-6 border-b">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Financial Performance</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div><strong class="text-gray-600 block">Last Year's Revenue (2024):</strong> <span id="modal-bd-last-year-revenue"></span></div>
+                    <div><strong class="text-gray-600 block">Monthly Operating Cash Flow:</strong> <span id="modal-bd-monthly-ocf"></span></div>
+                    <div><strong class="text-gray-600 block">Gross Profit Margin:</strong> <span id="modal-bd-gpm"></span>%</div>
+                    <div><strong class="text-gray-600 block">Net Profit Margin:</strong> <span id="modal-bd-npm"></span>%</div>
+                    <div><strong class="text-gray-600 block">Has Active Short-Term Debt:</strong> <span id="modal-bd-active-debt"></span></div>
+                </div>
+            </div>
+            <div class="pt-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Funding & Financing Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div><strong class="text-gray-600 block">Type of Financing Needed:</strong> <span id="modal-bd-financing-type"></span></div>
+                    <div><strong class="text-gray-600 block">Financing Preference:</strong> <span id="modal-bd-financing-preference"></span></div>
+                    <div class="md:col-span-2"><strong class="text-gray-600 block">Purpose of Funds:</strong> <span id="modal-bd-fund-purpose"></span></div>
+                    <div class="md:col-span-2"><strong class="text-gray-600 block">Available Collateral:</strong> <span id="modal-bd-collateral"></span></div>
+                    <div class="md:col-span-2"><strong class="text-gray-600 block">Documents:</strong>
+                        <div class="flex flex-col space-y-2 mt-2">
+                            <span id="modal-bd-company-profile-link"></span>
+                            <span id="modal-bd-financing-proposal-link"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="assign-analyst-business-data-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8 m-4">
+    <form id="assign-analyst-business-data-form">
+      <h2 id="assign-analyst-business-data-modal-title" class="text-2xl font-bold mb-6">
+        Assign Business Data to Analyst
+      </h2>
+      <input type="hidden" id="assign-business-owner-id" />
+      <div class="mb-6">
+        <label for="assign-analyst-business-data-select" class="block text-sm font-medium text-gray-700 mb-2">Select an Analyst</label>
+        <select id="assign-analyst-business-data-select" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700">
+          </select>
+      </div>
+      <div class="flex justify-end space-x-4 mt-8">
+        <button id="cancel-assign-analyst-business-data-form" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save Assignment</button>
+      </div>
+    </form>
   </div>
 </div>
 

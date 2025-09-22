@@ -194,6 +194,7 @@ document.getElementById("user-role-filter").addEventListener("change", (e) => {
 
 // --- AUTHENTICATION LOGIC ---
 
+// Replace this entire function in script.js
 function initializeAppUI(userData) {
     document.getElementById('navbar-user-name').textContent = userData.fullName || 'Profile';
     document.getElementById('navbar-user-avatar').src = userData.profilePictureURL || `https://placehold.co/40x40/e2e8f0/4a5568?text=${(userData.fullName || 'A').charAt(0)}`;
@@ -204,35 +205,25 @@ function initializeAppUI(userData) {
     
     renderGeneralReportsTable(userData.generalReports || []);
 
-    const adminNavLinks = document.getElementById('admin-nav-links');
-    const mobileAdminNavLinks = document.getElementById('mobile-admin-nav-links');
-    const businessOwnerNavLinks = document.getElementById('business-owner-nav-links');
-    const mobileBusinessOwnerNavLinks = document.getElementById('mobile-business-owner-nav-links');
+    const allNavLinks = document.querySelectorAll('#admin-nav-links, #mobile-admin-nav-links, #business-owner-nav-links, #mobile-business-owner-nav-links, #analyst-nav-links, #mobile-analyst-nav-links');
+    allNavLinks.forEach(links => links.style.display = 'none');
+
     const investorNavLinks = document.querySelectorAll('#nav-dashboard, #nav-bookings, #nav-verified-investments, #mobile-nav-dashboard, #mobile-nav-bookings, #mobile-nav-verified-investments');
+    investorNavLinks.forEach(link => link.style.display = 'none');
+    
     const navAdminLogs = document.getElementById('nav-admin-logs');
     const mobileNavAdminLogs = document.getElementById('mobile-nav-admin-logs');
-    const navContactUs = document.getElementById('nav-contact-us');
-    const mobileNavContactUs = document.getElementById('mobile-nav-contact-us');
-    
-    const analystManageProjectsLink = document.getElementById('nav-admin-projects');
-    const mobileAnalystManageProjectsLink = document.getElementById('mobile-nav-admin-projects');
-
-    adminNavLinks.style.display = 'none';
-    mobileAdminNavLinks.style.display = 'none';
-    businessOwnerNavLinks.style.display = 'none';
-    mobileBusinessOwnerNavLinks.style.display = 'none';
-    investorNavLinks.forEach(link => link.style.display = 'none');
     navAdminLogs.style.display = 'none';
     mobileNavAdminLogs.style.display = 'none';
+    
+    document.getElementById('incomplete-profile-banner').classList.add('hidden');
+
 
     let defaultPage = '';
 
     if (userData.role === 'admin') {
-        adminNavLinks.style.display = 'inline';
-        mobileAdminNavLinks.style.display = 'block';
-        navContactUs.style.display = 'none';
-        mobileNavContactUs.style.display = 'none';
-        
+        document.getElementById('admin-nav-links').style.display = 'inline';
+        document.getElementById('mobile-admin-nav-links').style.display = 'block';
         navAdminLogs.style.display = 'block';
         mobileNavAdminLogs.style.display = 'block';
         
@@ -241,32 +232,50 @@ function initializeAppUI(userData) {
         listenToAllInvestments();
         listenToAdminLogs();
         listenToProposedProjects();
-        defaultPage = 'admin-projects-section';
+        defaultPage = 'admin-business-data-section';
 
     } else if (userData.role === 'business-owner') {
-        businessOwnerNavLinks.style.display = 'inline';
-        mobileBusinessOwnerNavLinks.style.display = 'block';
-        navContactUs.style.display = 'flex';
-        mobileNavContactUs.style.display = 'flex';
-
+        document.getElementById('business-owner-nav-links').style.display = 'inline';
+        document.getElementById('mobile-business-owner-nav-links').style.display = 'block';
         listenToMyProjects();
         defaultPage = 'business-owner-my-projects-section';
 
+        
+
+        // --- GATING LOGIC FOR PROPOSE PROJECT BUTTON ---
+        const proposeBtn = document.getElementById('show-create-my-project-modal-btn');
+        const proposeMsg = document.getElementById('propose-project-status-message');
+        const banner = document.getElementById('incomplete-profile-banner');
+        
+        if (userData.isProfileComplete === false) {
+            // If profile is incomplete, show the banner
+            banner.classList.remove('hidden');
+            proposeBtn.disabled = true;
+            proposeMsg.textContent = 'Please complete your profile to enable project proposals.';
+            proposeMsg.classList.remove('hidden');
+        } else if (userData.isApprovedByAnalyst === false) {
+            // If profile is complete but not yet approved
+            proposeBtn.disabled = true;
+            proposeMsg.textContent = 'Your profile is awaiting analyst approval.';
+            proposeMsg.classList.remove('hidden');
+        } else {
+            // If profile is complete AND approved
+            proposeBtn.disabled = false;
+            proposeMsg.classList.add('hidden');
+        }
+
+        // --- END OF GATING LOGIC ---
+
     } else if (userData.role === 'analyst') {
-        analystManageProjectsLink.style.display = 'inline';
-        mobileAnalystManageProjectsLink.style.display = 'block';
-        navContactUs.style.display = 'none';
-        mobileNavContactUs.style.display = 'none';
+        document.getElementById('analyst-nav-links').style.display = 'inline';
+        document.getElementById('mobile-analyst-nav-links').style.display = 'block';
 
         listenToAdminProjects();
         listenToUsers();
-        defaultPage = 'admin-projects-section';
+        defaultPage = 'analyst-business-data-section';
 
     } else { // Investor role
         investorNavLinks.forEach(link => link.style.display = 'block');
-        navContactUs.style.display = 'flex';
-        mobileNavContactUs.style.display = 'flex';
-
         listenToProjects();
         listenToBookingsAndPortfolio();
         defaultPage = 'projects-dashboard-section';
@@ -276,7 +285,7 @@ function initializeAppUI(userData) {
     mainContent.style.display = 'block';
     navbar.style.display = 'block';
 
-    if (!document.querySelector('.page-section[style*="display: block"]') || document.getElementById('force-change-password-section').style.display === 'flex') {
+    if (!document.querySelector('.page-section[style*="display: block"], .page-section[style*="display: flex"]')) {
         showPage(defaultPage);
     }
     
@@ -299,24 +308,22 @@ onAuthStateChanged(auth, (user) => {
             if (userDoc.exists()) {
                 currentUserData = userDoc.data();
                 
+                // Gate 1: Force investors to change their initial password
                 if (currentUserData.role === 'investor' && currentUserData.hasChangedPassword === false) {
                     mainContent.style.display = 'block';
-                    navbar.style.display = 'none';
+                    navbar.style.display = 'none'; // Hide navbar
                     showPage('force-change-password-section');
                     loadingSpinner.style.display = 'none';
                 
-                } else if (currentUserData.role === 'business-owner' && currentUserData.isProfileComplete === false) {
-                    mainContent.style.display = 'block';
-                    navbar.style.display = 'none';
-                    showPage('complete-profile-section'); // <-- Important gating logic
-                    document.getElementById('complete-profile-submit-btn').disabled = false;
-                    loadingSpinner.style.display = 'none';
+                // REMOVED: The hard gate for business owners is gone.
+                // Now, all users who pass the first gate will proceed.
 
                 } else if (currentUserData.role === 'investor') {
                     tempUserDataForDisclaimer = currentUserData;
                     document.getElementById('disclaimer-modal').style.display = 'flex';
                     loadingSpinner.style.display = 'none';
                 } else {
+                    // All other roles (Admin, Analyst, Business Owner) go straight to the app UI.
                     initializeAppUI(currentUserData);
                 }
 
@@ -1811,8 +1818,25 @@ function listenToUsers() {
   const usersCollection = collection(db, "users");
   onSnapshot(usersCollection, (snapshot) => {
     allUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    const currentFilter = document.getElementById("user-role-filter").value;
-    renderAdminUsersTable(currentFilter);
+    
+    // --- THE FIX: Check which page is active and refresh it ---
+
+    // 1. Refresh the Admin's main user list if it's visible
+    if (document.getElementById('admin-users-section').style.display === 'block') {
+        const currentFilter = document.getElementById("user-role-filter").value;
+        renderAdminUsersTable(currentFilter);
+    }
+    
+    // 2. Refresh the Admin's business data view if it's visible
+    if (document.getElementById('admin-business-data-section').style.display === 'block') {
+        renderAdminBusinessData();
+    }
+
+    // 3. Refresh the Analyst's business data view if it's visible
+    if (document.getElementById('analyst-business-data-section').style.display === 'block') {
+        renderAnalystBusinessData();
+    }
+    // -----------------------------------------------------------
   });
 }
 
@@ -4479,6 +4503,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
             createdAt: Timestamp.now(),
             hasChangedPassword: false, 
             isProfileComplete: false, // <-- Important flag
+            isApprovedByAnalyst: false,
         };
 
         await setDoc(doc(db, "users", user.uid), userData);
@@ -4540,6 +4565,7 @@ document.getElementById('complete-profile-form').addEventListener('submit', asyn
 
         // Update the user's document in Firestore
         await updateDoc(userDocRef, dataToUpdate);
+         localStorage.removeItem(`businessProfileDraft_${currentUser.uid}`);
         
         // --- THE FIX: Manually re-initialize the UI ---
         // This new line tells the app to immediately show the dashboard.
@@ -4615,3 +4641,374 @@ function renderBusinessProfile() {
         proposalLinkEl.innerHTML = '<strong>Financing Proposal:</strong> Not Provided';
     }
 }
+
+// --- Add these new event listeners for the admin menu ---
+document.getElementById('nav-admin-business-data').addEventListener('click', (e) => {
+    e.preventDefault();
+    renderAdminBusinessData();
+    showPage('admin-business-data-section');
+});
+document.getElementById('mobile-nav-admin-business-data').addEventListener('click', (e) => {
+    e.preventDefault();
+    mobileMenu.classList.add('hidden');
+    renderAdminBusinessData();
+    showPage('admin-business-data-section');
+});
+
+// --- Add this listener for the new modal's close button ---
+document.getElementById('close-business-detail-modal').addEventListener('click', () => {
+    document.getElementById('business-detail-modal').style.display = 'none';
+});
+
+// --- Add this new function to render the table of business owners ---
+// Replace this entire function in script.js
+function renderAdminBusinessData() {
+    const tableBody = document.getElementById('admin-business-data-tbody');
+    tableBody.innerHTML = '';
+
+    const businessOwners = allUsers.filter(user => user.role === 'business-owner');
+
+    if (businessOwners.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">No business owner data found.</td></tr>`;
+        return;
+    }
+
+    businessOwners.forEach(user => {
+        // Find the assigned analyst's name, if it exists
+        const assignedAnalyst = user.assignedAnalystId ? allUsers.find(u => u.id === user.assignedAnalystId) : null;
+        const assignedAnalystName = assignedAnalyst ? assignedAnalyst.fullName : '<span class="text-gray-400">Unassigned</span>';
+
+        const row = `
+            <tr class="hover:bg-gray-50">
+                <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
+                <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
+                <td data-label="Assigned To" class="py-4 px-6 text-gray-700 whitespace-nowrap">${assignedAnalystName}</td>
+                <td data-label="Actions" class="py-4 px-6 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
+                        <button data-user-id="${user.id}" data-company-name="${user.companyName}" class="assign-analyst-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Assign</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    });
+
+    // Add event listeners for the buttons
+    tableBody.querySelectorAll('.view-business-details-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => openBusinessDetailModal(e.currentTarget.dataset.userId));
+    });
+    tableBody.querySelectorAll('.assign-analyst-business-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const { userId, companyName } = e.currentTarget.dataset;
+            openAssignAnalystForBusinessDataModal(userId, companyName);
+        });
+    });
+}
+
+// --- Add this new function to open and populate the detail modal ---
+function openBusinessDetailModal(userId) {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) {
+        showMessage("Could not find business owner data.");
+        return;
+    }
+
+    // Helper function to safely display data in the modal
+    const displayModal = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = value || 'N/A';
+        }
+    };
+
+    // Set modal title
+    document.getElementById('modal-bd-company-name').textContent = user.companyName || 'Business Details';
+
+    // Populate Owner & Business Info
+    displayModal('modal-bd-fullname', user.fullName);
+    displayModal('modal-bd-email', user.email);
+    displayModal('modal-bd-establishment-date', user.establishmentDate);
+    displayModal('modal-bd-location', user.location);
+    displayModal('modal-bd-industry', user.industry);
+    displayModal('modal-bd-employee-count', user.employeeCount);
+    displayModal('modal-bd-trade-activity', user.tradeActivity);
+
+    // Populate array data
+    const linksEl = document.getElementById('modal-bd-links');
+    if (linksEl) {
+        linksEl.innerHTML = user.links?.map(link => 
+            `<a href="${link}" target="_blank" class="text-blue-600 hover:underline">${link}</a>`
+        ).join('') || 'N/A';
+    }
+    displayModal('modal-bd-external-funding', user.externalFundingSources?.join(', '));
+
+    // Populate Financials
+    const details = user.step2Details || {};
+    displayModal('modal-bd-last-year-revenue', details.lastYearRevenue);
+    displayModal('modal-bd-monthly-ocf', details.monthlyOcf);
+    displayModal('modal-bd-gpm', details.gpm);
+    displayModal('modal-bd-npm', details.npm);
+    displayModal('modal-bd-active-debt', details.activeDebt);
+
+    // Populate Funding Details
+    displayModal('modal-bd-financing-type', details.financingType);
+    displayModal('modal-bd-financing-preference', details.financingPreference);
+    displayModal('modal-bd-fund-purpose', details.fundPurpose?.join(', '));
+    displayModal('modal-bd-collateral', details.collateral?.join(', '));
+    
+    // Populate Document Links
+    const profileLinkEl = document.getElementById('modal-bd-company-profile-link');
+    if (profileLinkEl && details.companyProfileLink) {
+        profileLinkEl.innerHTML = `<strong>Company Profile:</strong> <a href="${details.companyProfileLink}" target="_blank" class="text-blue-600 hover:underline">View Document</a>`;
+    } else if (profileLinkEl) {
+        profileLinkEl.innerHTML = '<strong>Company Profile:</strong> N/A';
+    }
+
+    const proposalLinkEl = document.getElementById('modal-bd-financing-proposal-link');
+    if (proposalLinkEl && details.financingProposalLink) {
+        proposalLinkEl.innerHTML = `<strong>Financing Proposal:</strong> <a href="${details.financingProposalLink}" target="_blank" class="text-blue-600 hover:underline">View Document</a>`;
+    } else if (proposalLinkEl) {
+        proposalLinkEl.innerHTML = '<strong>Financing Proposal:</strong> Not Provided';
+    }
+
+    // Show the modal
+    document.getElementById('business-detail-modal').style.display = 'flex';
+}
+
+// Add these two new functions to script.js
+
+function openAssignAnalystForBusinessDataModal(businessOwnerId, companyName) {
+    const modal = document.getElementById('assign-analyst-business-data-modal');
+    const select = document.getElementById('assign-analyst-business-data-select');
+    document.getElementById('assign-business-owner-id').value = businessOwnerId;
+    document.getElementById('assign-analyst-business-data-modal-title').textContent = `Assign "${companyName}" to an Analyst`;
+    
+    // Find the currently assigned analyst to pre-select them
+    const businessOwner = allUsers.find(u => u.id === businessOwnerId);
+    
+    // Populate the dropdown with all available analysts
+    select.innerHTML = '<option value="">Unassign</option>'; // Option to unassign
+    const analysts = allUsers.filter(user => user.role === 'analyst');
+    analysts.forEach(analyst => {
+        const option = document.createElement('option');
+        option.value = analyst.id;
+        option.textContent = `${analyst.fullName} (${analyst.email})`;
+        // If this analyst is already assigned, select them
+        if (businessOwner && businessOwner.assignedAnalystId === analyst.id) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+
+    modal.style.display = 'flex';
+}
+
+document.getElementById('cancel-assign-analyst-business-data-form').addEventListener('click', () => {
+    document.getElementById('assign-analyst-business-data-modal').style.display = 'none';
+});
+
+document.getElementById('assign-analyst-business-data-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const businessOwnerId = document.getElementById('assign-business-owner-id').value;
+    const analystId = document.getElementById('assign-analyst-business-data-select').value;
+    const businessOwnerDocRef = doc(db, "users", businessOwnerId);
+
+    loadingSpinner.style.display = 'flex';
+    try {
+        // If analystId is empty, it means we are unassigning.
+        // We use deleteField() to completely remove the field from the document.
+        const dataToUpdate = {
+            assignedAnalystId: analystId ? analystId : deleteField()
+        };
+        await updateDoc(businessOwnerDocRef, dataToUpdate);
+
+        showMessage("Assignment updated successfully.");
+        document.getElementById('assign-analyst-business-data-modal').style.display = 'none';
+        renderAdminBusinessData(); // Refresh the admin table to show the change
+    } catch (error) {
+        console.error("Error updating assignment:", error);
+        showMessage("Failed to update assignment.");
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+});
+
+// --- Add these new functions for the analyst view to script.js ---
+
+document.getElementById('nav-analyst-business-data').addEventListener('click', (e) => {
+    e.preventDefault();
+    renderAnalystBusinessData();
+    showPage('analyst-business-data-section');
+});
+document.getElementById('mobile-nav-analyst-business-data').addEventListener('click', (e) => {
+    e.preventDefault();
+    mobileMenu.classList.add('hidden');
+    renderAnalystBusinessData();
+    showPage('analyst-business-data-section');
+});
+
+// Replace this entire function in script.js
+function renderAnalystBusinessData() {
+    const tableBody = document.getElementById('analyst-business-data-tbody');
+    tableBody.innerHTML = '';
+
+    const assignedBusinesses = allUsers.filter(user => 
+        user.role === 'business-owner' && user.assignedAnalystId === currentUser.uid
+    );
+
+    if (assignedBusinesses.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No business data has been assigned to you for review.</td></tr>`;
+        return;
+    }
+
+    assignedBusinesses.forEach(user => {
+        // Determine the status and button state
+        const isApproved = user.isApprovedByAnalyst === true;
+        const statusHTML = isApproved
+            ? `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Approved</span>`
+            : `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending Approval</span>`;
+
+        const approveButtonHTML = isApproved
+            ? `<button class="bg-gray-400 text-white font-bold py-1 px-3 rounded-lg text-xs cursor-not-allowed" disabled>Approved</button>`
+            : `<button data-user-id="${user.id}" data-company-name="${user.companyName}" class="approve-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Approve</button>`;
+
+        const row = `
+            <tr class="hover:bg-gray-50">
+                <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
+                <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
+                <td data-label="Approval Status" class="py-4 px-6 text-gray-700 whitespace-nowrap">${statusHTML}</td>
+                <td data-label="Actions" class="py-4 px-6 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
+                        ${approveButtonHTML}
+                    </div>
+                </td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    });
+
+    tableBody.querySelectorAll('.view-business-details-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => openBusinessDetailModal(e.currentTarget.dataset.userId));
+    });
+    
+    // Add event listener for the new approve button
+    tableBody.querySelectorAll('.approve-business-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const { userId, companyName } = e.currentTarget.dataset;
+            handleAnalystApproveBusinessData(userId, companyName);
+        });
+    });
+}
+
+// Add this new function to script.js
+async function handleAnalystApproveBusinessData(businessOwnerId, companyName) {
+    if (!window.confirm(`Are you sure you want to approve the business "${companyName}"? This will allow them to propose new projects.`)) {
+        return;
+    }
+
+    loadingSpinner.style.display = 'flex';
+    const businessOwnerDocRef = doc(db, "users", businessOwnerId);
+
+    try {
+        await updateDoc(businessOwnerDocRef, {
+            isApprovedByAnalyst: true
+        });
+        showMessage(`Successfully approved ${companyName}.`);
+        // The table will automatically refresh due to the onSnapshot listener.
+    } catch (error) {
+        console.error("Error approving business data:", error);
+        showMessage("Failed to approve business data.");
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+}
+
+document.getElementById('go-to-complete-profile-btn').addEventListener('click', () => {
+    // First, show the correct page
+    showPage('complete-profile-section');
+    
+    // THEN, enable the submit button on that page
+    document.getElementById('complete-profile-submit-btn').disabled = false;
+    loadBusinessProfileDraft(); 
+});
+
+// Add these two new functions to script.js
+
+/**
+ * Saves the current state of the Step 2 form to the browser's localStorage.
+ */
+function saveBusinessProfileDraft() {
+    if (!currentUser) return; // Only save if a user is logged in
+
+    const form = document.getElementById('complete-profile-form');
+    const formData = {
+        companyProfileLink: form.querySelector('#profile-company-profile-link').value,
+        financingProposalLink: form.querySelector('#profile-financing-proposal-link').value,
+        lastYearRevenue: form.querySelector('#profile-last-year-revenue').value,
+        monthlyOcf: form.querySelector('#profile-monthly-ocf').value,
+        gpm: form.querySelector('#profile-gpm').value,
+        npm: form.querySelector('#profile-npm').value,
+        activeDebt: form.querySelector('input[name="active-debt"]:checked')?.value,
+        previousFunding: form.querySelector('#profile-previous-funding').value,
+        financingType: form.querySelector('input[name="financing-type"]:checked')?.value,
+        fundPurpose: Array.from(form.querySelectorAll('input[name="fund-purpose"]:checked')).map(cb => cb.value),
+        collateral: Array.from(form.querySelectorAll('input[name="collateral"]:checked')).map(cb => cb.value),
+        financingPreference: form.querySelector('input[name="financing-preference"]:checked')?.value,
+    };
+
+    // Save the data as a JSON string, unique to the current user
+    localStorage.setItem(`businessProfileDraft_${currentUser.uid}`, JSON.stringify(formData));
+}
+
+/**
+ * Loads a saved draft from localStorage and populates the Step 2 form.
+ */
+function loadBusinessProfileDraft() {
+    if (!currentUser) return;
+
+    const savedDraft = localStorage.getItem(`businessProfileDraft_${currentUser.uid}`);
+    if (savedDraft) {
+        const formData = JSON.parse(savedDraft);
+        const form = document.getElementById('complete-profile-form');
+
+        // Populate all text and select fields
+        form.querySelector('#profile-company-profile-link').value = formData.companyProfileLink || '';
+        form.querySelector('#profile-financing-proposal-link').value = formData.financingProposalLink || '';
+        form.querySelector('#profile-last-year-revenue').value = formData.lastYearRevenue || '';
+        form.querySelector('#profile-monthly-ocf').value = formData.monthlyOcf || '';
+        form.querySelector('#profile-gpm').value = formData.gpm || '';
+        form.querySelector('#profile-npm').value = formData.npm || '';
+        form.querySelector('#profile-previous-funding').value = formData.previousFunding || '';
+
+        // Populate radio buttons
+        if (formData.activeDebt) {
+            form.querySelector(`input[name="active-debt"][value="${formData.activeDebt}"]`).checked = true;
+        }
+        if (formData.financingType) {
+            form.querySelector(`input[name="financing-type"][value="${formData.financingType}"]`).checked = true;
+        }
+        if (formData.financingPreference) {
+            form.querySelector(`input[name="financing-preference"][value="${formData.financingPreference}"]`).checked = true;
+        }
+
+        // Populate checkboxes
+        form.querySelectorAll('input[name="fund-purpose"]').forEach(cb => {
+            if (formData.fundPurpose?.includes(cb.value)) {
+                cb.checked = true;
+            }
+        });
+        form.querySelectorAll('input[name="collateral"]').forEach(cb => {
+            if (formData.collateral?.includes(cb.value)) {
+                cb.checked = true;
+            }
+        });
+    }
+}
+
+const profileFormInputs = document.querySelectorAll('#complete-profile-form input, #complete-profile-form select, #complete-profile-form textarea');
+profileFormInputs.forEach(input => {
+    // Save whenever the user clicks out of a field
+    input.addEventListener('blur', saveBusinessProfileDraft);
+});
