@@ -4521,79 +4521,67 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
 document.getElementById('complete-profile-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorDiv = document.getElementById('complete-profile-error');
+    const loadingSpinner = document.getElementById('loading-spinner'); // Make sure you have this defined
     errorDiv.classList.add('hidden');
     loadingSpinner.style.display = 'flex';
 
     try {
-        // --- Collect all data from the new form ---
+        // --- Get all form values ---
         const companyProfileLink = document.getElementById('profile-company-profile-link').value;
         const financingProposalLink = document.getElementById('profile-financing-proposal-link').value;
         const lastYearRevenue = document.getElementById('profile-last-year-revenue').value;
         const previousFunding = document.getElementById('profile-previous-funding').value;
         const gpm = parseFloat(document.getElementById('profile-gpm').value);
         const npm = parseFloat(document.getElementById('profile-npm').value);
-        const activeDebt = document.querySelector('input[name="active-debt"]:checked').value;
         const monthlyOcf = document.getElementById('profile-monthly-ocf').value;
-        const financingType = document.querySelector('input[name="financing-type"]:checked').value;
-        const financingPreference = document.querySelector('input[name="financing-preference"]:checked').value;
         
-        const fundPurposeNodes = document.querySelectorAll('input[name="fund-purpose"]:checked');
-        const fundPurpose = Array.from(fundPurposeNodes).map(node => node.value);
-        
-        const collateralNodes = document.querySelectorAll('input[name="collateral"]:checked');
-        const collateral = Array.from(collateralNodes).map(node => node.value);
+        // --- Get checked radio buttons ---
+        const activeDebtNode = document.querySelector('input[name="active-debt"]:checked');
+        const financingTypeNode = document.querySelector('input[name="financing-type"]:checked');
+        const financingPreferenceNode = document.querySelector('input[name="financing-preference"]:checked');
 
-        // --- Prepare the data object for Firestore ---
+        // ==================== VALIDATION START ====================
+        // Check if all required radio buttons and selects are chosen.
+        if (!activeDebtNode || !financingTypeNode || !financingPreferenceNode || !lastYearRevenue || !previousFunding) {
+            errorDiv.textContent = "Gagal. Harap pastikan semua kolom telah diisi dengan benar.";
+            errorDiv.classList.remove('hidden');
+            loadingSpinner.style.display = 'none';
+            return; // Stop the execution if validation fails
+        }
+        // ===================== VALIDATION END =====================
+
+        // --- Collect values from nodes and checkboxes ---
+        const activeDebt = activeDebtNode.value;
+        const financingType = financingTypeNode.value;
+        const financingPreference = financingPreferenceNode.value;
+        const fundPurpose = Array.from(document.querySelectorAll('input[name="fund-purpose"]:checked')).map(node => node.value);
+        const collateral = Array.from(document.querySelectorAll('input[name="collateral"]:checked')).map(node => node.value);
+
+        // --- Prepare data for Firestore ---
         const userDocRef = doc(db, "users", currentUser.uid);
         const dataToUpdate = {
-            step2Details: { 
-                companyProfileLink,
-                financingProposalLink,
-                lastYearRevenue,
-                previousFunding,
-                gpm,
-                npm,
-                activeDebt,
-                monthlyOcf,
-                financingType,
-                financingPreference,
-                fundPurpose,
-                collateral,
+            step2Details: {
+                companyProfileLink, financingProposalLink, lastYearRevenue,
+                previousFunding, gpm, npm, activeDebt, monthlyOcf, financingType,
+                financingPreference, fundPurpose, collateral,
             },
-            isProfileComplete: true, 
+            isProfileComplete: true,
         };
 
-        // Update the user's document in Firestore
+        // --- Update Firestore and reload on success ---
         await updateDoc(userDocRef, dataToUpdate);
         localStorage.removeItem(`businessProfileDraft_${currentUser.uid}`);
         
-        // ==================== MODIFICATION START ====================
-        // This logic replaces the generic initializeAppUI() call to navigate directly.
-
-        // 1. Hide all page sections to ensure a clean view
-        document.querySelectorAll('.page-section').forEach(section => {
-            section.classList.add('hidden');
-        });
-        
-        // 2. Specifically show the "My Projects" section
-        document.getElementById('business-owner-my-projects-section').classList.remove('hidden');
-        
-        // 3. Hide the authentication container (the sign-in/sign-up forms)
-        document.getElementById('auth-section').classList.add('hidden');
-        
-        // 4. Ensure the main content area is visible
-        document.getElementById('main-content').classList.remove('hidden');
-
-        // Note: You may also want to add a class to the 'nav-my-project' link to make it look "active".
-        // Example: document.getElementById('nav-my-project').classList.add('your-active-nav-class');
-        
-        // ===================== MODIFICATION END =====================
+        // On success, simply reload the page.
+        // The app's main logic will now see the profile is complete and show the correct view.
+        window.location.reload();
 
     } catch (error) {
         console.error("Error completing profile:", error);
-        errorDiv.textContent = "Gagal menyimpan profil. Pastikan semua kolom yang wajib diisi telah terisi.";
+        errorDiv.textContent = "Terjadi kesalahan saat menyimpan profil. Silakan coba lagi.";
         errorDiv.classList.remove('hidden');
     } finally {
+        // The spinner will be hidden by the page reload, but we keep this as a fallback for errors.
         loadingSpinner.style.display = 'none';
     }
 });
