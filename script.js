@@ -4523,7 +4523,6 @@ document.getElementById('complete-profile-form').addEventListener('submit', asyn
     const errorDiv = document.getElementById('complete-profile-error');
     const loadingSpinner = document.getElementById('loading-spinner'); // Make sure you have this defined
     errorDiv.classList.add('hidden');
-    loadingSpinner.style.display = 'flex';
 
     try {
         // --- Get all form values ---
