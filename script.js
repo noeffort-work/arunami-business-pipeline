@@ -5016,3 +5016,100 @@ profileFormInputs.forEach(input => {
     // Save whenever the user clicks out of a field
     input.addEventListener('blur', saveBusinessProfileDraft);
 });
+
+// --- ADD THESE NEW EVENT LISTENERS AND FUNCTIONS FOR THE EDIT PROFILE FEATURE ---
+
+// 1. Event listener for the "Ubah Data" button on the profile view page
+document.getElementById('edit-business-profile-btn').addEventListener('click', () => {
+    openEditBusinessProfile(); // Populate the form with current data
+    showPage('edit-business-profile-section'); // Show the edit form
+});
+
+// 2. Event listener for the "Batal" button on the edit form
+document.getElementById('cancel-edit-profile-btn').addEventListener('click', () => {
+    showPage('business-profile-section'); // Go back to the profile view page
+});
+
+/**
+ * Populates the edit form with the current business owner's data.
+ */
+function openEditBusinessProfile() {
+    if (!currentUserData) return;
+
+    // Helper to populate a select dropdown and set its value
+    const populateSelect = (elementId, options, selectedValue) => {
+        const select = document.getElementById(elementId);
+        select.innerHTML = '';
+        options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.text;
+            select.appendChild(option);
+        });
+        select.value = selectedValue;
+    };
+    
+    // --- Populate top-level user data ---
+    document.getElementById('edit-bp-fullname').value = currentUserData.fullName || '';
+    document.getElementById('edit-bp-company-name').value = currentUserData.companyName || '';
+    document.getElementById('edit-bp-establishment-date').value = currentUserData.establishmentDate || '';
+
+    // Populate dropdowns from the signup form options
+    populateSelect('edit-bp-location', Array.from(document.getElementById('signup-location').options).map(o => ({value: o.value, text: o.text})), currentUserData.location);
+    populateSelect('edit-bp-industry', Array.from(document.getElementById('signup-industry').options).map(o => ({value: o.value, text: o.text})), currentUserData.industry);
+    populateSelect('edit-bp-employee-count', Array.from(document.getElementById('signup-employee-count').options).map(o => ({value: o.value, text: o.text})), currentUserData.employeeCount);
+
+    // --- Populate nested step2Details data ---
+    const details = currentUserData.step2Details || {};
+    populateSelect('edit-bp-last-year-revenue', Array.from(document.getElementById('profile-last-year-revenue').options).map(o => ({value: o.value, text: o.text})), details.lastYearRevenue);
+    populateSelect('edit-bp-monthly-ocf', Array.from(document.getElementById('profile-monthly-ocf').options).map(o => ({value: o.value, text: o.text})), details.monthlyOcf);
+    document.getElementById('edit-bp-gpm').value = details.gpm || '';
+    document.getElementById('edit-bp-npm').value = details.npm || '';
+
+    // Populate radio buttons
+    if (details.financingPreference) {
+        document.querySelector(`input[name="edit-financing-preference"][value="${details.financingPreference}"]`).checked = true;
+    }
+}
+
+// 3. Event listener for the edit form submission
+document.getElementById('edit-business-profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loadingSpinner.style.display = 'flex';
+
+    try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+
+        // Gather all the updated data from the form
+        const dataToUpdate = {
+            fullName: document.getElementById('edit-bp-fullname').value,
+            companyName: document.getElementById('edit-bp-company-name').value,
+            establishmentDate: document.getElementById('edit-bp-establishment-date').value,
+            location: document.getElementById('edit-bp-location').value,
+            industry: document.getElementById('edit-bp-industry').value,
+            employeeCount: document.getElementById('edit-bp-employee-count').value,
+            step2Details: {
+                // Keep existing step2Details and overwrite the ones from the form
+                ...(currentUserData.step2Details || {}), 
+                lastYearRevenue: document.getElementById('edit-bp-last-year-revenue').value,
+                monthlyOcf: document.getElementById('edit-bp-monthly-ocf').value,
+                gpm: parseFloat(document.getElementById('edit-bp-gpm').value),
+                npm: parseFloat(document.getElementById('edit-bp-npm').value),
+                financingPreference: document.querySelector('input[name="edit-financing-preference"]:checked').value,
+            }
+        };
+
+        // Save the updated data to Firestore
+        await updateDoc(userDocRef, dataToUpdate);
+        
+        showMessage("Profil berhasil diperbarui.");
+        showPage('business-profile-section'); // Go back to the profile view page
+        // The onSnapshot listener will automatically refresh the data on the view page
+
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        showMessage("Gagal memperbarui profil. Silakan coba lagi.");
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+});
