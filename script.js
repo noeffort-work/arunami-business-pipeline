@@ -4565,16 +4565,33 @@ document.getElementById('complete-profile-form').addEventListener('submit', asyn
 
         // Update the user's document in Firestore
         await updateDoc(userDocRef, dataToUpdate);
-         localStorage.removeItem(`businessProfileDraft_${currentUser.uid}`);
+        localStorage.removeItem(`businessProfileDraft_${currentUser.uid}`);
         
-        // --- THE FIX: Manually re-initialize the UI ---
-        // This new line tells the app to immediately show the dashboard.
-        initializeAppUI(currentUserData); 
-        // ---------------------------------------------
+        // ==================== MODIFICATION START ====================
+        // This logic replaces the generic initializeAppUI() call to navigate directly.
+
+        // 1. Hide all page sections to ensure a clean view
+        document.querySelectorAll('.page-section').forEach(section => {
+            section.classList.add('hidden');
+        });
+        
+        // 2. Specifically show the "My Projects" section
+        document.getElementById('business-owner-my-projects-section').classList.remove('hidden');
+        
+        // 3. Hide the authentication container (the sign-in/sign-up forms)
+        document.getElementById('auth-section').classList.add('hidden');
+        
+        // 4. Ensure the main content area is visible
+        document.getElementById('main-content').classList.remove('hidden');
+
+        // Note: You may also want to add a class to the 'nav-my-project' link to make it look "active".
+        // Example: document.getElementById('nav-my-project').classList.add('your-active-nav-class');
+        
+        // ===================== MODIFICATION END =====================
 
     } catch (error) {
         console.error("Error completing profile:", error);
-        errorDiv.textContent = "Failed to save profile. Please ensure all required fields are filled.";
+        errorDiv.textContent = "Gagal menyimpan profil. Pastikan semua kolom yang wajib diisi telah terisi.";
         errorDiv.classList.remove('hidden');
     } finally {
         loadingSpinner.style.display = 'none';
