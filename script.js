@@ -256,7 +256,7 @@ function initializeAppUI(userData) {
         } else if (userData.isApprovedByAnalyst === false) {
             // If profile is complete but not yet approved
             proposeBtn.disabled = true;
-            proposeMsg.textContent = 'Your profile is awaiting analyst approval.';
+            proposeMsg.textContent = 'Data Anda sudah kami terima, Data bisa dilihat di "My Business Profile"';
             proposeMsg.classList.remove('hidden');
         } else {
             // If profile is complete AND approved
