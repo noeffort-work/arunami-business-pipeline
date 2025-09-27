@@ -242,29 +242,24 @@ function initializeAppUI(userData) {
 
         
 
-        // --- GATING LOGIC FOR PROPOSE PROJECT BUTTON ---
         const proposeBtn = document.getElementById('show-create-my-project-modal-btn');
         const proposeMsg = document.getElementById('propose-project-status-message');
-        const banner = document.getElementById('incomplete-profile-banner');
-        
-        if (userData.isProfileComplete === false) {
-            // If profile is incomplete, show the banner
-            banner.classList.remove('hidden');
-            proposeBtn.disabled = true;
-            proposeMsg.textContent = 'Please complete your profile to enable project proposals.';
-            proposeMsg.classList.remove('hidden');
-        } else if (userData.isApprovedByAnalyst === false) {
-            // If profile is complete but not yet approved
-            proposeBtn.disabled = true;
-            proposeMsg.textContent = 'Data Anda sudah kami terima, Data bisa dilihat di "My Business Profile"';
-            proposeMsg.classList.remove('hidden');
-        } else {
-            // If profile is complete AND approved
-            proposeBtn.disabled = false;
-            proposeMsg.classList.add('hidden');
-        }
+        const proposeBtnCta = document.getElementById('show-create-my-project-modal-btn-cta');
+        const proposeMsgCta = document.getElementById('propose-project-status-message-cta');
 
-        // --- END OF GATING LOGIC ---
+        const allProposeBtns = [proposeBtn, proposeBtnCta];
+        const allProposeMsgs = [proposeMsg, proposeMsgCta];
+        
+        if (userData.isApprovedByAnalyst === true) {
+            allProposeBtns.forEach(btn => btn.disabled = false);
+            allProposeMsgs.forEach(msg => msg.classList.add('hidden'));
+        } else {
+            allProposeBtns.forEach(btn => btn.disabled = true);
+            allProposeMsgs.forEach(msg => {
+                msg.textContent = 'Profil Anda sedang menunggu persetujuan analis sebelum Anda dapat mengajukan proyek.';
+                msg.classList.remove('hidden');
+            });
+        }
 
     } else if (userData.role === 'analyst') {
         document.getElementById('analyst-nav-links').style.display = 'inline';
@@ -411,8 +406,6 @@ document.getElementById('bo-update-form').addEventListener('submit', async (e) =
 });
 
 // Business Owner View Toggles
-const myProjectsCardViewBtn = document.getElementById("my-projects-card-view-btn");
-const myProjectsListViewBtn = document.getElementById("my-projects-list-view-btn");
 const myProjectsGrid = document.getElementById("my-projects-grid");
 const myProjectsListContainer = document.getElementById("my-projects-list-container");
 
@@ -421,24 +414,6 @@ const proposedCardViewBtn = document.getElementById("proposed-card-view-btn");
 const proposedListViewBtn = document.getElementById("proposed-list-view-btn");
 const proposedGrid = document.getElementById("admin-proposed-projects-grid");
 const proposedListContainer = document.getElementById("admin-proposed-projects-list-container");
-
-myProjectsCardViewBtn.addEventListener("click", () => {
-  myProjectsGrid.style.display = "grid";
-  myProjectsListContainer.style.display = "none";
-  myProjectsCardViewBtn.classList.add("bg-white", "shadow");
-  myProjectsCardViewBtn.classList.remove("text-gray-600");
-  myProjectsListViewBtn.classList.remove("bg-white", "shadow");
-  myProjectsListViewBtn.classList.add("text-gray-600");
-});
-
-myProjectsListViewBtn.addEventListener("click", () => {
-  myProjectsGrid.style.display = "none";
-  myProjectsListContainer.style.display = "block";
-  myProjectsListViewBtn.classList.add("bg-white", "shadow");
-  myProjectsListViewBtn.classList.remove("text-gray-600");
-  myProjectsCardViewBtn.classList.remove("bg-white", "shadow");
-  myProjectsCardViewBtn.classList.add("text-gray-600");
-});
 
 // Business Owner Navigation
 document.getElementById("nav-my-project").addEventListener("click", (e) => {
@@ -3672,25 +3647,40 @@ function transformGoogleDriveFolderLink(url) {
 // =================== NEW FUNCTIONS FOR BUSINESS OWNER ==================
 // =======================================================================
 
+// GANTI SELURUH FUNGSI INI
 function listenToMyProjects() {
     if (!currentUser) return;
     const projectsQuery = query(collection(db, "projects"), where("ownerId", "==", currentUser.uid));
 
     onSnapshot(projectsQuery, (snapshot) => {
-        const myProjectsTableBody = document.getElementById('my-projects-table-body');
-        const myApprovedProjectsTableBody = document.getElementById('my-approved-projects-table-body');
+        const ctaContainer = document.getElementById('no-projects-cta');
+        const projectsContainer = document.getElementById('projects-view-container');
         
         const allMyProjects = [];
         snapshot.forEach(doc => {
             allMyProjects.push({ id: doc.id, ...doc.data() });
         });
 
-        const proposedProjects = allMyProjects.filter(p => p.status !== 'Approved');
-        const approvedProjects = allMyProjects.filter(p => p.status === 'Approved');
-        
-        renderMyProjectsTable(proposedProjects, myProjectsTableBody);
-        renderMyApprovedProjectsTable(approvedProjects, myApprovedProjectsTableBody);
-        renderMyProjectProgress(allMyProjects); // Call the new function
+        if (allMyProjects.length === 0) {
+            // Jika tidak ada proyek, tampilkan Call to Action
+            ctaContainer.style.display = 'block';
+            projectsContainer.style.display = 'none';
+        } else {
+            // Jika ada proyek, tampilkan daftar proyek
+            ctaContainer.style.display = 'none';
+            projectsContainer.style.display = 'block';
+
+            // Pisahkan proyek yang diajukan dan yang disetujui
+            const proposedProjects = allMyProjects.filter(p => p.status !== 'Approved');
+            const approvedProjects = allMyProjects.filter(p => p.status === 'Approved');
+            
+            // Render tabel-tabel terkait
+            const myProjectsTableBody = document.getElementById('my-projects-table-body');
+            const myApprovedProjectsTableBody = document.getElementById('my-approved-projects-table-body');
+            renderMyProjectsTable(proposedProjects, myProjectsTableBody);
+            renderMyApprovedProjectsTable(approvedProjects, myApprovedProjectsTableBody);
+            renderMyProjectProgress(allMyProjects);
+        }
     });
 }
 
@@ -4458,8 +4448,10 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
     const errorDiv = document.getElementById('sign-up-error');
     errorDiv.classList.add('hidden');
 
+    // --- Mengambil semua nilai dari formulir ---
     const fullName = document.getElementById('signup-fullname').value;
     const email = document.getElementById('signup-email').value;
+    let rawPhone = document.getElementById('signup-phone').value;
     const companyName = document.getElementById('signup-company-name').value;
     const link1 = document.getElementById('signup-link1').value;
     const link2 = document.getElementById('signup-link2').value;
@@ -4475,7 +4467,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
     const confirmPassword = document.getElementById('signup-confirm-password').value;
 
     if (password !== confirmPassword) {
-        errorDiv.textContent = 'Passwords do not match.';
+        errorDiv.textContent = 'Kata sandi tidak cocok.';
         errorDiv.classList.remove('hidden');
         return;
     }
@@ -4483,13 +4475,26 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
     loadingSpinner.style.display = 'flex';
 
     try {
+        // Langkah 1: Buat pengguna di Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // --- Logika pemformatan nomor telepon ---
+        let finalPhone = rawPhone.replace(/\D/g, ''); // Hapus semua karakter non-angka
+        if (finalPhone.startsWith('0')) {
+            finalPhone = finalPhone.substring(1); // Hapus '0' di depan jika ada
+        }
+        if (!finalPhone.startsWith('62')) {
+            finalPhone = '62' + finalPhone; // Tambahkan '62' jika belum ada
+        }
+        finalPhone = '+' + finalPhone; // Tambahkan '+' di awal
+        // --- Akhir logika pemformatan ---
+
+        // Langkah 2: Siapkan dokumen profil pengguna untuk Firestore
         const userData = {
             fullName,
             email,
-            phone: "",
+            phone: finalPhone, // Simpan nomor telepon yang sudah diformat
             companyName,
             links: [link1, link2, link3].filter(link => link),
             establishmentDate,
@@ -4502,7 +4507,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
             profilePictureURL: "",
             createdAt: Timestamp.now(),
             hasChangedPassword: false, 
-            isProfileComplete: false, // <-- Important flag
+            isProfileComplete: false,
             isApprovedByAnalyst: false,
         };
 
@@ -4512,6 +4517,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
         console.error("Sign up error:", error);
         errorDiv.textContent = error.message;
         errorDiv.classList.remove('hidden');
+    } finally {
         loadingSpinner.style.display = 'none';
     }
 });
@@ -4589,17 +4595,18 @@ document.getElementById('complete-profile-form').addEventListener('submit', asyn
 function renderBusinessProfile() {
     if (!currentUserData) return;
 
-    // Helper function to safely display data
+    // Fungsi bantuan untuk menampilkan data dengan aman
     const display = (id, value) => {
         const el = document.getElementById(id);
         if (el) {
-            el.textContent = value || 'N/A';
+            el.textContent = value || 'T/A'; // T/A = Tidak Ada
         }
     };
     
-    // Populate Owner & Business Info
+    // Mengisi Informasi Pemilik & Bisnis
     display('bp-fullname', currentUserData.fullName);
     display('bp-email', currentUserData.email);
+    display('bp-phone', currentUserData.phone);
     display('bp-company-name', currentUserData.companyName);
     display('bp-establishment-date', currentUserData.establishmentDate);
     display('bp-location', currentUserData.location);
@@ -4607,16 +4614,16 @@ function renderBusinessProfile() {
     display('bp-employee-count', currentUserData.employeeCount);
     display('bp-trade-activity', currentUserData.tradeActivity);
 
-    // Populate array data
+    // Mengisi data array (tautan dan sumber pendanaan)
     const linksEl = document.getElementById('bp-links');
     if (linksEl) {
         linksEl.innerHTML = currentUserData.links?.map(link => 
             `<a href="${link}" target="_blank" class="text-blue-600 hover:underline">${link}</a>`
-        ).join('') || 'N/A';
+        ).join('') || 'T/A';
     }
     display('bp-external-funding', currentUserData.externalFundingSources?.join(', '));
 
-    // Populate Financials (accessing the nested step2Details object)
+    // Mengisi Kinerja Keuangan (mengakses objek step2Details)
     const details = currentUserData.step2Details || {};
     display('bp-last-year-revenue', details.lastYearRevenue);
     display('bp-monthly-ocf', details.monthlyOcf);
@@ -4624,25 +4631,25 @@ function renderBusinessProfile() {
     display('bp-npm', details.npm);
     display('bp-active-debt', details.activeDebt);
 
-    // Populate Funding Details
+    // Mengisi Detail Pendanaan & Pembiayaan
     display('bp-financing-type', details.financingType);
     display('bp-financing-preference', details.financingPreference);
     display('bp-fund-purpose', details.fundPurpose?.join(', '));
     display('bp-collateral', details.collateral?.join(', '));
     
-    // Populate Document Links
+    // Mengisi Tautan Dokumen
     const profileLinkEl = document.getElementById('bp-company-profile-link');
     if (profileLinkEl && details.companyProfileLink) {
-        profileLinkEl.innerHTML = `<strong>Company Profile:</strong> <a href="${details.companyProfileLink}" target="_blank" class="text-blue-600 hover:underline">View Document</a>`;
+        profileLinkEl.innerHTML = `<strong>Profil Perusahaan:</strong> <a href="${details.companyProfileLink}" target="_blank" class="text-blue-600 hover:underline">Lihat Dokumen</a>`;
     } else if (profileLinkEl) {
-        profileLinkEl.innerHTML = '<strong>Company Profile:</strong> N/A';
+        profileLinkEl.innerHTML = '<strong>Profil Perusahaan:</strong> T/A';
     }
 
     const proposalLinkEl = document.getElementById('bp-financing-proposal-link');
     if (proposalLinkEl && details.financingProposalLink) {
-        proposalLinkEl.innerHTML = `<strong>Financing Proposal:</strong> <a href="${details.financingProposalLink}" target="_blank" class="text-blue-600 hover:underline">View Document</a>`;
+        proposalLinkEl.innerHTML = `<strong>Proposal Pembiayaan:</strong> <a href="${details.financingProposalLink}" target="_blank" class="text-blue-600 hover:underline">Lihat Dokumen</a>`;
     } else if (proposalLinkEl) {
-        proposalLinkEl.innerHTML = '<strong>Financing Proposal:</strong> Not Provided';
+        proposalLinkEl.innerHTML = '<strong>Proposal Pembiayaan:</strong> Tidak Disediakan';
     }
 }
 
@@ -4732,6 +4739,7 @@ function openBusinessDetailModal(userId) {
     // Populate Owner & Business Info
     displayModal('modal-bd-fullname', user.fullName);
     displayModal('modal-bd-email', user.email);
+    displayModal('modal-bd-phone', user.phone);
     displayModal('modal-bd-establishment-date', user.establishmentDate);
     displayModal('modal-bd-location', user.location);
     displayModal('modal-bd-industry', user.industry);
@@ -4871,7 +4879,7 @@ function renderAnalystBusinessData() {
         const isApproved = user.isApprovedByAnalyst === true;
         const statusHTML = isApproved
             ? `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Approved</span>`
-            : `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending Approval</span>`;
+            : `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>`;
 
         const approveButtonHTML = isApproved
             ? `<button class="bg-gray-400 text-white font-bold py-1 px-3 rounded-lg text-xs cursor-not-allowed" disabled>Approved</button>`
@@ -4881,7 +4889,8 @@ function renderAnalystBusinessData() {
             <tr class="hover:bg-gray-50">
                 <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
                 <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
-                <td data-label="Approval Status" class="py-4 px-6 text-gray-700 whitespace-nowrap">${statusHTML}</td>
+                <td data-label="+62
+                 Status" class="py-4 px-6 text-gray-700 whitespace-nowrap">${statusHTML}</td>
                 <td data-label="Actions" class="py-4 px-6 text-center">
                     <div class="flex items-center justify-center space-x-2">
                         <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
@@ -5052,6 +5061,11 @@ function openEditBusinessProfile() {
     // --- Populate top-level user data ---
     document.getElementById('edit-bp-fullname').value = currentUserData.fullName || '';
     document.getElementById('edit-bp-company-name').value = currentUserData.companyName || '';
+    let phoneForInput = (currentUserData.phone || '').replace(/\D/g, ''); // Hapus semua yang bukan angka
+    if (phoneForInput.startsWith('62')) {
+        phoneForInput = phoneForInput.substring(2); // Hapus '62'
+    }
+    document.getElementById('edit-bp-phone').value = phoneForInput;
     document.getElementById('edit-bp-establishment-date').value = currentUserData.establishmentDate || '';
 
     // Populate dropdowns from the signup form options
@@ -5084,12 +5098,12 @@ document.getElementById('edit-business-profile-form').addEventListener('submit',
         const dataToUpdate = {
             fullName: document.getElementById('edit-bp-fullname').value,
             companyName: document.getElementById('edit-bp-company-name').value,
+            phone: formatPhoneNumber(document.getElementById('edit-bp-phone').value), // Using a helper for consistency
             establishmentDate: document.getElementById('edit-bp-establishment-date').value,
             location: document.getElementById('edit-bp-location').value,
             industry: document.getElementById('edit-bp-industry').value,
             employeeCount: document.getElementById('edit-bp-employee-count').value,
             step2Details: {
-                // Keep existing step2Details and overwrite the ones from the form
                 ...(currentUserData.step2Details || {}), 
                 lastYearRevenue: document.getElementById('edit-bp-last-year-revenue').value,
                 monthlyOcf: document.getElementById('edit-bp-monthly-ocf').value,
@@ -5099,12 +5113,19 @@ document.getElementById('edit-business-profile-form').addEventListener('submit',
             }
         };
 
-        // Save the updated data to Firestore
+        // 1. Save the updated data to Firestore
         await updateDoc(userDocRef, dataToUpdate);
         
+        // --- NEW LOGIC TO FORCE REFRESH ---
+        // 2. Immediately update the local currentUserData object
+        Object.assign(currentUserData, dataToUpdate);
+
+        // 3. Re-render the profile view in the background with the new data
+        renderBusinessProfile();
+        // --- END OF NEW LOGIC ---
+
         showMessage("Profil berhasil diperbarui.");
-        showPage('business-profile-section'); // Go back to the profile view page
-        // The onSnapshot listener will automatically refresh the data on the view page
+        showPage('business-profile-section'); // 4. Now show the already refreshed page
 
     } catch (error) {
         console.error("Error updating profile:", error);
@@ -5112,4 +5133,19 @@ document.getElementById('edit-business-profile-form').addEventListener('submit',
     } finally {
         loadingSpinner.style.display = 'none';
     }
+});
+
+function formatPhoneNumber(rawPhone) {
+    let finalPhone = (rawPhone || '').replace(/\D/g, ''); // Remove all non-numeric characters
+    if (finalPhone.startsWith('0')) {
+        finalPhone = finalPhone.substring(1);
+    }
+    if (finalPhone && !finalPhone.startsWith('62')) { // Check if finalPhone is not empty
+        finalPhone = '62' + finalPhone;
+    }
+    return finalPhone ? '+' + finalPhone : ''; // Return formatted number or empty string
+}
+
+document.getElementById('show-create-my-project-modal-btn-cta').addEventListener('click', () => {
+    openProjectModal();
 });
