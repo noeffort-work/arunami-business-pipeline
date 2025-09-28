@@ -191,6 +191,9 @@ window.addEventListener("click", (e) => {
 document.getElementById("user-role-filter").addEventListener("change", (e) => {
   renderAdminUsersTable(e.target.value);
 });
+document.getElementById('bo-completion-filter').addEventListener('change', () => {
+    renderAdminBusinessData();
+});
 
 // --- AUTHENTICATION LOGIC ---
 
@@ -4801,17 +4804,32 @@ document.getElementById('close-business-detail-modal').addEventListener('click',
 // --- Add this new function to render the table of business owners ---
 // Replace this entire function in script.js
 function renderAdminBusinessData() {
+
+  // Add this code to the beginning of the function
+const allBusinessOwners = allUsers.filter(user => user.role === 'business-owner');
+const completedProfiles = allBusinessOwners.filter(user => user.isProfileComplete === true);
+document.getElementById('total-bo-count').textContent = allBusinessOwners.length;
+document.getElementById('total-bo-completed-count').textContent = completedProfiles.length;
+
     const tableBody = document.getElementById('admin-business-data-tbody');
     tableBody.innerHTML = '';
 
+    const showOnlyCompleted = document.getElementById('bo-completion-filter').checked;
+
+    let businessOwnersToDisplay = allBusinessOwners;
+
+      if (showOnlyCompleted) {
+        businessOwnersToDisplay = allBusinessOwners.filter(user => user.isProfileComplete === true);
+    }
+
     const businessOwners = allUsers.filter(user => user.role === 'business-owner');
 
-    if (businessOwners.length === 0) {
+   if (businessOwnersToDisplay.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">No business owner data found.</td></tr>`;
         return;
     }
 
-    businessOwners.forEach(user => {
+    businessOwnersToDisplay.forEach(user => {
         // Find the assigned analyst's name, if it exists
         const assignedAnalyst = user.assignedAnalystId ? allUsers.find(u => u.id === user.assignedAnalystId) : null;
         const assignedAnalystName = assignedAnalyst ? assignedAnalyst.fullName : '<span class="text-gray-400">Unassigned</span>';

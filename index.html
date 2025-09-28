@@ -631,6 +631,22 @@
 
 <div id="admin-business-data-section" class="page-section">
     <h1 class="text-2xl md:text-3xl font-bold mb-6">Business Owner Data</h1>
+    <div class="flex justify-end mb-4">
+    <div class="flex items-center">
+        <input id="bo-completion-filter" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+        <label for="bo-completion-filter" class="ml-2 block text-sm font-medium text-gray-700">Show Only Completed Profiles</label>
+    </div>
+</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h3 class="text-lg font-medium text-gray-500">Total Business Owners</h3>
+        <p id="total-bo-count" class="mt-1 text-4xl font-semibold text-gray-900">0</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h3 class="text-lg font-medium text-gray-500">Completed Step 2 Profile</h3>
+        <p id="total-bo-completed-count" class="mt-1 text-4xl font-semibold text-gray-900">0</p>
+    </div>
+</div>
     <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg">
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white responsive-table">
