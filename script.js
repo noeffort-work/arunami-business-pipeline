@@ -4752,18 +4752,18 @@ document.getElementById('business-profile-form').addEventListener('submit', asyn
             externalFundingSources: getCheckedValues('bp-edit-funding-source'),
             step2Details: {
                 ...(currentUserData.step2Details || {}), 
-                lastYearRevenue: document.getElementById('bp-edit-last-year-revenue').value,
-                monthlyOcf: document.getElementById('bp-edit-monthly-ocf').value,
-                gpm: parseFloat(document.getElementById('bp-edit-gpm').value),
-                npm: parseFloat(document.getElementById('bp-edit-npm').value),
-                activeDebt: document.querySelector('input[name="bp-edit-active-debt"]:checked')?.value,
-                financingType: document.querySelector('input[name="bp-edit-financing-type"]:checked')?.value,
-                financingPreference: document.querySelector('input[name="bp-edit-financing-preference"]:checked')?.value,
-                fundPurpose: getCheckedValues('bp-edit-fund-purpose'),
-                collateral: getCheckedValues('bp-edit-collateral'),
-                companyProfileLink: document.getElementById('bp-edit-company-profile-link').value,
-                financingProposalLink: document.getElementById('bp-edit-financing-proposal-link').value,
-            }
+                 lastYearRevenue: document.getElementById('bp-edit-last-year-revenue').value,
+    monthlyOcf: document.getElementById('bp-edit-monthly-ocf').value,
+    gpm: parseFloat(document.getElementById('bp-edit-gpm').value),
+    npm: parseFloat(document.getElementById('bp-edit-npm').value),
+    activeDebt: document.querySelector('input[name="bp-edit-active-debt"]:checked')?.value ?? null,
+    financingType: document.querySelector('input[name="bp-edit-financing-type"]:checked')?.value ?? null,
+    financingPreference: document.querySelector('input[name="bp-edit-financing-preference"]:checked')?.value ?? null,
+    fundPurpose: getCheckedValues('bp-edit-fund-purpose'),
+    collateral: getCheckedValues('bp-edit-collateral'),
+    companyProfileLink: document.getElementById('bp-edit-company-profile-link').value,
+    financingProposalLink: document.getElementById('bp-edit-financing-proposal-link').value,
+}
         };
 
         await updateDoc(userDocRef, dataToUpdate);
