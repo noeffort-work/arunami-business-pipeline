@@ -4716,6 +4716,10 @@ if (currentUserData.isProfileComplete === true) {
     // If profile is incomplete, hide the fields and show the call-to-action
     step2Fields.classList.add('hidden');
     step2Cta.classList.remove('hidden');
+    
+    // --- ADD THIS NEW CODE ---
+    // Remove the 'required' attribute from all inputs within the hidden section
+    step2Fields.querySelectorAll('[required]').forEach(el => el.removeAttribute('required'));
 }
 
 
