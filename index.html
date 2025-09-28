@@ -719,139 +719,131 @@
         </div>
 
         <div id="business-profile-section" class="page-section">
-    <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl md:text-3xl font-bold">Profil Bisnis Saya</h1>
-    <button id="edit-business-profile-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-        Ubah Data
-    </button>
-</div>
-    <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
-
-        <div class="pb-6 border-b">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Owner & Business Information</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <div><strong class="text-gray-600 block">Owner Name:</strong> <span id="bp-fullname"></span></div>
-                <div><strong class="text-gray-600 block">Owner Email:</strong> <span id="bp-email"></span></div>
-                <div><strong class="text-gray-600 block">Nomor Telepon:</strong> <span id="bp-phone"></span></div>
-                <div><strong class="text-gray-600 block">Company Name:</strong> <span id="bp-company-name"></span></div>
-                <div><strong class="text-gray-600 block">Establishment Date:</strong> <span id="bp-establishment-date"></span></div>
-                <div><strong class="text-gray-600 block">Location:</strong> <span id="bp-location"></span></div>
-                <div><strong class="text-gray-600 block">Industry:</strong> <span id="bp-industry"></span></div>
-                <div><strong class="text-gray-600 block">Employee Count:</strong> <span id="bp-employee-count"></span></div>
-                <div><strong class="text-gray-600 block">Trade Activity:</strong> <span id="bp-trade-activity"></span></div>
-                <div class="md:col-span-2"><strong class="text-gray-600 block">Online Links:</strong> <span id="bp-links" class="flex flex-col space-y-1"></span></div>
-                <div class="md:col-span-2"><strong class="text-gray-600 block">Previous External Funding:</strong> <span id="bp-external-funding"></span></div>
-            </div>
+    <form id="business-profile-form">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold">Profil Bisnis Saya</h1>
+            <button id="save-business-profile-btn" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Simpan Perubahan
+            </button>
         </div>
 
-        <div class="py-6 border-b">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Financial Performance</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <div><strong class="text-gray-600 block">Last Year's Revenue (2024):</strong> <span id="bp-last-year-revenue"></span></div>
-                <div><strong class="text-gray-600 block">Monthly Operating Cash Flow:</strong> <span id="bp-monthly-ocf"></span></div>
-                <div><strong class="text-gray-600 block">Gross Profit Margin:</strong> <span id="bp-gpm"></span>%</div>
-                <div><strong class="text-gray-600 block">Net Profit Margin:</strong> <span id="bp-npm"></span>%</div>
-                <div><strong class="text-gray-600 block">Has Active Short-Term Debt:</strong> <span id="bp-active-debt"></span></div>
-            </div>
-        </div>
-
-        <div class="pt-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Funding & Financing Details</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <div><strong class="text-gray-600 block">Type of Financing Needed:</strong> <span id="bp-financing-type"></span></div>
-                <div><strong class="text-gray-600 block">Financing Preference:</strong> <span id="bp-financing-preference"></span></div>
-                <div class="md:col-span-2"><strong class="text-gray-600 block">Purpose of Funds:</strong> <span id="bp-fund-purpose"></span></div>
-                <div class="md:col-span-2"><strong class="text-gray-600 block">Available Collateral:</strong> <span id="bp-collateral"></span></div>
-                <div class="md:col-span-2"><strong class="text-gray-600 block">Documents:</strong>
-                    <div class="flex flex-col space-y-2 mt-2">
-                        <span id="bp-company-profile-link"></span>
-                        <span id="bp-financing-proposal-link"></span>
+        <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+            <fieldset class="mb-6 pb-6 border-b">
+                <legend class="text-xl font-semibold mb-4 text-gray-800">Informasi Pemilik & Bisnis</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-fullname">Nama Pemilik</label>
+                        <input id="bp-edit-fullname" type="text" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-email">Email Pemilik</label>
+                        <input id="bp-edit-email" type="email" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-gray-100" disabled />
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-phone">Nomor Telepon</label>
+                        <div class="flex"><span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+62</span><input id="bp-edit-phone" type="tel" class="shadow-sm border rounded-r-lg w-full py-2 px-3 text-gray-700" required /></div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-company-name">Nama Perusahaan</label>
+                        <input id="bp-edit-company-name" type="text" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-establishment-date">Tanggal Pendirian</label>
+                        <input id="bp-edit-establishment-date" type="month" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-location">Lokasi</label>
+                        <select id="bp-edit-location" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white" required></select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-industry">Industri</label>
+                        <select id="bp-edit-industry" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white" required></select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-employee-count">Jumlah Karyawan</label>
+                        <select id="bp-edit-employee-count" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white" required></select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-trade-activity">Kegiatan Perdagangan</label>
+                        <select id="bp-edit-trade-activity" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white" required></select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-600 text-sm font-bold mb-1">Tautan Online</label>
+                        <input id="bp-edit-link1" type="text" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 mb-2" placeholder="Tautan utama (Website/Medsos)" />
+                        <input id="bp-edit-link2" type="text" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 mb-2" placeholder="Tautan kedua (Opsional)" />
+                        <input id="bp-edit-link3" type="text" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" placeholder="Tautan ketiga (Opsional)" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-600 text-sm font-bold mb-2">Sumber Pendanaan Eksternal Sebelumnya</label>
+                        <div id="bp-edit-funding-source-container" class="space-y-2"></div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </fieldset>
 
-    </div>
-</div>
-
-<div id="edit-business-profile-section" class="page-section">
-    <h1 class="text-2xl md:text-3xl font-bold mb-6">Ubah Profil Bisnis</h1>
-    <form id="edit-business-profile-form" class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
-        
-        <fieldset class="mb-6 border-t pt-4">
-            <legend class="text-xl font-semibold text-gray-700 mb-4">Informasi Pemilik & Bisnis</legend>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-fullname">Nama Pemilik Usaha</label>
-                    <input class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" id="edit-bp-fullname" type="text" required />
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-company-name">Nama Usaha</label>
-                    <input class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" id="edit-bp-company-name" type="text" required />
-                </div>
-                <div>
-    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-phone">Nomor Telepon</label>
-    <div class="flex">
-        <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+62</span>
-        <input class="shadow-sm border rounded-r-lg w-full py-2 px-3 text-gray-700" id="edit-bp-phone" type="tel" placeholder="81234567890" required />
-    </div>
-</div>
-                 <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-establishment-date">Tahun Pendirian Usaha</label>
-                    <input class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" id="edit-bp-establishment-date" type="month" required />
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-location">Lokasi Usaha</label>
-                    <select id="edit-bp-location" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required></select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-industry">Tipe Usaha</label>
-                    <select id="edit-bp-industry" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required></select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-employee-count">Jumlah Karyawan</label>
-                    <select id="edit-bp-employee-count" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required></select>
-                </div>
+            <div id="profile-step2-cta" class="hidden text-center bg-blue-50 p-8 my-6 rounded-lg border border-blue-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-blue-500 mb-4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                <h3 class="text-xl font-bold text-gray-800">Anda belum melengkapi profil Anda</h3>
+                <p class="text-gray-600 mt-2 mb-6">Lengkapi detail keuangan dan pendanaan untuk melanjutkan ke tahap peninjauan oleh analis.</p>
+                <button id="profile-cta-complete-btn" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">Lengkapi Sekarang</button>
             </div>
-        </fieldset>
-
-        <fieldset class="mb-6 border-t pt-4">
-            <legend class="text-xl font-semibold text-gray-700 mb-4">Kinerja Keuangan</legend>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-last-year-revenue">Omzet Tahun Terakhir (2024)</label>
-                    <select id="edit-bp-last-year-revenue" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required></select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-monthly-ocf">Arus Kas Operasi Bulanan</label>
-                    <select id="edit-bp-monthly-ocf" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required></select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-gpm">Margin Laba Kotor (%)</label>
-                    <input class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" id="edit-bp-gpm" type="number" step="0.01" required />
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="edit-bp-npm">Margin Laba Bersih (%)</label>
-                    <input class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" id="edit-bp-npm" type="number" step="0.01" required />
-                </div>
+            
+            <div id="profile-step2-fields" class="hidden">
+                <fieldset class="mb-6 pb-6 border-b">
+                    <legend class="text-xl font-semibold mb-4 text-gray-800">Kinerja Keuangan</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div>
+                            <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-last-year-revenue">Omzet Tahun Terakhir</label>
+                            <select id="bp-edit-last-year-revenue" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-monthly-ocf">Arus Kas Operasi Bulanan</label>
+                            <select id="bp-edit-monthly-ocf" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-gpm">Margin Laba Kotor (%)</label>
+                            <input id="bp-edit-gpm" type="number" step="0.01" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-npm">Margin Laba Bersih (%)</label>
+                            <input id="bp-edit-npm" type="number" step="0.01" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-600 text-sm font-bold mb-2">Punya Utang Jangka Pendek Aktif?</label>
+                            <div class="flex items-center space-x-4"><label><input type="radio" name="bp-edit-active-debt" value="Ya" required class="mr-1">Ya</label><label><input type="radio" name="bp-edit-active-debt" value="Tidak" class="mr-1">Tidak</label></div>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend class="text-xl font-semibold mb-4 text-gray-800">Detail Pendanaan & Dokumen</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div>
+                            <label class="block text-gray-600 text-sm font-bold mb-2">Tipe Pembiayaan yang Dibutuhkan</label>
+                            <div class="flex items-center space-x-4 mt-1"><label><input type="radio" name="bp-edit-financing-type" value="Modal kerja jangka pendek" required class="mr-1">Modal kerja jangka pendek</label><label><input type="radio" name="bp-edit-financing-type" value="Investasi" class="mr-1">Investasi</label></div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-sm font-bold mb-2">Preferensi Pembiayaan</label>
+                            <div class="flex items-center space-x-4 mt-1"><label><input type="radio" name="bp-edit-financing-preference" value="Syariah" required class="mr-1">Syariah</label><label><input type="radio" name="bp-edit-financing-preference" value="Konvensional" class="mr-1">Konvensional</label></div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-600 text-sm font-bold mb-2">Tujuan Dana</label>
+                            <div id="bp-edit-fund-purpose-container" class="space-y-1"></div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-600 text-sm font-bold mb-2">Jaminan yang Tersedia</label>
+                            <div id="bp-edit-collateral-container" class="space-y-1"></div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-company-profile-link">Tautan Profil Perusahaan (PDF)</label>
+                            <input id="bp-edit-company-profile-link" type="text" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-financing-proposal-link">Tautan Proposal Pembiayaan (PDF, Opsional)</label>
+                            <input id="bp-edit-financing-proposal-link" type="text" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" />
+                        </div>
+                    </div>
+                </fieldset>
             </div>
-        </fieldset>
-        
-        <fieldset class="mb-6 border-t pt-4">
-            <legend class="text-xl font-semibold text-gray-700 mb-4">Detail Lainnya</legend>
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Preferensi Pembiayaan</label>
-                <div class="flex items-center space-x-4">
-                    <label><input type="radio" name="edit-financing-preference" value="Syariah" required class="mr-2">Syariah</label>
-                    <label><input type="radio" name="edit-financing-preference" value="Konvensional" class="mr-2">Konvensional</label>
-                </div>
-            </div>
-        </fieldset>
-
-        <div class="flex justify-end space-x-4 mt-8">
-            <button id="cancel-edit-profile-btn" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Batal</button>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Simpan Perubahan</button>
         </div>
     </form>
 </div>
@@ -1082,27 +1074,32 @@
     </div>
 
     <div id="no-projects-cta" class="hidden text-center bg-white p-8 md:p-12 rounded-lg shadow-lg max-w-3xl mx-auto mt-10">
-        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-blue-500 mb-4">
-            <path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"></path>
-            <path d="M15 3v6h6"></path>
-            <path d="M10 16s.8-1 2-1c1.3 0 2 1 2 1"></path>
-            <path d="M8 12h8"></path>
-        </svg>
-        <h2 class="text-2xl font-bold mb-4">Selamat Datang!</h2>
-        <p class="text-gray-600 mb-4 max-w-xl mx-auto">
-            Pendaftaran usaha Anda sudah kami terima. Jika usaha Anda lolos ke tahap selanjutnya, tim kami akan menginfokan kepada Anda. Untuk melihat data Anda, bisa klik tombol "Profil Bisnis Saya" di menu navigasi.
-        </p>
-        <p class="text-gray-600 mb-8 max-w-xl mx-auto">
-            Jika usaha Anda lolos, Anda akan diminta melengkapi data usaha dan rencana pembiayaan Anda melalui fitur "Ajukan Proyek Baru".
-        </p>
-        <div class="flex flex-col items-center">
-             <button id="show-create-my-project-modal-btn-cta" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                Ajukan Proyek Baru
-            </button>
-            <p id="propose-project-status-message-cta" class="text-xs text-gray-500 mt-2 hidden"></p>
-        </div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-blue-500 mb-4">
+        <path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"></path>
+        <path d="M15 3v6h6"></path>
+        <path d="M10 16s.8-1 2-1c1.3 0 2 1 2 1"></path>
+        <path d="M8 12h8"></path>
+    </svg>
+    <h2 class="text-2xl font-bold mb-4">Selamat Datang!</h2>
+    <p class="text-gray-600 mb-4 max-w-xl mx-auto">
+        Pendaftaran usaha Anda sudah kami terima. Jika usaha Anda lolos ke tahap selanjutnya, tim kami akan menginfokan kepada Anda. Untuk melihat data Anda, bisa klik tombol "Profil Bisnis Saya" di menu navigasi.
+    </p>
+    <p class="text-gray-600 mb-8 max-w-xl mx-auto">
+        Jika usaha Anda lolos, Anda akan diminta melengkapi data usaha dan rencana pembiayaan Anda melalui fitur "Ajukan Proyek Baru".
+    </p>
+
+    <div class="flex flex-col items-center">
+        <button id="cta-complete-profile-btn" class="hidden w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center">
+            Lengkapi Profil Anda
+        </button>
+
+        <button id="show-create-my-project-modal-btn-cta" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Ajukan Proyek Baru
+        </button>
+        <p id="propose-project-status-message-cta" class="text-xs text-gray-500 mt-2 hidden"></p>
     </div>
+</div>
 </div>
 
         <div id="business-owner-approved-projects-section" class="page-section">

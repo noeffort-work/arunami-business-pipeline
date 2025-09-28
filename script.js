@@ -3648,6 +3648,7 @@ function transformGoogleDriveFolderLink(url) {
 // =======================================================================
 
 // GANTI SELURUH FUNGSI INI
+// GANTI SELURUH FUNGSI INI
 function listenToMyProjects() {
     if (!currentUser) return;
     const projectsQuery = query(collection(db, "projects"), where("ownerId", "==", currentUser.uid));
@@ -3665,16 +3666,30 @@ function listenToMyProjects() {
             // Jika tidak ada proyek, tampilkan Call to Action
             ctaContainer.style.display = 'block';
             projectsContainer.style.display = 'none';
+
+            // Ambil referensi ke tombol-tombol di dalam CTA
+            const completeProfileBtn = document.getElementById('cta-complete-profile-btn');
+            const proposeProjectBtn = document.getElementById('show-create-my-project-modal-btn-cta');
+
+            // Logika untuk menampilkan tombol yang benar
+            if (currentUserData.isProfileComplete === false) {
+                // Tampilkan tombol "Lengkapi Profil" jika profil belum lengkap
+                completeProfileBtn.classList.remove('hidden');
+                proposeProjectBtn.classList.add('hidden');
+            } else {
+                // Tampilkan tombol "Ajukan Proyek Baru" jika profil sudah lengkap
+                completeProfileBtn.classList.add('hidden');
+                proposeProjectBtn.classList.remove('hidden');
+            }
+
         } else {
             // Jika ada proyek, tampilkan daftar proyek
             ctaContainer.style.display = 'none';
             projectsContainer.style.display = 'block';
 
-            // Pisahkan proyek yang diajukan dan yang disetujui
             const proposedProjects = allMyProjects.filter(p => p.status !== 'Approved');
             const approvedProjects = allMyProjects.filter(p => p.status === 'Approved');
             
-            // Render tabel-tabel terkait
             const myProjectsTableBody = document.getElementById('my-projects-table-body');
             const myApprovedProjectsTableBody = document.getElementById('my-approved-projects-table-body');
             renderMyProjectsTable(proposedProjects, myProjectsTableBody);
@@ -3683,6 +3698,12 @@ function listenToMyProjects() {
         }
     });
 }
+
+document.getElementById('cta-complete-profile-btn').addEventListener('click', () => {
+    showPage('complete-profile-section');
+    document.getElementById('complete-profile-submit-btn').disabled = false;
+    loadBusinessProfileDraft();
+});
 
   // --- NEW EVENT LISTENERS AND RENDERER FOR PROJECT PROGRESS ---
 
@@ -4591,67 +4612,169 @@ document.getElementById('complete-profile-form').addEventListener('submit', asyn
     }
 });
 
-// Add this entire new function to script.js
+document.getElementById('profile-cta-complete-btn').addEventListener('click', () => {
+    showPage('complete-profile-section');
+    document.getElementById('complete-profile-submit-btn').disabled = false;
+    loadBusinessProfileDraft();
+});
+
 function renderBusinessProfile() {
     if (!currentUserData) return;
 
-    // Fungsi bantuan untuk menampilkan data dengan aman
-    const display = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.textContent = value || 'T/A'; // T/A = Tidak Ada
+    const populateSelect = (elementId, optionsSourceId, selectedValue) => {
+        const select = document.getElementById(elementId);
+        const sourceSelect = document.getElementById(optionsSourceId);
+        if (select && sourceSelect) {
+            select.innerHTML = sourceSelect.innerHTML;
+            select.value = selectedValue || '';
         }
     };
+
+    const populateCheckboxes = (containerId, optionsSourceSelector, checkedValues) => {
+        const container = document.getElementById(containerId);
+        const sourceCheckboxes = document.querySelectorAll(optionsSourceSelector);
+        if (!container || !sourceCheckboxes) return;
+        container.innerHTML = '';
+        sourceCheckboxes.forEach(sourceCb => {
+            const label = sourceCb.parentElement.cloneNode(true);
+            const newCb = label.querySelector('input');
+            newCb.name = 'bp-edit-' + sourceCb.name;
+            if (checkedValues && checkedValues.includes(sourceCb.value)) {
+                newCb.checked = true;
+            } else {
+                newCb.checked = false;
+            }
+            container.appendChild(label);
+        });
+    };
     
-    // Mengisi Informasi Pemilik & Bisnis
-    display('bp-fullname', currentUserData.fullName);
-    display('bp-email', currentUserData.email);
-    display('bp-phone', currentUserData.phone);
-    display('bp-company-name', currentUserData.companyName);
-    display('bp-establishment-date', currentUserData.establishmentDate);
-    display('bp-location', currentUserData.location);
-    display('bp-industry', currentUserData.industry);
-    display('bp-employee-count', currentUserData.employeeCount);
-    display('bp-trade-activity', currentUserData.tradeActivity);
-
-    // Mengisi data array (tautan dan sumber pendanaan)
-    const linksEl = document.getElementById('bp-links');
-    if (linksEl) {
-        linksEl.innerHTML = currentUserData.links?.map(link => 
-            `<a href="${link}" target="_blank" class="text-blue-600 hover:underline">${link}</a>`
-        ).join('') || 'T/A';
+    document.getElementById('bp-edit-fullname').value = currentUserData.fullName || '';
+    document.getElementById('bp-edit-email').value = currentUserData.email || '';
+    document.getElementById('bp-edit-company-name').value = currentUserData.companyName || '';
+    document.getElementById('bp-edit-phone').value = (currentUserData.phone || '').replace('+62', '');
+    
+    // --- FIX FOR ESTABLISHMENT DATE ---
+    let establishmentDateStr = '';
+    const establishmentDate = currentUserData.establishmentDate;
+    if (establishmentDate) {
+        if (typeof establishmentDate === 'string') {
+            // If it's already a string like "2025-07", use it directly
+            establishmentDateStr = establishmentDate;
+        } else if (establishmentDate.toDate) { 
+            // If it's a Firestore Timestamp, convert it
+            const dateObj = establishmentDate.toDate();
+            const year = dateObj.getFullYear();
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-indexed
+            establishmentDateStr = `${year}-${month}`;
+        }
     }
-    display('bp-external-funding', currentUserData.externalFundingSources?.join(', '));
+    document.getElementById('bp-edit-establishment-date').value = establishmentDateStr;
+    // --- END OF FIX ---
 
-    // Mengisi Kinerja Keuangan (mengakses objek step2Details)
+    populateSelect('bp-edit-location', 'signup-location', currentUserData.location);
+    populateSelect('bp-edit-industry', 'signup-industry', currentUserData.industry);
+    populateSelect('bp-edit-employee-count', 'signup-employee-count', currentUserData.employeeCount);
+    populateSelect('bp-edit-trade-activity', 'signup-trade-activity', currentUserData.tradeActivity);
+    
+    document.getElementById('bp-edit-link1').value = currentUserData.links?.[0] || '';
+    document.getElementById('bp-edit-link2').value = currentUserData.links?.[1] || '';
+    document.getElementById('bp-edit-link3').value = currentUserData.links?.[2] || '';
+    
+    populateCheckboxes('bp-edit-funding-source-container', 'input[name="funding-source"]', currentUserData.externalFundingSources);
+    
     const details = currentUserData.step2Details || {};
-    display('bp-last-year-revenue', details.lastYearRevenue);
-    display('bp-monthly-ocf', details.monthlyOcf);
-    display('bp-gpm', details.gpm);
-    display('bp-npm', details.npm);
-    display('bp-active-debt', details.activeDebt);
-
-    // Mengisi Detail Pendanaan & Pembiayaan
-    display('bp-financing-type', details.financingType);
-    display('bp-financing-preference', details.financingPreference);
-    display('bp-fund-purpose', details.fundPurpose?.join(', '));
-    display('bp-collateral', details.collateral?.join(', '));
+    populateSelect('bp-edit-last-year-revenue', 'profile-last-year-revenue', details.lastYearRevenue);
+    populateSelect('bp-edit-monthly-ocf', 'profile-monthly-ocf', details.monthlyOcf);
+    document.getElementById('bp-edit-gpm').value = details.gpm || '';
+    document.getElementById('bp-edit-npm').value = details.npm || '';
+    document.getElementById('bp-edit-company-profile-link').value = details.companyProfileLink || '';
+    document.getElementById('bp-edit-financing-proposal-link').value = details.financingProposalLink || '';
     
-    // Mengisi Tautan Dokumen
-    const profileLinkEl = document.getElementById('bp-company-profile-link');
-    if (profileLinkEl && details.companyProfileLink) {
-        profileLinkEl.innerHTML = `<strong>Profil Perusahaan:</strong> <a href="${details.companyProfileLink}" target="_blank" class="text-blue-600 hover:underline">Lihat Dokumen</a>`;
-    } else if (profileLinkEl) {
-        profileLinkEl.innerHTML = '<strong>Profil Perusahaan:</strong> T/A';
-    }
+    const setRadio = (name, value) => {
+        if (value) {
+            const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+            if (radio) radio.checked = true;
+        } else {
+            document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.checked = false);
+        }
+    };
+    setRadio('bp-edit-active-debt', details.activeDebt);
+    setRadio('bp-edit-financing-type', details.financingType);
+    setRadio('bp-edit-financing-preference', details.financingPreference);
 
-    const proposalLinkEl = document.getElementById('bp-financing-proposal-link');
-    if (proposalLinkEl && details.financingProposalLink) {
-        proposalLinkEl.innerHTML = `<strong>Proposal Pembiayaan:</strong> <a href="${details.financingProposalLink}" target="_blank" class="text-blue-600 hover:underline">Lihat Dokumen</a>`;
-    } else if (proposalLinkEl) {
-        proposalLinkEl.innerHTML = '<strong>Proposal Pembiayaan:</strong> Tidak Disediakan';
-    }
+    populateCheckboxes('bp-edit-fund-purpose-container', 'input[name="fund-purpose"]', details.fundPurpose);
+    populateCheckboxes('bp-edit-collateral-container', 'input[name="collateral"]', details.collateral);
+
+    const step2Fields = document.getElementById('profile-step2-fields');
+const step2Cta = document.getElementById('profile-step2-cta');
+
+if (currentUserData.isProfileComplete === true) {
+    // If profile is complete, show the detailed fields
+    step2Fields.classList.remove('hidden');
+    step2Cta.classList.add('hidden');
+} else {
+    // If profile is incomplete, hide the fields and show the call-to-action
+    step2Fields.classList.add('hidden');
+    step2Cta.classList.remove('hidden');
 }
+
+
+  }
+
+document.getElementById('business-profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loadingSpinner.style.display = 'flex';
+    const saveButton = document.getElementById('save-business-profile-btn');
+
+    try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+
+        const getCheckedValues = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
+        
+        const dataToUpdate = {
+            fullName: document.getElementById('bp-edit-fullname').value,
+            companyName: document.getElementById('bp-edit-company-name').value,
+            phone: formatPhoneNumber(document.getElementById('bp-edit-phone').value),
+            establishmentDate: document.getElementById('bp-edit-establishment-date').value,
+            location: document.getElementById('bp-edit-location').value,
+            industry: document.getElementById('bp-edit-industry').value,
+            employeeCount: document.getElementById('bp-edit-employee-count').value,
+            tradeActivity: document.getElementById('bp-edit-trade-activity').value,
+            links: [
+                document.getElementById('bp-edit-link1').value,
+                document.getElementById('bp-edit-link2').value,
+                document.getElementById('bp-edit-link3').value
+            ].filter(link => link),
+            externalFundingSources: getCheckedValues('bp-edit-funding-source'),
+            step2Details: {
+                ...(currentUserData.step2Details || {}), 
+                lastYearRevenue: document.getElementById('bp-edit-last-year-revenue').value,
+                monthlyOcf: document.getElementById('bp-edit-monthly-ocf').value,
+                gpm: parseFloat(document.getElementById('bp-edit-gpm').value),
+                npm: parseFloat(document.getElementById('bp-edit-npm').value),
+                activeDebt: document.querySelector('input[name="bp-edit-active-debt"]:checked')?.value,
+                financingType: document.querySelector('input[name="bp-edit-financing-type"]:checked')?.value,
+                financingPreference: document.querySelector('input[name="bp-edit-financing-preference"]:checked')?.value,
+                fundPurpose: getCheckedValues('bp-edit-fund-purpose'),
+                collateral: getCheckedValues('bp-edit-collateral'),
+                companyProfileLink: document.getElementById('bp-edit-company-profile-link').value,
+                financingProposalLink: document.getElementById('bp-edit-financing-proposal-link').value,
+            }
+        };
+
+        await updateDoc(userDocRef, dataToUpdate);
+        
+        Object.assign(currentUserData, dataToUpdate);
+        
+        showMessage("Profil berhasil diperbarui.");
+
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        showMessage("Gagal memperbarui profil. Silakan coba lagi.");
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+});
 
 // --- Add these new event listeners for the admin menu ---
 document.getElementById('nav-admin-business-data').addEventListener('click', (e) => {
@@ -5026,18 +5149,7 @@ profileFormInputs.forEach(input => {
     input.addEventListener('blur', saveBusinessProfileDraft);
 });
 
-// --- ADD THESE NEW EVENT LISTENERS AND FUNCTIONS FOR THE EDIT PROFILE FEATURE ---
 
-// 1. Event listener for the "Ubah Data" button on the profile view page
-document.getElementById('edit-business-profile-btn').addEventListener('click', () => {
-    openEditBusinessProfile(); // Populate the form with current data
-    showPage('edit-business-profile-section'); // Show the edit form
-});
-
-// 2. Event listener for the "Batal" button on the edit form
-document.getElementById('cancel-edit-profile-btn').addEventListener('click', () => {
-    showPage('business-profile-section'); // Go back to the profile view page
-});
 
 /**
  * Populates the edit form with the current business owner's data.
@@ -5086,54 +5198,6 @@ function openEditBusinessProfile() {
     }
 }
 
-// 3. Event listener for the edit form submission
-document.getElementById('edit-business-profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loadingSpinner.style.display = 'flex';
-
-    try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-
-        // Gather all the updated data from the form
-        const dataToUpdate = {
-            fullName: document.getElementById('edit-bp-fullname').value,
-            companyName: document.getElementById('edit-bp-company-name').value,
-            phone: formatPhoneNumber(document.getElementById('edit-bp-phone').value), // Using a helper for consistency
-            establishmentDate: document.getElementById('edit-bp-establishment-date').value,
-            location: document.getElementById('edit-bp-location').value,
-            industry: document.getElementById('edit-bp-industry').value,
-            employeeCount: document.getElementById('edit-bp-employee-count').value,
-            step2Details: {
-                ...(currentUserData.step2Details || {}), 
-                lastYearRevenue: document.getElementById('edit-bp-last-year-revenue').value,
-                monthlyOcf: document.getElementById('edit-bp-monthly-ocf').value,
-                gpm: parseFloat(document.getElementById('edit-bp-gpm').value),
-                npm: parseFloat(document.getElementById('edit-bp-npm').value),
-                financingPreference: document.querySelector('input[name="edit-financing-preference"]:checked').value,
-            }
-        };
-
-        // 1. Save the updated data to Firestore
-        await updateDoc(userDocRef, dataToUpdate);
-        
-        // --- NEW LOGIC TO FORCE REFRESH ---
-        // 2. Immediately update the local currentUserData object
-        Object.assign(currentUserData, dataToUpdate);
-
-        // 3. Re-render the profile view in the background with the new data
-        renderBusinessProfile();
-        // --- END OF NEW LOGIC ---
-
-        showMessage("Profil berhasil diperbarui.");
-        showPage('business-profile-section'); // 4. Now show the already refreshed page
-
-    } catch (error) {
-        console.error("Error updating profile:", error);
-        showMessage("Gagal memperbarui profil. Silakan coba lagi.");
-    } finally {
-        loadingSpinner.style.display = 'none';
-    }
-});
 
 function formatPhoneNumber(rawPhone) {
     let finalPhone = (rawPhone || '').replace(/\D/g, ''); // Remove all non-numeric characters
@@ -5149,3 +5213,5 @@ function formatPhoneNumber(rawPhone) {
 document.getElementById('show-create-my-project-modal-btn-cta').addEventListener('click', () => {
     openProjectModal();
 });
+
+// TAMBAHKAN BLOK KODE BARU INI SECARA KESELURUHAN
