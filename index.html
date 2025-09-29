@@ -259,7 +259,7 @@
     <label class="block text-gray-700 text-sm font-bold mb-2" for="signup-phone">Nomor Telepon</label>
     <div class="flex">
         <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+62</span>
-        <input class="shadow-sm appearance-none border rounded-r-lg w-full py-3 px-4 text-gray-700" id="signup-phone" type="tel" placeholder="81234567890" required />
+        <input class="shadow-sm appearance-none border rounded-r-lg w-full py-3 px-4 text-gray-700" id="signup-phone" type="number" placeholder="81234567890" required />
     </div>
 </div>
         </fieldset>
@@ -573,20 +573,21 @@
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Kebutuhan Dana</label>
-                    <div class="space-y-1">
-                        <label class="flex items-center"><input type="checkbox" name="fund-purpose" value="Ekspansi" class="mr-2">Ekspansi</label>
-                        <label class="flex items-center"><input type="checkbox" name="fund-purpose" value="Beli alat" class="mr-2">Beli alat</label>
-                        <label class="flex items-center"><input type="checkbox" name="fund-purpose" value="Kebutuhan modal projek" class="mr-2">Kebutuhan modal projek</label>
-                    </div>
-                </div>
+    <label class="block text-gray-700 text-sm font-bold mb-2">Apa rencana penggunaan dana pembiayaan anda?</label>
+    <div class="space-y-1">
+        <label class="flex items-center"><input type="checkbox" name="fund-purpose" value="Ekspansi Usaha" class="mr-2">Ekspansi Usaha (Penambahan cabang, SDM, ekspansi luar daerah / luar negeri)</label>
+        <label class="flex items-center"><input type="checkbox" name="fund-purpose" value="Pembelian Asset Usaha" class="mr-2">Pembelian Asset Usaha (alat, kendaraan, gedung, dll)</label>
+        <label class="flex items-center"><input type="checkbox" name="fund-purpose" value="Kebutuhan Modal Kerja Projek" class="mr-2">Kebutuhan Modal Kerja Projek</label>
+    </div>
+</div>
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Jaminan yang Ada</label>
-                    <div class="space-y-1">
-                        <label class="flex items-center"><input type="checkbox" name="collateral" value="Jaminan pribadi" class="mr-2">Jaminan pribadi</label>
-                        <label class="flex items-center"><input type="checkbox" name="collateral" value="Kontrak Proyek Kerja" class="mr-2">Kontrak Proyek Kerja</label>
-                    </div>
-                </div>
+    <label class="block text-gray-700 text-sm font-bold mb-2">Apakah anda memiliki jaminan / surat perintah kerja / dokumen yang setara?</label>
+    <div class="space-y-1">
+        <label class="flex items-center"><input type="radio" name="collateral" value="Jaminan usaha" class="mr-2">Jaminan usaha (aset usaha, surat berharga, dll)</label>
+        <label class="flex items-center"><input type="radio" name="collateral" value="Surat Perintah Kerja" class="mr-2">Surat Perintah Kerja / LC / Invoice dll</label>
+        <label class="flex items-center"><input type="radio" name="collateral" value="Tidak memiliki jaminan" class="mr-2">Tidak memiliki jaminan</label>
+    </div>
+</div>
                  <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Preferensi Pembiayaan</label>
                     <div class="flex items-center space-x-4">
@@ -758,7 +759,7 @@
                     </div>
                     <div>
                         <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-phone">Nomor Telepon</label>
-                        <div class="flex"><span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+62</span><input id="bp-edit-phone" type="tel" class="shadow-sm border rounded-r-lg w-full py-2 px-3 text-gray-700" required /></div>
+                        <div class="flex"><span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+62</span><input id="bp-edit-phone" type="number" class="shadow-sm border rounded-r-lg w-full py-2 px-3 text-gray-700" required /></div>
                     </div>
                     <div>
                         <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-company-name">Nama Perusahaan</label>
@@ -1096,19 +1097,15 @@
         <path d="M10 16s.8-1 2-1c1.3 0 2 1 2 1"></path>
         <path d="M8 12h8"></path>
     </svg>
-    <h2 class="text-2xl font-bold mb-4">Selamat Datang!</h2>
-    <p class="text-gray-600 mb-4 max-w-xl mx-auto">
-        Pendaftaran usaha Anda sudah kami terima. Jika usaha Anda lolos ke tahap selanjutnya, tim kami akan menginfokan kepada Anda. Untuk melihat data Anda, bisa klik tombol "Profil Bisnis Saya" di menu navigasi.
-    </p>
+    <h2 class="text-2xl font-bold mb-4">Terima kasih telah mendaftar program ACCES</h2>
     <p class="text-gray-600 mb-8 max-w-xl mx-auto">
-        Jika usaha Anda lolos, Anda akan diminta melengkapi data usaha dan rencana pembiayaan Anda melalui fitur "Ajukan Proyek Baru".
+        Langkah selanjutnya, anda perlu mengisi data mengenai kondisi bisnis dan rencana pengajuan pembiayaan anda dengan klik tombol ini
     </p>
 
     <div class="flex flex-col items-center">
         <button id="cta-complete-profile-btn" class="hidden w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center">
-            Lengkapi Profil Anda
+            Lengkapi Data Bisnis & Pengajuan
         </button>
-
         <button id="show-create-my-project-modal-btn-cta" class="hidden w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Ajukan Proyek Baru
