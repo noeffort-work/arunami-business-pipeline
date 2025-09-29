@@ -4848,25 +4848,33 @@ document.getElementById('total-bo-completed-count').textContent = completedProfi
     }
 
     businessOwnersToDisplay.forEach(user => {
-        // Find the assigned analyst's name, if it exists
-        const assignedAnalyst = user.assignedAnalystId ? allUsers.find(u => u.id === user.assignedAnalystId) : null;
-        const assignedAnalystName = assignedAnalyst ? assignedAnalyst.fullName : '<span class="text-gray-400">Unassigned</span>';
+    // Find the assigned analyst's name, if it exists
+    const assignedAnalyst = user.assignedAnalystId ? allUsers.find(u => u.id === user.assignedAnalystId) : null;
+    const assignedAnalystName = assignedAnalyst ? assignedAnalyst.fullName : '<span class="text-gray-400">Unassigned</span>';
 
-        const row = `
-            <tr class="hover:bg-gray-50">
-                <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
-                <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
-                <td data-label="Assigned To" class="py-4 px-6 text-gray-700 whitespace-nowrap">${assignedAnalystName}</td>
-                <td data-label="Actions" class="py-4 px-6 text-center">
-                    <div class="flex items-center justify-center space-x-2">
-                        <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
-                        <button data-user-id="${user.id}" data-company-name="${user.companyName}" class="assign-analyst-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Assign</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-        tableBody.innerHTML += row;
-    });
+    // --- ADD THIS LOGIC ---
+    // Create a pre-filled message and generate the WhatsApp link
+    const whatsappMessage = `Halo ${user.fullName}, kami dari tim ACCES ingin menghubungi Anda terkait data bisnis Anda.`;
+    const whatsappLink = formatWhatsAppLink(user.phone, whatsappMessage);
+
+    const row = `
+        <tr class="hover:bg-gray-50">
+            <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
+            <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
+            <td data-label="Assigned To" class="py-4 px-6 text-gray-700 whitespace-nowrap">${assignedAnalystName}</td>
+            <td data-label="Actions" class="py-4 px-6 text-center">
+                <div class="flex items-center justify-center space-x-2">
+                    <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
+                    
+                    <a href="${whatsappLink}" target="_blank" class="bg-emerald-500 text-white font-bold py-1 px-3 rounded-lg hover:bg-emerald-600 text-xs">WhatsApp</a>
+
+                    <button data-user-id="${user.id}" data-company-name="${user.companyName}" class="assign-analyst-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Assign</button>
+                </div>
+            </td>
+        </tr>
+    `;
+    tableBody.innerHTML += row;
+});
 
     // Add event listeners for the buttons
     tableBody.querySelectorAll('.view-business-details-btn').forEach(btn => {
