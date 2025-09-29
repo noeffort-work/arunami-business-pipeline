@@ -191,7 +191,7 @@ window.addEventListener("click", (e) => {
 document.getElementById("user-role-filter").addEventListener("change", (e) => {
   renderAdminUsersTable(e.target.value);
 });
-document.getElementById('bo-completion-filter').addEventListener('change', () => {
+document.getElementById('bo-profile-status-filter').addEventListener('change', () => {
     renderAdminBusinessData();
 });
 
@@ -4828,13 +4828,17 @@ document.getElementById('total-bo-completed-count').textContent = completedProfi
     const tableBody = document.getElementById('admin-business-data-tbody');
     tableBody.innerHTML = '';
 
-    const showOnlyCompleted = document.getElementById('bo-completion-filter').checked;
+    const filterValue = document.getElementById('bo-profile-status-filter').value;
 
     let businessOwnersToDisplay = allBusinessOwners;
 
-      if (showOnlyCompleted) {
-        businessOwnersToDisplay = allBusinessOwners.filter(user => user.isProfileComplete === true);
-    }
+    if (filterValue === 'completed') {
+    businessOwnersToDisplay = allBusinessOwners.filter(user => user.isProfileComplete === true);
+} else if (filterValue === 'incomplete') {
+    // An incomplete profile is one where isProfileComplete is false or doesn't exist yet
+    businessOwnersToDisplay = allBusinessOwners.filter(user => !user.isProfileComplete);
+}
+
 
     const businessOwners = allUsers.filter(user => user.role === 'business-owner');
 
