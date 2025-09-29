@@ -4568,6 +4568,13 @@ document.getElementById('complete-profile-form').addEventListener('submit', asyn
     const loadingSpinner = document.getElementById('loading-spinner'); // Make sure you have this defined
     errorDiv.classList.add('hidden');
 
+    // --- ADD THIS VALIDATION BLOCK ---
+    const fundPurposeCheckboxes = document.querySelectorAll('input[name="fund-purpose"]:checked');
+    if (fundPurposeCheckboxes.length === 0) {
+       alert("Gagal. Harap pilih setidaknya satu 'Rencana Penggunaan Dana'.");
+    return; // Stop the function if validation fails
+    }
+
     try {
         // --- Get all form values ---
         const companyProfileLink = document.getElementById('profile-company-profile-link').value;
