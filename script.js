@@ -259,7 +259,6 @@ function initializeAppUI(userData) {
         } else {
             allProposeBtns.forEach(btn => btn.disabled = true);
             allProposeMsgs.forEach(msg => {
-                msg.textContent = 'Profil Anda sedang menunggu persetujuan analis sebelum Anda dapat mengajukan proyek.';
                 msg.classList.remove('hidden');
             });
         }
@@ -3666,24 +3665,39 @@ function listenToMyProjects() {
         });
 
         if (allMyProjects.length === 0) {
-            // Jika tidak ada proyek, tampilkan Call to Action
-            ctaContainer.style.display = 'block';
-            projectsContainer.style.display = 'none';
+    // Jika tidak ada proyek, tampilkan Call to Action
+    ctaContainer.style.display = 'block';
+    projectsContainer.style.display = 'none';
 
-            // Ambil referensi ke tombol-tombol di dalam CTA
-            const completeProfileBtn = document.getElementById('cta-complete-profile-btn');
-            const proposeProjectBtn = document.getElementById('show-create-my-project-modal-btn-cta');
+    // Ambil referensi ke elemen CTA untuk diubah teksnya
+    const ctaTitle = ctaContainer.querySelector('h2');
+    const ctaParagraph = ctaContainer.querySelector('p');
+    const completeProfileBtn = document.getElementById('cta-complete-profile-btn');
+    const proposeProjectBtn = document.getElementById('show-create-my-project-modal-btn-cta');
 
-            // Logika untuk menampilkan tombol yang benar
-            if (currentUserData.isProfileComplete === false) {
-                // Tampilkan tombol "Lengkapi Profil" jika profil belum lengkap
-                completeProfileBtn.classList.remove('hidden');
-                proposeProjectBtn.classList.add('hidden');
-            } else {
-                // Tampilkan tombol "Ajukan Proyek Baru" jika profil sudah lengkap
-                completeProfileBtn.classList.add('hidden');
-                proposeProjectBtn.classList.remove('hidden');
-            }
+    // Sembunyikan semua tombol terlebih dahulu
+    completeProfileBtn.classList.add('hidden');
+    proposeProjectBtn.classList.add('hidden');
+
+    // Logika baru untuk menampilkan pesan dan tombol yang tepat
+    if (currentUserData.isProfileComplete === false) {
+        // STATE 1: Profil BELUM LENGKAP
+        ctaTitle.textContent = "Terima kasih telah mendaftar program ACCES";
+        ctaParagraph.textContent = "Langkah selanjutnya, anda perlu mengisi data mengenai kondisi bisnis dan rencana pengajuan pembiayaan anda dengan klik tombol ini";
+        completeProfileBtn.classList.remove('hidden');
+
+    } else if (currentUserData.isProfileComplete === true && currentUserData.isApprovedByAnalyst === false) {
+        // STATE 2: Profil SUDAH LENGKAP, TAPI MENUNGGU PERSETUJUAN
+        ctaTitle.textContent = "Selamat Datang!";
+        ctaParagraph.innerHTML = `Pendaftaran usaha Anda sudah kami terima. Jika usaha Anda lolos ke tahap selanjutnya, tim kami akan menginfokan kepada Anda. Untuk melihat data Anda, bisa klik tombol "Profil Bisnis Saya" di menu navigasi.<br><br>Jika usaha Anda lolos, Anda akan diminta melengkapi data usaha dan rencana pembiayaan Anda melalui fitur "Ajukan Proyek Baru"`;
+        // Tidak ada tombol yang ditampilkan di state ini
+
+    } else {
+        // STATE 3: Profil SUDAH LENGKAP DAN SUDAH DISETUJUI
+        ctaTitle.textContent = "Anda Siap Mengajukan Proyek!";
+        ctaParagraph.textContent = "Profil bisnis Anda telah disetujui oleh tim analis kami. Anda sekarang dapat mengajukan proyek baru untuk mendapatkan pendanaan.";
+        proposeProjectBtn.classList.remove('hidden');
+    }
 
         } else {
             // Jika ada proyek, tampilkan daftar proyek
