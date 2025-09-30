@@ -5269,4 +5269,85 @@ document.getElementById('show-create-my-project-modal-btn-cta').addEventListener
     openProjectModal();
 });
 
-// TAMBAHKAN BLOK KODE BARU INI SECARA KESELURUHAN
+// --- ADD THIS ENTIRE NEW FUNCTION TO SCRIPT.JS ---
+
+async function exportBusinessOwnerDataToCSV() {
+    // 1. Start with all business owners
+    const allBusinessOwners = allUsers.filter(user => user.role === 'business-owner');
+
+    // --- ADD THIS FILTERING LOGIC ---
+    // Get the selected value from the filter dropdown
+    const filterValue = document.getElementById('bo-profile-status-filter').value;
+    let businessOwnersToExport = allBusinessOwners; // This is the list we will export
+
+    // Apply the filter based on the dropdown's value
+    if (filterValue === 'completed') {
+        businessOwnersToExport = allBusinessOwners.filter(user => user.isProfileComplete === true);
+    } else if (filterValue === 'incomplete') {
+        businessOwnersToExport = allBusinessOwners.filter(user => !user.isProfileComplete);
+    }
+    // --- END OF FILTERING LOGIC ---
+
+    if (businessOwnersToExport.length === 0) {
+        alert('No data to export for the current filter.');
+        return;
+    }
+
+    // Define the headers for your CSV file.
+    const headers = [
+        'Full Name', 'Email', 'Phone', 'Company Name', 'Establishment Date',
+        'Location', 'Industry', 'Employee Count', 'Trade Activity', 'Links',
+        'External Funding Sources', 'Company Profile Link', 'Financing Proposal Link',
+        'Last Year Revenue', 'Monthly OCF', 'GPM (%)', 'NPM (%)', 'Has Active Debt',
+        'Previous Funding', 'Financing Type', 'Financing Preference', 'Fund Purpose',
+        'Collateral'
+    ];
+
+    // Helper function to handle commas and quotes in data
+    const escapeCSV = (value) => {
+        if (value === null || value === undefined) {
+            return '';
+        }
+        let str = String(value);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            str = `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+    };
+
+    // Map each user object from the FILTERED LIST to a row in the CSV
+    const rows = businessOwnersToExport.map(user => {
+        const details = user.step2Details || {};
+        
+        return [
+            user.fullName, user.email, user.phone ? `="${String(user.phone).startsWith('+') ? user.phone : '+' + user.phone}"` : '', user.companyName, user.establishmentDate,
+            user.location, user.industry, user.employeeCount, (user.links || []).join('; '),
+            (user.externalFundingSources || []).join('; '), details.companyProfileLink,
+            details.financingProposalLink, details.lastYearRevenue, details.monthlyOcf,
+            details.gpm, details.npm, details.activeDebt, details.previousFunding,
+            details.financingType, details.financingPreference, (details.fundPurpose || []).join('; '),
+            details.collateral
+        ].map(escapeCSV);
+    });
+
+    // Combine headers and rows into a single CSV string
+    let csvContent = headers.join(',') + '\r\n';
+    rows.forEach(rowArray => {
+        let row = rowArray.join(',');
+        csvContent += row + '\r\n';
+    });
+
+    // Create a Blob and trigger the download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `acces_business_owner_data_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Add this event listener for the new export button
+document.getElementById('export-bo-data-btn').addEventListener('click', exportBusinessOwnerDataToCSV);
