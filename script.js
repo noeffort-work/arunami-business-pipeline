@@ -5296,7 +5296,7 @@ async function exportBusinessOwnerDataToCSV() {
     // Define the headers for your CSV file.
     const headers = [
         'Full Name', 'Email', 'Phone', 'Company Name', 'Establishment Date',
-        'Location', 'Industry', 'Employee Count', 'Trade Activity', 'Links',
+        'Location', 'Industry', 'Employee Count', 'Links',
         'External Funding Sources', 'Company Profile Link', 'Financing Proposal Link',
         'Last Year Revenue', 'Monthly OCF', 'GPM (%)', 'NPM (%)', 'Has Active Debt',
         'Previous Funding', 'Financing Type', 'Financing Preference', 'Fund Purpose',
