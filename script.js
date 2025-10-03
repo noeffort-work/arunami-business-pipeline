@@ -4541,6 +4541,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
             employeeCount,
             tradeActivity,
             externalFundingSources,
+            discoverySource: discoverySource,
             role: 'business-owner',
             profilePictureURL: "",
             createdAt: Timestamp.now(),
@@ -4932,6 +4933,8 @@ function openBusinessDetailModal(userId) {
         ).join('') || 'N/A';
     }
     displayModal('modal-bd-external-funding', user.externalFundingSources?.join(', '));
+    displayModal('modal-bd-discovery-source', user.discoverySource);
+
 
     // Populate Financials
     const details = user.step2Details || {};
@@ -5297,7 +5300,7 @@ async function exportBusinessOwnerDataToCSV() {
     const headers = [
         'Full Name', 'Email', 'Phone', 'Company Name', 'Establishment Date',
         'Location', 'Industry', 'Employee Count', 'Links',
-        'External Funding Sources', 'Company Profile Link', 'Financing Proposal Link',
+        'External Funding Sources', 'Discovery Source', 'Company Profile Link', 'Financing Proposal Link',
         'Last Year Revenue', 'Monthly OCF', 'GPM (%)', 'NPM (%)', 'Has Active Debt',
         'Previous Funding', 'Financing Type', 'Financing Preference', 'Fund Purpose',
         'Collateral'
@@ -5322,7 +5325,7 @@ async function exportBusinessOwnerDataToCSV() {
         return [
             user.fullName, user.email, user.phone ? `="${String(user.phone).startsWith('+') ? user.phone : '+' + user.phone}"` : '', user.companyName, user.establishmentDate,
             user.location, user.industry, user.employeeCount, (user.links || []).join('; '),
-            (user.externalFundingSources || []).join('; '), details.companyProfileLink,
+            (user.externalFundingSources || []).join('; '), user.discoverySource, details.companyProfileLink,
             details.financingProposalLink, details.lastYearRevenue, details.monthlyOcf,
             details.gpm, details.npm, details.activeDebt, details.previousFunding,
             details.financingType, details.financingPreference, (details.fundPurpose || []).join('; '),
@@ -5351,3 +5354,5 @@ async function exportBusinessOwnerDataToCSV() {
 
 // Add this event listener for the new export button
 document.getElementById('export-bo-data-btn').addEventListener('click', exportBusinessOwnerDataToCSV);
+// Add this line with the other const declarations
+const discoverySource = document.querySelector('input[name="discovery-source"]:checked').value;

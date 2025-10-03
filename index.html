@@ -405,6 +405,31 @@
             </div>
         </fieldset>
 
+        <fieldset class="mb-6 border-t pt-4">
+    <legend class="text-lg font-semibold text-gray-700 mb-4">Sumber Informasi</legend>
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2">Darimana anda mengetahui program ini?</label>
+        <div class="space-y-2">
+            <label class="flex items-center">
+                <input type="radio" name="discovery-source" value="Sosial Media Kementrian UMKM" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" required>
+                <span class="ml-3 text-gray-700">Sosial Media Kementrian UMKM</span>
+            </label>
+            <label class="flex items-center">
+                <input type="radio" name="discovery-source" value="Informasi dari tim lembaga keuangan" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                <span class="ml-3 text-gray-700">Informasi dari tim lembaga keuangan</span>
+            </label>
+            <label class="flex items-center">
+                <input type="radio" name="discovery-source" value="Info dari komunitas / asosiasi / teman" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                <span class="ml-3 text-gray-700">Info dari komunitas / asosiasi / teman</span>
+            </label>
+            <label class="flex items-center">
+                <input type="radio" name="discovery-source" value="Sosialisasi di acara kementrian sebelumnya" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                <span class="ml-3 text-gray-700">Sosialisasi di acara kementrian sebelumnya</span>
+            </label>
+        </div>
+    </div>
+</fieldset>
+
         <div class="flex items-center justify-between">
             <button class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg" type="submit">
             Sign Up
@@ -2749,6 +2774,10 @@
                     <div><strong class="text-gray-600 block">Employee Count:</strong> <span id="modal-bd-employee-count"></span></div>
                     <div><strong class="text-gray-600 block">Trade Activity:</strong> <span id="modal-bd-trade-activity"></span></div>
                     <div class="md:col-span-2"><strong class="text-gray-600 block">Previous External Funding:</strong> <span id="modal-bd-external-funding"></span></div>
+                    <div class="md:col-span-2">
+    <strong class="text-gray-600 block">Discovery Source:</strong>
+    <span id="modal-bd-discovery-source"></span>
+</div>
                     <div class="md:col-span-2"><strong class="text-gray-600 block">Online Links:</strong> <span id="modal-bd-links" class="flex flex-col space-y-1"></span></div>
                 </div>
             </div>
