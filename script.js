@@ -4501,6 +4501,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
     const tradeActivity = document.getElementById('signup-trade-activity').value;
     const checkedFundingNodes = document.querySelectorAll('input[name="funding-source"]:checked');
     const externalFundingSources = Array.from(checkedFundingNodes).map(node => node.value);
+    const discoverySource = document.querySelector('input[name="discovery-source"]:checked').value;
     const password = document.getElementById('signup-password').value;
     const confirmPassword = document.getElementById('signup-confirm-password').value;
 
@@ -5355,4 +5356,3 @@ async function exportBusinessOwnerDataToCSV() {
 // Add this event listener for the new export button
 document.getElementById('export-bo-data-btn').addEventListener('click', exportBusinessOwnerDataToCSV);
 // Add this line with the other const declarations
-const discoverySource = document.querySelector('input[name="discovery-source"]:checked').value;
