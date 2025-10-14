@@ -4497,6 +4497,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
     const establishmentDate = document.getElementById('signup-establishment-date').value;
     const location = document.getElementById('signup-location').value;
     const industry = document.getElementById('signup-industry').value;
+    const fundingNeeded = document.getElementById('signup-funding-needed').value;
     const employeeCount = document.getElementById('signup-employee-count').value;
     const tradeActivity = document.getElementById('signup-trade-activity').value;
     const checkedFundingNodes = document.querySelectorAll('input[name="funding-source"]:checked');
@@ -4539,6 +4540,7 @@ document.getElementById('sign-up-form').addEventListener('submit', async (e) => 
             establishmentDate,
             location,
             industry,
+            fundingNeeded,
             employeeCount,
             tradeActivity,
             externalFundingSources,
@@ -4700,6 +4702,7 @@ function renderBusinessProfile() {
     populateSelect('bp-edit-location', 'signup-location', currentUserData.location);
     populateSelect('bp-edit-industry', 'signup-industry', currentUserData.industry);
     populateSelect('bp-edit-employee-count', 'signup-employee-count', currentUserData.employeeCount);
+    populateSelect('bp-edit-funding-needed', 'signup-funding-needed', currentUserData.fundingNeeded);
     populateSelect('bp-edit-trade-activity', 'signup-trade-activity', currentUserData.tradeActivity);
     
     document.getElementById('bp-edit-link1').value = currentUserData.links?.[0] || '';
@@ -4768,6 +4771,7 @@ document.getElementById('business-profile-form').addEventListener('submit', asyn
             establishmentDate: document.getElementById('bp-edit-establishment-date').value,
             location: document.getElementById('bp-edit-location').value,
             industry: document.getElementById('bp-edit-industry').value,
+            fundingNeeded: document.getElementById('bp-edit-funding-needed').value,
             employeeCount: document.getElementById('bp-edit-employee-count').value,
             tradeActivity: document.getElementById('bp-edit-trade-activity').value,
             links: [
@@ -4920,6 +4924,7 @@ function openBusinessDetailModal(userId) {
     displayModal('modal-bd-establishment-date', user.establishmentDate);
     displayModal('modal-bd-location', user.location);
     displayModal('modal-bd-industry', user.industry);
+    displayModal('modal-bd-funding-needed', user.fundingNeeded);
     displayModal('modal-bd-employee-count', user.employeeCount);
     displayModal('modal-bd-trade-activity', user.tradeActivity);
 

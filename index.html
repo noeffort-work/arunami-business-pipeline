@@ -338,6 +338,15 @@
                     <option value="Other">Other</option>
                 </select>
             </div>
+            <div class="mb-4">
+    <label class="block text-gray-700 text-sm font-bold mb-2" for="signup-funding-needed">Berapa funding yang kamu butuhkan?</label>
+    <select id="signup-funding-needed" class="shadow-sm border rounded-lg w-full py-3 px-4 text-gray-700" required>
+        <option value="" disabled selected>Pilih rentang pendanaan</option>
+        <option value="500 Juta - 2 Miliar">500 Juta - 2 Miliar</option>
+        <option value="2 - 5 Miliar">2 - 5 Miliar</option>
+        <option value="5 Miliar ke atas">5 Miliar ke atas</option>
+    </select>
+</div>
         </fieldset>
         
         <fieldset class="mb-6 border-t pt-4">
@@ -842,6 +851,10 @@
                         <div id="bp-edit-funding-source-container" class="space-y-2"></div>
                     </div>
                 </div>
+                <div>
+    <label class="block text-gray-600 text-sm font-bold mb-1" for="bp-edit-funding-needed">Kebutuhan Pendanaan</label>
+    <select id="bp-edit-funding-needed" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 bg-white" required></select>
+</div>
             </fieldset>
 
             <div id="profile-step2-cta" class="hidden text-center bg-blue-50 p-8 my-6 rounded-lg border border-blue-200">
@@ -2784,6 +2797,7 @@
                     <div><strong class="text-gray-600 block">Employee Count:</strong> <span id="modal-bd-employee-count"></span></div>
                     <div><strong class="text-gray-600 block">Trade Activity:</strong> <span id="modal-bd-trade-activity"></span></div>
                     <div class="md:col-span-2"><strong class="text-gray-600 block">Previous External Funding:</strong> <span id="modal-bd-external-funding"></span></div>
+                    <div><strong class="text-gray-600 block">Kebutuhan Pendanaan:</strong> <span id="modal-bd-funding-needed"></span></div>
                     <div class="md:col-span-2">
     <strong class="text-gray-600 block">Discovery Source:</strong>
     <span id="modal-bd-discovery-source"></span>
