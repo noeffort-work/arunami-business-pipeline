@@ -4824,68 +4824,65 @@ document.getElementById('close-business-detail-modal').addEventListener('click',
     document.getElementById('business-detail-modal').style.display = 'none';
 });
 
-// --- Add this new function to render the table of business owners ---
 // Replace this entire function in script.js
-function renderAdminBusinessData() {
-
-  // Add this code to the beginning of the function
-const allBusinessOwners = allUsers.filter(user => user.role === 'business-owner');
-const completedProfiles = allBusinessOwners.filter(user => user.isProfileComplete === true);
-document.getElementById('total-bo-count').textContent = allBusinessOwners.length;
-document.getElementById('total-bo-completed-count').textContent = completedProfiles.length;
-
+function renderAdminBusinessData(searchTerm = '', statusFilter = 'all') {
     const tableBody = document.getElementById('admin-business-data-tbody');
     tableBody.innerHTML = '';
 
-    const filterValue = document.getElementById('bo-profile-status-filter').value;
+    // --- NEW FILTERING LOGIC ---
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    let filteredBusinessOwners = allUsers.filter(user => {
+        if (user.role !== 'business-owner') {
+            return false;
+        }
 
-    let businessOwnersToDisplay = allBusinessOwners;
+        // Apply status filter
+        if (statusFilter === 'completed' && user.isProfileComplete !== true) {
+            return false;
+        }
+        if (statusFilter === 'incomplete' && user.isProfileComplete === true) {
+            return false;
+        }
 
-    if (filterValue === 'completed') {
-    businessOwnersToDisplay = allBusinessOwners.filter(user => user.isProfileComplete === true);
-} else if (filterValue === 'incomplete') {
-    // An incomplete profile is one where isProfileComplete is false or doesn't exist yet
-    businessOwnersToDisplay = allBusinessOwners.filter(user => !user.isProfileComplete);
-}
+        // Apply search filter
+        if (searchTerm) {
+            const inName = user.fullName?.toLowerCase().includes(lowerCaseSearchTerm);
+            const inCompany = user.companyName?.toLowerCase().includes(lowerCaseSearchTerm);
+            if (!inName && !inCompany) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    // --- END OF FILTERING LOGIC ---
 
-
-    const businessOwners = allUsers.filter(user => user.role === 'business-owner');
-
-   if (businessOwnersToDisplay.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">No business owner data found.</td></tr>`;
+    if (filteredBusinessOwners.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">No business owners match the current filters.</td></tr>`;
         return;
     }
 
-    businessOwnersToDisplay.forEach(user => {
-    // Find the assigned analyst's name, if it exists
-    const assignedAnalyst = user.assignedAnalystId ? allUsers.find(u => u.id === user.assignedAnalystId) : null;
-    const assignedAnalystName = assignedAnalyst ? assignedAnalyst.fullName : '<span class="text-gray-400">Unassigned</span>';
+    filteredBusinessOwners.forEach(user => {
+        const assignedAnalyst = user.assignedAnalystId ? allUsers.find(u => u.id === user.assignedAnalystId) : null;
+        const assignedAnalystName = assignedAnalyst ? assignedAnalyst.fullName : '<span class="text-gray-400">Unassigned</span>';
 
-    // --- ADD THIS LOGIC ---
-    // Create a pre-filled message and generate the WhatsApp link
-    const whatsappMessage = `Halo ${user.fullName}, kami dari tim ACCES ingin menghubungi Anda terkait data bisnis Anda.`;
-    const whatsappLink = formatWhatsAppLink(user.phone, whatsappMessage);
+        const row = `
+            <tr class="hover:bg-gray-50">
+                <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
+                <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
+                <td data-label="Assigned To" class="py-4 px-6 text-gray-700 whitespace-nowrap">${assignedAnalystName}</td>
+                <td data-label="Actions" class="py-4 px-6 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
+                        <button data-user-id="${user.id}" data-company-name="${user.companyName}" class="assign-analyst-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Assign</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    });
 
-    const row = `
-        <tr class="hover:bg-gray-50">
-            <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
-            <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
-            <td data-label="Assigned To" class="py-4 px-6 text-gray-700 whitespace-nowrap">${assignedAnalystName}</td>
-            <td data-label="Actions" class="py-4 px-6 text-center">
-                <div class="flex items-center justify-center space-x-2">
-                    <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
-                    
-                    <a href="${whatsappLink}" target="_blank" class="bg-emerald-500 text-white font-bold py-1 px-3 rounded-lg hover:bg-emerald-600 text-xs">WhatsApp</a>
-
-                    <button data-user-id="${user.id}" data-company-name="${user.companyName}" class="assign-analyst-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Assign</button>
-                </div>
-            </td>
-        </tr>
-    `;
-    tableBody.innerHTML += row;
-});
-
-    // Add event listeners for the buttons
+    // Re-attach event listeners for the newly created buttons
     tableBody.querySelectorAll('.view-business-details-btn').forEach(btn => {
         btn.addEventListener('click', (e) => openBusinessDetailModal(e.currentTarget.dataset.userId));
     });
@@ -5356,3 +5353,20 @@ async function exportBusinessOwnerDataToCSV() {
 // Add this event listener for the new export button
 document.getElementById('export-bo-data-btn').addEventListener('click', exportBusinessOwnerDataToCSV);
 // Add this line with the other const declarations
+
+// Add this new block of code to script.js
+
+const boSearchInput = document.getElementById('bo-search-input');
+const boStatusFilter = document.getElementById('bo-profile-status-filter');
+
+function applyBusinessDataFilters() {
+    const searchTerm = boSearchInput.value;
+    const statusFilter = boStatusFilter.value;
+    renderAdminBusinessData(searchTerm, statusFilter);
+}
+
+// Trigger the filter function whenever the user types in the search bar
+boSearchInput.addEventListener('input', applyBusinessDataFilters);
+
+// Trigger the filter function whenever the user changes the dropdown selection
+boStatusFilter.addEventListener('change', applyBusinessDataFilters);
