@@ -4833,18 +4833,27 @@ function renderAdminBusinessData(searchTerm = '', statusFilter = 'all') {
     const tableBody = document.getElementById('admin-business-data-tbody');
     tableBody.innerHTML = '';
 
-    // --- NEW FILTERING LOGIC ---
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    let filteredBusinessOwners = allUsers.filter(user => {
-        if (user.role !== 'business-owner') {
-            return false;
-        }
+    // --- FIX 1: CALCULATE AND DISPLAY SUMMARY COUNTS ---
+    // First, get all business owners from the global list
+    const allBusinessOwners = allUsers.filter(user => user.role === 'business-owner');
+    
+    // Calculate the totals
+    const totalBO = allBusinessOwners.length;
+    const totalCompleted = allBusinessOwners.filter(user => user.isProfileComplete === true).length;
+    
+    // Update the HTML elements for the summary cards
+    document.getElementById('total-bo-count').textContent = totalBO;
+    document.getElementById('total-bo-completed-count').textContent = totalCompleted;
+    // --- END OF FIX 1 ---
 
+    // --- FILTERING LOGIC (This part remains the same) ---
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    let filteredBusinessOwners = allBusinessOwners.filter(user => {
         // Apply status filter
         if (statusFilter === 'completed' && user.isProfileComplete !== true) {
             return false;
         }
-        if (statusFilter === 'incomplete' && user.isProfileComplete === true) {
+        if (statusFilter === 'incomplete' && user.isProfileComplete === true) { // Corrected this line
             return false;
         }
 
@@ -4869,20 +4878,26 @@ function renderAdminBusinessData(searchTerm = '', statusFilter = 'all') {
     filteredBusinessOwners.forEach(user => {
         const assignedAnalyst = user.assignedAnalystId ? allUsers.find(u => u.id === user.assignedAnalystId) : null;
         const assignedAnalystName = assignedAnalyst ? assignedAnalyst.fullName : '<span class="text-gray-400">Unassigned</span>';
+        
+        // --- FIX 2: ADD WHATSAPP BUTTON ---
+        const whatsappLink = formatWhatsAppLink(user.phone); // Generate the WhatsApp link
 
         const row = `
-            <tr class="hover:bg-gray-50">
-                <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
-                <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
-                <td data-label="Assigned To" class="py-4 px-6 text-gray-700 whitespace-nowrap">${assignedAnalystName}</td>
-                <td data-label="Actions" class="py-4 px-6 text-center">
-                    <div class="flex items-center justify-center space-x-2">
-                        <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
-                        <button data-user-id="${user.id}" data-company-name="${user.companyName}" class="assign-analyst-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Assign</button>
-                    </div>
-                </td>
-            </tr>
-        `;
+    <tr class="hover:bg-gray-50">
+        <td data-label="Company Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${user.companyName || 'N/A'}</td>
+        <td data-label="Owner Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${user.fullName || 'N/A'}</td>
+        <td data-label="Assigned To" class="py-4 px-6 text-gray-700 whitespace-nowrap">${assignedAnalystName}</td>
+        <td data-label="Actions" class="py-4 px-6 text-center">
+            <div class="flex items-center justify-center space-x-2">
+                <a href="${whatsappLink}" target="_blank" class="p-2 text-gray-600 hover:text-green-600" title="Send WhatsApp">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+                </a>
+                <button data-user-id="${user.id}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
+                <button data-user-id="${user.id}" data-company-name="${user.companyName}" class="assign-analyst-business-btn bg-green-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-green-700 text-xs">Assign</button>
+            </div>
+        </td>
+    </tr>
+`;
         tableBody.innerHTML += row;
     });
 
