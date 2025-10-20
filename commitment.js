@@ -31,17 +31,16 @@ function formatPhoneNumber(rawPhone) {
     return finalPhone ? '+' + finalPhone : '';
 }
 
-// --- MAIN LOGIC ---
+// --- CORRECTED AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // User is signed in, now check if they are qualified
+        // User is confirmed to be signed in. Now, check if they are qualified.
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
             const userData = userDoc.data();
 
-            // --- SECURITY CHECK ---
             // The user must be a business owner, approved by an analyst, and not yet committed.
             const isQualified = 
                 userData.role === 'business-owner' &&
@@ -49,37 +48,38 @@ onAuthStateChanged(auth, async (user) => {
                 userData.hasCommitted !== true;
 
             if (isQualified) {
-                // User is qualified, show and populate the form
-                document.getElementById('commitment-name').textContent = userData.fullName || 'Data tidak ditemukan';
-                document.getElementById('commitment-company-name').textContent = userData.companyName || 'Data tidak ditemukan';
+                // User is qualified: show and populate the form
+                document.getElementById('commitment-name').textContent = userData.fullName || 'Data not found';
+                document.getElementById('commitment-company-name').textContent = userData.companyName || 'Data not found';
                 document.getElementById('commitment-phone').value = (userData.phone || '').replace('+62', '');
                 
                 formSection.style.display = 'flex';
-                loadingSpinner.style.display = 'none';
             } else {
-                // User is NOT qualified, show the "Access Denied" message
+                // User is logged in but NOT qualified: show the "Access Denied" message
                 unauthorizedMessage.style.display = 'flex';
-                loadingSpinner.style.display = 'none';
             }
         } else {
-            // User document doesn't exist
+            // User document doesn't exist in Firestore: show "Access Denied"
             unauthorizedMessage.style.display = 'flex';
-            loadingSpinner.style.display = 'none';
         }
     } else {
-        // User is not signed in, redirect to the main login page
-        window.location.href = 'index.html';
+        // User is definitively not signed in: show the "Access Denied" message
+        // This will now wait for Firebase to be sure before running.
+        unauthorizedMessage.style.display = 'flex';
     }
+
+    // Hide the loading spinner after all checks are complete
+    loadingSpinner.style.display = 'none';
 });
 
-// Event listener for checkbox logic
+// Event listener for checkbox logic (remains the same)
 document.getElementById('commitment-checkboxes').addEventListener('change', () => {
     const checkboxes = document.querySelectorAll('input[name="commitment-check"]');
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
     document.getElementById('submit-commitment-btn').disabled = !allChecked;
 });
 
-// Event listener for form submission
+// Event listener for form submission (remains the same)
 commitmentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loadingSpinner.style.display = 'flex';
@@ -105,13 +105,12 @@ commitmentForm.addEventListener('submit', async (e) => {
         batch.update(userDocRef, { phone: updatedPhone, hasCommitted: true });
         await batch.commit();
 
-        // Show success message and redirect
-        alert("Terima kasih! Komitmen Anda telah berhasil kami terima.");
+        alert("Thank you! Your commitment has been received.");
         window.location.href = 'index.html';
 
     } catch (error) {
         console.error("Error submitting commitment:", error);
-        alert("Gagal mengirim komitmen. Silakan coba lagi.");
+        alert("Failed to submit commitment. Please try again.");
     } finally {
         loadingSpinner.style.display = 'none';
     }
