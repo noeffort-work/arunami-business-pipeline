@@ -13,41 +13,33 @@
 </head>
 <body class="text-gray-800">
 
-    <div id="loading-spinner" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+    <div id="loading-spinner" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
     </div>
 
-    <div id="unauthorized-message" class="hidden flex items-center justify-center min-h-screen text-center p-4">
-        <div>
-            <h1 class="text-2xl font-bold text-red-600">Akses Ditolak</h1>
-            <p class="text-gray-600 mt-2">Anda tidak memiliki izin untuk mengakses halaman ini, atau Anda sudah mengirimkan formulir komitmen.</p>
-            <a href="index.html" class="mt-6 inline-block bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Kembali ke Halaman Utama</a>
-        </div>
-    </div>
-
-    <div id="commitment-form-section" class="hidden flex items-center justify-center min-h-[80vh] py-12">
+    <div id="commitment-form-section" class="flex items-center justify-center min-h-screen py-12">
         <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl w-full mx-auto">
             <form id="commitment-form">
                 <div class="text-center mb-8">
                     <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-blue-500 mb-4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m10.5 17.5 2 2 4-4"></path></svg>
                     <h1 class="text-3xl font-bold">Formulir Komitmen Peserta Terpilih</h1>
-                    <p class="text-gray-600 mt-2">Harap konfirmasi data Anda dan setujui setiap poin di bawah ini.</p>
+                    <p class="text-gray-600 mt-2">Harap isi data Anda dan setujui setiap poin di bawah ini.</p>
                 </div>
 
                 <div class="bg-gray-50 border rounded-lg p-6 mb-8 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Nama</label>
-                        <p id="commitment-name" class="text-lg font-semibold text-gray-800"></p>
+                        <label class="block text-sm font-medium text-gray-700" for="commitment-name">Nama</label>
+                        <input id="commitment-name" type="text" class="mt-1 shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500">Nama Usaha (Sesuai Badan Hukum)</label>
-                        <p id="commitment-company-name" class="text-lg font-semibold text-gray-800"></p>
+                        <label class="block text-sm font-medium text-gray-700" for="commitment-company-name">Nama Usaha (Sesuai Badan Hukum)</label>
+                        <input id="commitment-company-name" type="text" class="mt-1 shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700" required />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500" for="commitment-phone">Nomor Telepon</label>
+                        <label class="block text-sm font-medium text-gray-700" for="commitment-phone">Nomor Telepon</label>
                         <div class="flex mt-1">
                             <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-200 text-gray-600 text-sm">+62</span>
-                            <input id="commitment-phone" type="tel" class="shadow-sm border rounded-r-lg w-full py-2 px-3 text-gray-700" required />
+                            <input id="commitment-phone" type="tel" class="shadow-sm border rounded-r-lg w-full py-2 px-3 text-gray-700" placeholder="8123456789" required />
                         </div>
                     </div>
                 </div>

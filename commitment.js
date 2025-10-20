@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, writeBatch, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
 const firebaseConfig = {
@@ -12,15 +11,11 @@ const firebaseConfig = {
   appId: "1:266344538248:web:fb412f07da4151e0c47f3d"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
 // --- DOM ELEMENT REFERENCES ---
 const loadingSpinner = document.getElementById("loading-spinner");
-const formSection = document.getElementById("commitment-form-section");
-const unauthorizedMessage = document.getElementById("unauthorized-message");
 const commitmentForm = document.getElementById('commitment-form');
 
 // --- HELPER FUNCTION ---
@@ -31,87 +26,48 @@ function formatPhoneNumber(rawPhone) {
     return finalPhone ? '+' + finalPhone : '';
 }
 
-// --- CORRECTED AUTHENTICATION LOGIC ---
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // User is confirmed to be signed in. Now, check if they are qualified.
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
+// --- MAIN LOGIC ---
 
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-
-            // --- UPDATED SECURITY CHECK ---
-            // The user must be a business owner and not yet committed.
-            // The analyst approval check has been removed as requested.
-            const isQualified = 
-                userData.role === 'business-owner' &&
-                userData.hasCommitted !== true;
-
-            if (isQualified) {
-                // User is qualified: show and populate the form
-                document.getElementById('commitment-name').textContent = userData.fullName || 'Data not found';
-                document.getElementById('commitment-company-name').textContent = userData.companyName || 'Data not found';
-                document.getElementById('commitment-phone').value = (userData.phone || '').replace('+62', '');
-                
-                formSection.style.display = 'flex';
-            } else {
-                // User is logged in but NOT qualified: show the "Access Denied" message
-                unauthorizedMessage.style.display = 'flex';
-            }
-        } else {
-            // User document doesn't exist in Firestore: show "Access Denied"
-            unauthorizedMessage.style.display = 'flex';
-        }
-    } else {
-        // User is definitively not signed in: show the "Access Denied" message
-        unauthorizedMessage.style.display = 'flex';
-    }
-
-    // Hide the loading spinner after all checks are complete
-    loadingSpinner.style.display = 'none';
-});
-
-// Event listener for checkbox logic (remains the same)
+// Event listener for checkbox logic (to enable/disable the submit button)
 document.getElementById('commitment-checkboxes').addEventListener('change', () => {
     const checkboxes = document.querySelectorAll('input[name="commitment-check"]');
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
     document.getElementById('submit-commitment-btn').disabled = !allChecked;
 });
 
-// Event listener for form submission (remains the same)
+// Event listener for form submission
 commitmentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loadingSpinner.style.display = 'flex';
-    const user = auth.currentUser;
 
     try {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        const userData = userDoc.data();
-        
-        const updatedPhone = formatPhoneNumber(document.getElementById('commitment-phone').value);
+        // Get all manually inputted data from the form
+        const fullName = document.getElementById('commitment-name').value;
+        const companyName = document.getElementById('commitment-company-name').value;
+        const phone = formatPhoneNumber(document.getElementById('commitment-phone').value);
 
+        // Prepare the data to be saved
         const commitmentData = {
-            userId: user.uid,
-            fullName: userData.fullName,
-            companyName: userData.companyName,
-            phone: updatedPhone,
+            fullName: fullName,
+            companyName: companyName,
+            phone: phone,
             committedAt: Timestamp.now(),
         };
 
-        const batch = writeBatch(db);
-        batch.set(doc(db, "commitments", user.uid), commitmentData);
-        batch.update(userDocRef, { phone: updatedPhone, hasCommitted: true });
-        await batch.commit();
+        // Add the new commitment record to the 'commitments' collection
+        await addDoc(collection(db, "commitments"), commitmentData);
 
-        alert("Thank you! Your commitment has been received.");
-        window.location.href = 'index.html';
+        // Hide spinner and show the success pop-up
+        loadingSpinner.style.display = 'none';
+        alert("Terima kasih telah mengisi formulir komitmen partisipasi program ACCES, jika ada pertanyaan harap hubungi Tim ACCES 0851-2332-0408");
+        
+        // Reset the form after successful submission
+        commitmentForm.reset();
+        document.getElementById('submit-commitment-btn').disabled = true;
 
     } catch (error) {
         console.error("Error submitting commitment:", error);
-        alert("Failed to submit commitment. Please try again.");
-    } finally {
+        alert("Gagal mengirim komitmen. Silakan coba lagi.");
         loadingSpinner.style.display = 'none';
     }
 });
