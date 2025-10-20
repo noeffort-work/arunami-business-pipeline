@@ -4,12 +4,12 @@ import { getFirestore, doc, getDoc, writeBatch, Timestamp } from "https://www.gs
 
 // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyB2d8_d_xaobWfmNNSw2bx9RA5tYpVbKpU",
+  authDomain: "arunami-brand-pipeline-9da20.firebaseapp.com",
+  projectId: "arunami-brand-pipeline-9da20",
+  storageBucket: "arunami-brand-pipeline-9da20.firebasestorage.app",
+  messagingSenderId: "266344538248",
+  appId: "1:266344538248:web:fb412f07da4151e0c47f3d"
 };
 
 // Initialize Firebase
