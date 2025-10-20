@@ -56,6 +56,7 @@ let userDocListenerUnsubscribe = null;
 let reportData = { investments: [], prospects: [] };
 let tempUserDataForDisclaimer = null;
 let isResubmitFlowActive = false;
+let allCommitments = [];
 
 try {
   app = initializeApp(firebaseConfig);
@@ -235,6 +236,7 @@ function initializeAppUI(userData) {
         listenToAllInvestments();
         listenToAdminLogs();
         listenToProposedProjects();
+        listenToCommitments();
         defaultPage = 'admin-business-data-section';
 
     } else if (userData.role === 'business-owner') {
@@ -5390,3 +5392,66 @@ boSearchInput.addEventListener('input', applyBusinessDataFilters);
 
 // Trigger the filter function whenever the user changes the dropdown selection
 boStatusFilter.addEventListener('change', applyBusinessDataFilters);
+
+// Event Listeners for the new "Commitment Data" navigation links
+document.getElementById('nav-admin-commitment-data').addEventListener('click', (e) => {
+    e.preventDefault();
+    showPage('admin-commitment-data-section');
+});
+document.getElementById('mobile-nav-admin-commitment-data').addEventListener('click', (e) => {
+    e.preventDefault();
+    mobileMenu.classList.add('hidden');
+    showPage('admin-commitment-data-section');
+});
+
+/**
+ * Sets up a real-time listener for the 'commitments' collection.
+ */
+function listenToCommitments() {
+    const commitmentsQuery = query(collection(db, "commitments"));
+    onSnapshot(commitmentsQuery, (snapshot) => {
+        allCommitments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Automatically refresh the table if it's the currently viewed page
+        if (document.getElementById('admin-commitment-data-section').style.display === 'block') {
+            renderAdminCommitmentData();
+        }
+    });
+}
+
+/**
+ * Renders the table of business owners who have submitted the commitment form.
+ */
+function renderAdminCommitmentData() {
+    const tableBody = document.getElementById('admin-commitment-tbody');
+    tableBody.innerHTML = '';
+
+    if (allCommitments.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No commitment data found.</td></tr>`;
+        return;
+    }
+
+    // Sort by most recent commitment
+    const sortedCommitments = [...allCommitments].sort((a, b) => b.committedAt.toMillis() - a.committedAt.toMillis());
+
+    sortedCommitments.forEach(commitment => {
+        const row = `
+            <tr class="hover:bg-gray-50">
+                <td data-label="Owner Name" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">${commitment.fullName || 'N/A'}</td>
+                <td data-label="Business Name" class="py-4 px-6 text-gray-700 whitespace-nowrap">${commitment.companyName || 'N/A'}</td>
+                <td data-label="Committed At" class="py-4 px-6 text-gray-700 whitespace-nowrap">${formatDetailedTimestamp(commitment.committedAt)}</td>
+                <td data-label="Actions" class="py-4 px-6 text-center">
+                    <button data-user-id="${commitment.userId}" class="view-business-details-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 text-xs">View Details</button>
+                </td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    });
+
+    // Re-use the existing 'openBusinessDetailModal' function when the button is clicked
+    tableBody.querySelectorAll('.view-business-details-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            openBusinessDetailModal(e.currentTarget.dataset.userId);
+        });
+    });
+}
