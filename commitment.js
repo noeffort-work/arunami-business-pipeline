@@ -41,10 +41,11 @@ onAuthStateChanged(auth, async (user) => {
         if (userDoc.exists()) {
             const userData = userDoc.data();
 
-            // The user must be a business owner, approved by an analyst, and not yet committed.
+            // --- UPDATED SECURITY CHECK ---
+            // The user must be a business owner and not yet committed.
+            // The analyst approval check has been removed as requested.
             const isQualified = 
                 userData.role === 'business-owner' &&
-                userData.isApprovedByAnalyst === true &&
                 userData.hasCommitted !== true;
 
             if (isQualified) {
@@ -64,7 +65,6 @@ onAuthStateChanged(auth, async (user) => {
         }
     } else {
         // User is definitively not signed in: show the "Access Denied" message
-        // This will now wait for Firebase to be sure before running.
         unauthorizedMessage.style.display = 'flex';
     }
 
