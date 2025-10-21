@@ -11,12 +11,14 @@ const firebaseConfig = {
   appId: "1:266344538248:web:fb412f07da4151e0c47f3d"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // --- DOM ELEMENT REFERENCES ---
 const loadingSpinner = document.getElementById("loading-spinner");
 const commitmentForm = document.getElementById('commitment-form');
+const phoneInput = document.getElementById('commitment-phone');
 
 // --- HELPER FUNCTION ---
 function formatPhoneNumber(rawPhone) {
@@ -28,7 +30,13 @@ function formatPhoneNumber(rawPhone) {
 
 // --- MAIN LOGIC ---
 
-// Event listener for checkbox logic (to enable/disable the submit button)
+// --- NEW: Phone Number Validation ---
+// This listener automatically removes any non-numeric characters as the user types.
+phoneInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '');
+});
+
+// Event listener for checkbox logic
 document.getElementById('commitment-checkboxes').addEventListener('change', () => {
     const checkboxes = document.querySelectorAll('input[name="commitment-check"]');
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -41,12 +49,10 @@ commitmentForm.addEventListener('submit', async (e) => {
     loadingSpinner.style.display = 'flex';
 
     try {
-        // Get all manually inputted data from the form
         const fullName = document.getElementById('commitment-name').value;
         const companyName = document.getElementById('commitment-company-name').value;
-        const phone = formatPhoneNumber(document.getElementById('commitment-phone').value);
+        const phone = formatPhoneNumber(phoneInput.value);
 
-        // Prepare the data to be saved
         const commitmentData = {
             fullName: fullName,
             companyName: companyName,
@@ -54,16 +60,15 @@ commitmentForm.addEventListener('submit', async (e) => {
             committedAt: Timestamp.now(),
         };
 
-        // Add the new commitment record to the 'commitments' collection
         await addDoc(collection(db, "commitments"), commitmentData);
 
-        // Hide spinner and show the success pop-up
         loadingSpinner.style.display = 'none';
+        
+        // --- UPDATED: Show pop-up and then redirect ---
         alert("Terima kasih telah mengisi formulir komitmen partisipasi program ACCES, jika ada pertanyaan harap hubungi Tim ACCES 0851-2332-0408");
         
-        // Reset the form after successful submission
-        commitmentForm.reset();
-        document.getElementById('submit-commitment-btn').disabled = true;
+        // Redirect to the homepage after the user clicks "OK" on the alert
+        window.location.href = 'https://accescapital.id';
 
     } catch (error) {
         console.error("Error submitting commitment:", error);
