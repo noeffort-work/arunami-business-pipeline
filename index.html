@@ -107,6 +107,9 @@
                     <a href="#" id="nav-analyst-business-data" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Business Data to Review</a>
                     <a href="#" id="nav-admin-projects" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Manage Projects</a>
                 </span>
+                <span id="kementrian-nav-links" class="hidden">
+    <a href="#" id="nav-kementrian-business-data" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">Business Data</a>
+</span>
                 <div id="profile-dropdown-container" class="relative inline-block group">
                     <button id="profile-dropdown-btn" class="flex items-center space-x-2">
                         <span id="navbar-user-name" class="font-medium text-sm hidden lg:block">Profile</span>
@@ -151,6 +154,9 @@
                 <a href="#" id="mobile-nav-analyst-business-data" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Business Data to Review</a>
                 <a href="#" id="mobile-nav-admin-projects" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Manage Projects</a>
             </div>
+            <div id="mobile-kementrian-nav-links" class="hidden border-t mt-2 pt-2">
+    <a href="#" id="mobile-nav-kementrian-business-data" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200">Business Data</a>
+</div>
 
             <a href="https://wa.me/6285123320408" id="mobile-nav-contact-us" target="_blank" rel="noopener noreferrer" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 flex items-center">
                 <img src="https://firebasestorage.googleapis.com/v0/b/investor-club-a1272.firebasestorage.app/o/asset%2FWA%20Logo.png?alt=media&token=dd9a7789-96bb-4988-bc31-cfbf65c47452" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="mr-3 text-green-500"><path d="M16.75 13.96c.25.13.42.2.46.28.04.09.04.5-.02.95-.06.45-.33.85-.59.98-.26.13-.59.19-.89.13-.3-.06-1.98-.95-3.75-2.71-1.39-1.39-2.3-3.14-2.4-3.33-.1-.19-.52-1.09.1-2.04.57-.87.95-.95.95-.95.09,0,.23-.04.38.38.14.42.49,1.18.54,1.28.05.1.08.16.03.26-.05.1-.08.13-.16.23-.08.1-.16.19-.23.26-.08.08-.16.16-.16.23 0 .08.05.16.13.31.21.42.95,1.64,2.18,2.86,1.23,1.23,2.44,1.98,2.86,2.18.16.08.23.13.31.13.08,0,.16-.08.23-.16.08-.08.16-.16.26-.23.1-.08.13-.11.23-.16.1-.05.16-.03.26.03.1.05,1.28.49,1.28.54.1.05.16.08.16.16.03.11,0 .26-.11.38-.13.14-.31.23-.39.28zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
@@ -2047,14 +2053,12 @@
           </div>
           <div class="mb-4" id="role-field-container">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="user-role">Role</label>
-            <select
-  id="user-role"
-  class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700"
->
+            <select id="user-role" class="shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700">
   <option value="investor" selected>Investor</option>
   <option value="business-owner">Business Owner</option>
   <option value="admin">Admin</option>
   <option value="analyst">Analyst</option>
+  <option value="kementrian">Kementrian</option>
   </select>
           </div>
 
@@ -2456,31 +2460,38 @@
       What type of user would you like to add?
     </p>
     <div class="grid grid-cols-2 gap-4">
-      <button
-        id="add-investor-btn"
-        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-blue-50 text-blue-800 rounded-lg border-2 border-transparent hover:border-blue-500 hover:bg-blue-100 transition"
-      >
-        <span class="text-lg font-bold">Investor</span>
-      </button>
-      <button
-        id="add-business-owner-btn"
-        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-green-50 text-green-800 rounded-lg border-2 border-transparent hover:border-green-500 hover:bg-green-100 transition"
-      >
-        <span class="text-lg font-bold">Business Owner</span>
-      </button>
-      <button
-        id="add-admin-btn"
-        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-gray-50 text-gray-800 rounded-lg border-2 border-transparent hover:border-gray-500 hover:bg-gray-100 transition"
-      >
-        <span class="text-lg font-bold">Admin</span>
-      </button>
-      <button
-        id="add-analyst-btn"
-        class="role-selection-btn flex flex-col items-center justify-center p-6 bg-yellow-50 text-yellow-800 rounded-lg border-2 border-transparent hover:border-yellow-500 hover:bg-yellow-100 transition"
-      >
-        <span class="text-lg font-bold">Analyst</span>
-      </button>
-    </div>
+    <button
+      id="add-investor-btn"
+      class="role-selection-btn flex flex-col items-center justify-center p-6 bg-blue-50 text-blue-800 rounded-lg border-2 border-transparent hover:border-blue-500 hover:bg-blue-100 transition"
+    >
+      <span class="text-lg font-bold">Investor</span>
+    </button>
+    <button
+      id="add-business-owner-btn"
+      class="role-selection-btn flex flex-col items-center justify-center p-6 bg-green-50 text-green-800 rounded-lg border-2 border-transparent hover:border-green-500 hover:bg-green-100 transition"
+    >
+      <span class="text-lg font-bold">Business Owner</span>
+    </button>
+    <button
+      id="add-admin-btn"
+      class="role-selection-btn flex flex-col items-center justify-center p-6 bg-gray-50 text-gray-800 rounded-lg border-2 border-transparent hover:border-gray-500 hover:bg-gray-100 transition"
+    >
+      <span class="text-lg font-bold">Admin</span>
+    </button>
+    <button
+      id="add-analyst-btn"
+      class="role-selection-btn flex flex-col items-center justify-center p-6 bg-yellow-50 text-yellow-800 rounded-lg border-2 border-transparent hover:border-yellow-500 hover:bg-yellow-100 transition"
+    >
+      <span class="text-lg font-bold">Analyst</span>
+    </button>
+    
+    <button
+      id="add-kementrian-btn"
+      class="role-selection-btn flex flex-col items-center justify-center p-6 bg-purple-50 text-purple-800 rounded-lg border-2 border-transparent hover:border-purple-500 hover:bg-purple-100 transition col-span-2"
+    >
+      <span class="text-lg font-bold">Kementrian</span>
+    </button>
+</div>
   </div>
 </div>
 
